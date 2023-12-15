@@ -1,23 +1,20 @@
 # Project Documentation
 
-## Github 사용 규칙
+## Git 사용 규칙
 
-- 자신의 코드의 버전관리를 위해서 본인의 branch에 본인이 작업한 내용을 `git push origin [branch_name]`로 push합니다.
+- **Git 플로우**: release - git actions(CI/CD) - main(AWS 배포용 브랜치) - develop(개발용 브랜치) - feature branch(개인 브랜치) [[참고]](https://gmlwjd9405.github.io/2018/05/11/types-of-git-branch.html)
 
-- 100MB 이상의 파일은 올리면 안 됩니다. 올려지지도 않을 거에요. 해당 파일 형식(모델)은 .gitignore에 추가해야 합니다.
+- 작업 시작 전 `git checkout [branch_name]`으로 본인의 branch로 이동해서 `git branch -v`로 본인의 branch로 이동되었는지 확인하고, `git merge develop`으로 branch와 develop 브랜치를 병합해서 동기화합니다. develop branch는 모든 조원의 작업들을 merge하기 때문에 계속해서 바뀌기 때문에 병합해서 동기화로 충돌을 최소화합니다. 충돌이 발생했을 때는 기본적으로 develop branch의 내용을 따르고, 본인의 branch를 develop branch에 병합을 해야한다고 생각될 경우에는 모두에게 알려주세요. 🥺
 
-- 주기적으로 자신의 branch와 main 브랜치를 병합합니다. main branch는 다른 조원의 작업으로 계속해서 바뀌기 때문에 병합으로 충돌을 최소화합니다. 충돌이 발생했을 때는 기본적으로 main branch의 내용을 따르고, 본인의 branch를 main branch에 병합을 해야한다고 생각될 경우에는 저에게 말해주세요. 바로 병합을 진행하도록 하겠습니다.
+- 자신의 코드의 버전관리를 위해서 본인의 branch에 본인이 작업한 내용을 `git push origin [branch_name]`로 push합니다. 😐
 
-```bash
-git checkout [branch_name]
-git merge main
-```
+- 자신의 branch에만 병합하도록 합니다. 특정 작업이 끝나면 repository에서 본인의 branch로 이동해서, pull request 버튼을 눌러서 develop branch에 병합을 요청합니다. 🙂
 
-- 자신의 branch에만 병합하도록 합니다. 어차피 저 이외에 main branch 수정 권한은 부여하지 않았지만, 특정 작업이 끝나면 repository에서 pull request를 통해 main branch에 병합을 요청합니다.
+- `[본인의 이름].md` 파일을 만들어서 본인이 만들거나 수정한 코드에 대해서 기본적인 설명을 적어주세요. 다른 팀원들이 본인의 코드를 이해할 수 있도록 하면 좋을 것 같아요. 😊 [[참고]](https://gist.github.com/ihoneymon/652be052a0727ad59601)
 
-- `[본인의 이름].md` 파일을 만들어서 본인이 만들거나 수정한 코드에 대해서 기본적인 설명을 적어주세요. 다른 팀원들이 본인의 코드를 이해할 수 있도록 하면 좋을 것 같아요. [참고링크](https://gist.github.com/ihoneymon/652be052a0727ad59601)
+- 100MB 이상의 파일은 올리면 안 됩니다. git LFS(Large File Storage)를 사용해야하는데, 굳이 쓸 필요가 없다고 생각이 되네요. 따라서 해당 파일 형식은 .gitignore에 추가해야 합니다. 🥺
 
-- 저도 협업이 처음이라서 기본적인 규칙만 정해봤는데, 추가적인 제안 사항이 있다면 말해주세요.
+- 이번 프로젝트를 통해서 모두 git 이용 방법을 확실하게 익히고 가면 좋을 거라 생각합니다. 저도 협업이 처음이라서 기본적인 규칙만 정해봤는데, 추가적인 제안 사항이 있다면 말해주세요. 😊
 
 ## 개인 branch 생성 및 사용 방법
 
@@ -27,10 +24,15 @@ git merge main
 git checkout -b [branch_name]
 ```
 
-2. 작업 후 commit
+2. 작업 후 모든 파일을 staging area로 이동시키기
 
 ```bash
 git add .
+```
+
+3. staging area에 있는 파일들의 버전을 저장함
+
+```
 git commit -m "[commit_message]"
 ```
 
@@ -40,7 +42,7 @@ git commit -m "[commit_message]"
 git push -u origin [branch_name]
 ```
 
-4. 이후에 자신에 branch에 push
+4. 이후에 자신에 branch에 push: upstream이 설정되었으므로 -u 옵션은 불필요함
 
 ```bash
 git push origin [branch_name]
@@ -90,7 +92,7 @@ deactivate
 
 ## voice-changer를 docker로 설치하기
 
-1. wsl 설치
+### 1. wsl 설치
 
 - wsl 설치하기
 
@@ -110,7 +112,7 @@ wsl --install -d ubuntu
 wsl --list
 ```
 
-2. docker desktop 설치/재시작 및 wsl와 통합하기
+### 2. docker desktop 설치/재시작 및 wsl와 통합하기 [[참고]](https://www.youtube.com/watch?v=POo_Cg0eFMU)
 
 - docker desktop에서 설치하기
 
@@ -123,7 +125,7 @@ wsl --list
 wsl --list
 ```
 
-3. git clone
+### 3. git clone
 
 - git 모듈 다운로드: Linux git으로 clone으로 해야 띄어쓰기 이슈 예방 가능. Windows의 git pull이랑 Linux의 git pull을 했을 때, 띄어쓰기 방식이 다름.
 
@@ -143,12 +145,10 @@ git clone https://github.com/w-okada/voice-changer.git
 cd [path]
 ```
 
-4. 프로그램 실행
+### 4. 프로그램 실행
 
-- 도커를 사용해서 프로그램 실행하기: 노트북에는 GPU가 없음
+- 도커를 사용해서 프로그램 실행하기: 저희 노트북에는 GPU가 없어요. 😢
 
 ```bash
 USE_GPU=off bash start_docker.sh
 ```
-
-5. [참고 링크 - 일본어](https://www.youtube.com/watch?v=POo_Cg0eFMU)
