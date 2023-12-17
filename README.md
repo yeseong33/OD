@@ -38,47 +38,57 @@
 
 - 이번 프로젝트를 통해서 모두 git 이용 방법을 확실하게 익히고 가면 좋을 거라 생각합니다. 저도 협업이 처음이라서 기본적인 규칙만 정해봤는데, 추가적인 제안 사항이 있다면 말해주세요.
 
+## 3. 개발 환경 설정
+
 ### 개인 branch 생성 및 사용 방법
 
-1. 새로운 branch 생성 후 해당 브랜치로 이동
+1. 현재 프로젝트를 로컬로 가져오기
+
+```bash
+git clone https://github.com/Aivle-4th-Team-16/big-project.git
+```
+
+2. 새로운 branch 생성 후 해당 브랜치로 이동
 
 ```bash
 git checkout -b [branch_name]
 ```
 
-2. 작업 후 모든 파일을 staging area로 이동시키기
+3. `[본인의 이름].md` 파일을 추가하기 [[참고1]](https://gist.github.com/ihoneymon/652be052a0727ad59601), [[참고2]](/Myeongkyu.md)
+
+4. 작업 후 모든 파일을 staging area로 이동시키기
 
 ```bash
 git add .
 ```
 
-3. staging area에 있는 파일들의 버전을 저장함
+5. staging area에 있는 파일들의 버전을 저장함: 커밋 메시지에는 명확하게 본인이 추가한 기능이나 고친 버그 등을 써주세요.
 
 ```
 git commit -m "[commit_message]"
 ```
 
-3. 처음에 자신의 branch에 push: upstream을 설정함
+6. (환경 설정을 끝내고) 처음에 자신의 branch에 push: upstream을 설정함
 
 ```bash
 git push -u origin [branch_name]
 ```
 
-4. 이후에 자신에 branch에 push: upstream이 설정되었으므로 -u 옵션은 불필요함
+7. (이후에 push할 때) 자신에 branch에 push: upstream이 설정되었으므로 -u 옵션은 불필요함
 
 ```bash
 git push origin [branch_name]
 ```
 
-## 3. 개발 환경 설정
+### PostgreSQL 설치하기
 
-### Postgresql 설치하기
+1. PostgreSQL 설치 [[참고1]](https://www.postgresql.org/download/), [[참고2]](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)
 
-- Postgresql를 설치합니다. [[참고1]](https://www.postgresql.org/download/), [[참고2]](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)
+2. PostgreSQL 서버 실행: 저는 같이 설치되는 pgAdmin4를 실행해서 사용합니다. 커맨드로 쓸꺼 아니여서요.
 
 ### 가상환경 사용해서 의존성 관리하기
 
-1. 가상 환경을 생성할 경로로 이동하기
+1. 가상 환경을 생성할 경로로 이동하기: 저는 귀찮아서 C:\로 했습니다.
 
 ```bash
 cd [path]
@@ -108,17 +118,46 @@ cd [path]
 pip install -r requirements.txt
 ```
 
-6. 현재 본인의 가상환경의 의존성을 프로젝트 환경으로 복사하기
+### 기타 가상환경 명령어
+
+- 현재 본인의 가상환경의 의존성을 프로젝트 환경으로 복사하기: 본인의 의존성을 추가했다면 사용해주도록 합니다.
 
 ```bash
 pip freeze > requirements.txt
 ```
 
-7. 가상환경 종료하기
+- 가상환경 종료하기
 
 ```bash
 deactivate
 ```
+
+### Django 시작하기
+
+1. 기본적인 프로젝트 생성, settings.py 설정, 데이터베이스 설정: 제가 미리 해두었습니다. 처음에 생성된 app 이름은 config로 바꾸어두었습니다.
+
+2. 프로젝트 루트 폴더에 `.env` 파일을 만들고 다음과 같이 입력
+   ![env_example](/description_images/env_example.png)
+
+3. 기본 마이그레이션 적용하기
+
+```bash
+python manage.py migrate
+```
+
+4. 관리자 계정 생성하기
+
+```bash
+python manage.py createsuperuser
+```
+
+5. 서버 실행
+
+```bash
+python manage.py runserver
+```
+
+6. `http://127.0.0.1:8000/` 및 `http://127.0.0.1:8000/admin/`으로 접속을 해서 정상적으로 되는지 확인하기
 
 ## 4. 코드 작성 규칙
 
