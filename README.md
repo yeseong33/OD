@@ -2,12 +2,12 @@
 
 ## 목차
 
-- 1. [개요](#1-개요-🗒️)
-- 2. [협업 방법](#2-협업-방법-🤝)
-- 3. [개발 환경 설정](#3-개발-환경-설정-💻)
-- 4. [코드 작성 규칙](#4-코드-작성-규칙-⌨️)
-- 5. [자주 발생하는 문제](#5-자주-발생하는-문제-😥)
-- 6. [참고 자료](#6-참고-자료-📚)
+1. [개요](##1-개요-🗒️)
+2. [협업 방법](##2-협업-방법-🤝)
+3. [개발 환경 설정](##3-개발-환경-설정-💻)
+4. [코드 작성 규칙](##4-코드-작성-규칙-⌨️)
+5. [자주 발생하는 문제](##5-자주-발생하는-문제-😥)
+6. [참고 자료](##6-참고-자료-📚)
 
 ## 1. 개요 🗒️
 
@@ -31,7 +31,7 @@
 
 - 자신의 코드의 버전관리를 위해서 본인의 branch에 본인이 작업한 내용을 `git push origin [branch_name]`로 push합니다.
 
-- 자신의 branch에만 병합하도록 합니다. 특정 작업이 끝나면 repository에서 본인의 branch로 이동해서, pull request 버튼을 눌러서 develop branch에 병합을 요청합니다.
+- **자신의 branch**에만 병합하도록 합니다. 특정 작업이 끝나면 repository에서 **본인의 branch**로 이동해서, pull request 버튼을 눌러서 develop branch에 병합을 요청합니다.
   ![pull request](/description_images/pull-request.png)
 
 - 100MB 이상의 파일은 올리면 안 됩니다. git LFS(Large File Storage)를 사용해야하는데, 굳이 쓸 필요가 없다고 생각이 되네요. 따라서 해당 파일 형식은 .gitignore에 추가해야 합니다.
@@ -74,7 +74,7 @@ git push origin [branch_name]
 
 ### Postgresql 설치하기
 
-- Postgresql를 설치합니다. [참고1](https://www.postgresql.org/download/), [참고2](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)
+- Postgresql를 설치합니다. [[참고1]](https://www.postgresql.org/download/), [[참고2]](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)
 
 ### 가상환경 사용해서 의존성 관리하기
 
@@ -126,7 +126,7 @@ deactivate
 
 #### python
 
-- PEP 8 스타일 가이드를 준수합니다. [참고](https://ultrakain.gitbooks.io/python/content/chapter1/coding-style-pep8.html)
+- PEP 8 스타일 가이드를 준수합니다. [[참고]](https://ultrakain.gitbooks.io/python/content/chapter1/coding-style-pep8.html)
 
 #### html/css
 
@@ -135,7 +135,7 @@ deactivate
 
 #### JavaScript
 
-- 최대한 Bootstrap의 컴포넌트를 활용합니다. [참고](https://getbootstrap.kr/docs/5.3/components/accordion/)
+- 최대한 Bootstrap의 컴포넌트를 활용합니다. [[참고]](https://getbootstrap.kr/docs/5.3/components/accordion/)
 - 본인이 직접 효과를 넣고 싶다면 Jquery, React와 같은 프레임워크는 사용하지 않고, Vanilla Script로 작성하도록 합니다.
 - 추후에 시간이 남으면(?), React로 리팩토링을 해봐도 괜찮을 것 같아요.
 
