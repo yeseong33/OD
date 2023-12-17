@@ -137,6 +137,7 @@ deactivate
 1. 기본적인 프로젝트 생성, settings.py 설정, 데이터베이스 설정: 제가 미리 해두었습니다. 처음에 생성된 app 이름은 config로 바꾸어두었습니다.
 
 2. 프로젝트 루트 폴더에 `.env` 파일을 만들고 다음과 같이 입력
+   </br>
    ![env_example](/description_images/env_example.png)
 
 3. 기본 마이그레이션 적용하기
