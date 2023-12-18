@@ -8,6 +8,15 @@
 4. [코드 작성 규칙](#4-코드-작성-규칙)
 5. [자주 발생하는 문제](#5-자주-발생하는-문제)
 6. [참고 자료](#6-참고-자료)
+7. [개인 파트](#7-개인-파트)
+   > 1. [김규수](#1-김규수)
+   > 2. [김예진](#2-김예진)
+   > 3. [김우진](#3-김우진)
+   > 4. [박우영](#4-박우영)
+   > 5. [오예성](#5-오예성)
+   > 6. [전명규](#6-전명규)
+   > 7. [정호균](#7-정호균)
+   > 8. [최영렬](#8-최영렬)
 
 ## 1. 개요
 
@@ -17,6 +26,8 @@
 
 - `[본인의 이름].md` 파일을 만들어서 본인이 만들거나 수정한 코드에 대해서 기본적인 설명을 적어주세요. 다른 팀원들이 본인의 코드를 이해할 수 있도록 하면 좋을 것 같아요. 제가 주기적으로 확인하고, 각자의 `[본인의 이름].md`과 `README.md`를 병합하도록 할게요. 😊 [[참고1]](https://gist.github.com/ihoneymon/652be052a0727ad59601), [[참고2]](/Myeongkyu.md)
 
+- description_images 폴더는 단순히 README.md를 위한 사진 자료를 넣는 폴더입니다. 😶
+
 - `README.md`에 이런 내용이 추가되면 좋을 것 같다고 생각하는 부분이 있으면 말해주세요! 적극 반영하겠습니다. 🫡
 
 ## 2. 협업 방법
@@ -25,7 +36,26 @@
 
 - **Git 플로우**: release - git actions(CI/CD) - main(AWS 배포용 브랜치) - develop(개발용 브랜치) - feature branch(개인 브랜치) [[참고1]](https://gmlwjd9405.github.io/2018/05/11/types-of-git-branch.html), [[참고2]](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
 
-- 링크를 읽어보시면 알겠지만, 추후 개선을 버전 관리를 위한 release branch도 필요하고, feature branch는 보통 기능이 들어가야 하고 여러가지가 조금 달라요. 편의상 각자의 이름으로 해서 하면 좋을 것 같아서 이렇게 했습니다.
+- 브랜치 규칙 [[참고]](https://forevermfl.atlassian.net/jira/software/projects/AIVLE16/pages)
+
+  > - 배포: develop
+  > - 문서: chore
+  > - 새로운 기능 개발: feature
+  > - 버그 수정: fix
+  > - 배포된 버전 긴급 수정: hotfix
+  >   > - 예시. feature/audiobook-login
+
+- commit 규칙
+
+  > - **배포**: develop
+  > - **문서 수정**: chore
+  > - **기능 추가**: feat
+  > - **기능에 대한 버그 수정**: fix
+  > - **배포 이후 버그가 생겼을 때**: hotfix
+  > - **기능 유지, 코드 변화**: refoctor
+  > - **테스트 코드 추가 또는 수정**: test
+  >   > - 예시. feat: user curd (#issu번호)
+  >   >   ![commit_rule](/description_images/commit_example.png)
 
 - 작업 시작 전 `git checkout [branch_name]`으로 본인의 branch로 이동해서 `git branch -v`로 본인의 branch로 이동되었는지 확인하고, `git merge develop`으로 branch와 develop 브랜치를 병합해서 동기화합니다. develop branch는 모든 조원의 작업들을 merge하기 때문에 계속해서 바뀌기 때문에 병합해서 동기화로 충돌을 최소화합니다. 충돌이 발생했을 때는 기본적으로 develop branch의 내용을 따르고, 본인의 branch를 develop branch에 병합을 해야한다고 생각될 경우에는 모두에게 알려주세요.
 
@@ -300,3 +330,57 @@ cd [path]
 ```bash
 USE_GPU=off bash start_docker.sh
 ```
+
+## 7. 개인 파트
+
+- 본인이 코드 설명이나, 필요한 설명이 있으면 추가하고 chore branch를 통해 업데이트 해주세요!
+
+### (1) 김규수
+
+#### 🥺
+
+- 😯
+
+### (2) 김예진
+
+#### 🥺
+
+- 😯
+
+### (3) 김우진
+
+#### 🥺
+
+- 😯
+
+### (4) 박우영
+
+#### 🥺
+
+- 😯
+
+### (5) 오예성
+
+#### 🥺
+
+- 😯
+
+### (6) 전명규
+
+#### branch 규칙에 대해서
+
+![branch_strategy](/description_images/branch_strategy.png)
+
+- 자동 배포 때문에, 위의 전략을 사용하면 좋을 것 같다고 생각하는데, 어떻게 생각하시나요?
+
+### (7) 정호균
+
+#### 🥺
+
+- 😯
+
+### (8) 최영렬
+
+#### 🥺
+
+- 😯

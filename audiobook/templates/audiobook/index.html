@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>메인</title>
-</head>
-<body>
-    메인페이지입니다.
-</body>
-</html>
+{% extends 'audiobook/template.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+        <div class="row justify-content-center">
+            <div class="text-center">
+                <button class="btn btn-primary">첫 달 무료로 이용하기</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

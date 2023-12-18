@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'audiobook',
     'user',
-    'seller',
     'community',
 ]
 
@@ -127,7 +126,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'  # 정적 파일 경로
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
+# 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
