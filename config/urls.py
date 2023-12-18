@@ -21,6 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('audiobook.urls')),
     path('community/', include('community.urls')),
-    path('seller/', include('seller.urls')),
     path('user/', include('user.urls')),
 ]
