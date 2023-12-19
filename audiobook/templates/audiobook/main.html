@@ -1,0 +1,46 @@
+{% extends 'audiobook/template.html' %}
+{% load static %}
+
+{% block content %}
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <title>Audio Books</title>
+    </head>
+    <body>
+        <h2>이달의 TOP 10 오디오북</h2>
+        <div class="book-section">
+            {% for book in top_books %}
+            <div class="book">
+                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
+                <h2>{{ book.book_title }}</h2>
+                <p>{{ book.book_author }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2>User님이 청취 중인 오디오북</h2>
+        <div class="book-section">
+            {% for book in user_books %}
+            <div class="book">
+                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
+                <h2>{{ book.book_title }}</h2>
+                <p>{{ book.book_author }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2>이번주 HOT 음섬 구경하기</h2>
+        <div class="book-section">
+            {% for book in hot_books %}
+            <div class="book">
+                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
+                <h2>{{ book.book_title }}</h2>
+                <p>{{ book.book_author }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+    </html>
+{% endblock %}

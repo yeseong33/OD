@@ -5,7 +5,7 @@ app_name = 'audiobook'  # audiobook:search
 
 urlpatterns = [
     path('template', views.template, name='template'),
-    path('main', views.main, name='main'),
+    path('main/', views.MainView.as_view(), name='main'),
     path('genre', views.genre, name='genre'),
     path('search', views.search, name='search'),
     path('content', views.content, name='content'),
