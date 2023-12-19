@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Search</title>
+</head>
+<body>
+    <h1>도서 검색</h1>
+    <form method="get" action="{% url 'community:book_search' %}">
+        <input type="text" name="query" placeholder="검색">
+        <button type="submit">검색하기</button>
+    </form>
+    {% if books %}
+        <ul>
+            {% for book in books %}
+                <li>
+                    <img src="{{ book.image }}" alt="{{ book.title }}">
+                    <h2>{{ book.title }}</h2>
+                    <p>저자: {{ book.author }}</p>
+                    <p>출판사: {{ book.publisher }}</p>
+                    <p>출판일: {{ book.pubdate }}</p>
+                    <p>가격: {{ book.price }}</p>
+                    <p>ISBN: {{ book.isbn }}</p>
+                    <a href="{{ book.link }}">더 보기</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% elif query %}
+        <p>검색 결과가 없습니다.</p>
+    {% endif %}
+</body>
+</html>
