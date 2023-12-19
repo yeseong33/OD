@@ -7,3 +7,7 @@ def index(request):
 
 def template(request):
     return render(request, 'audiobook/template.html')
+
+
+def custom(request):
+    return render(request, 'audiobook/custom.html')
