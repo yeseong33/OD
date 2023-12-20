@@ -3,7 +3,6 @@ from . import views
 
 app_name = 'audiobook'  # audiobook:search
 
-app_name = 'audiobook'  # audiobook:search
 
 urlpatterns = [
     path('template', views.template, name='template'),
@@ -17,5 +16,7 @@ urlpatterns = [
     path('voice/custom/upload', views.voice_custom_upload, name='vioce_custom_upload'),
     path('voice/custom/complete', views.voice_custom_complete, name='vioce_custom_complete'),
     path('login', views.login, name='login'),
+    path('', views.index, name='index'),
+    
     
 ]
