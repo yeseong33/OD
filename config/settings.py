@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.google',
+    
 ]
 
 MIDDLEWARE = [
@@ -147,6 +149,6 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 3
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
-LOGIN_REDIRECT_URL = 'audiobook/main'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = 'main'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True 

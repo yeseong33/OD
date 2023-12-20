@@ -10,3 +10,8 @@ def template(request):
 
 def login(request):
     return render(request, 'audiobook/login.html')
+
+
+def main(request):
+    print(request.user.username)
+    return render(request, 'audiobook/main.html')
