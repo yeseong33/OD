@@ -14,12 +14,10 @@ import os
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv()  # 환경 변수를 로드함
 load_dotenv()  # 환경 변수를 로드함
 
 # Quick-start development settings - unsuitable for production
@@ -46,9 +44,7 @@ INSTALLED_APPS = [
     'audiobook',
     'user',
     'community',
-    'audiobook',
-    'user',
-    'community',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +93,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
