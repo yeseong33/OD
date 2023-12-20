@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Book Search</title>
+        <style>
+            .book-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .book-info h4,
+            .book-info .author {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .books-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .book-item img {
+                width: 80%;      /* 이미지의 너비를 부모 요소의 100%로 설정 */
+                height: 200px;    /* 이미지의 높이를 150픽셀로 설정 */
+                object-fit: cover; /* 이미지의 비율을 유지하면서 요소에 맞게 조정 */
+                object-position: center; /* 이미지를 중앙에 위치시킴 */
+            }
+            
+        </style>
+    </head>
+    <body>
+        <h1>도서 검색</h1>
+        <form method="get" action="{% url 'community:book_search' %}">
+            <input type="text" name="query" placeholder="검색" />
+            <button type="submit">검색하기</button>
+        </form>
+        {% if books %}
+        <div class="books-grid">
+            {% for book in books %}
+            <div class="book-item">
+                <a href="{% url 'community:book_complete' book.isbn %}">  <!-- get 요청 -->
+                    <img src="{{ book.image }}" alt="{{ book.title }}" />
+                </a>
+                <div class="book-info">
+                    <h4>{{ book.title }}</h4>
+                    <p class="author">저자: {{ book.author }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif query %}
+        <p>검색 결과가 없습니다.</p>
+        {% endif %}
+    </body>
+</html>

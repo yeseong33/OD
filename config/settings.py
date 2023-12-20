@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -49,7 +50,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.google',
-    
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
+ROOT_URLCONF = 'config.urls'
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -82,6 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
@@ -97,7 +100,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -133,6 +135,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATIC_URL = '/static/'  # 정적 파일 경로
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
+# 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
 STATIC_URL = '/static/'  # 정적 파일 경로
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
 # 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)

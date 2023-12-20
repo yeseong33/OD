@@ -23,7 +23,8 @@ class Book(models.Model):
     book_price = models.IntegerField()
     book_publisher = models.CharField(max_length=255)
     book_publication_date = models.DateField()
-    book_content = models.TextField()
+    book_content = models.TextField() # 수정...?
+    book_description = models.TextField()
     book_likes = models.IntegerField(default=0)
     book_isbn = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
