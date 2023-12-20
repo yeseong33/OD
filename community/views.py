@@ -16,12 +16,16 @@ from django.db.models import F
 
 load_dotenv()  # 환경 변수를 로드함
 
+def book_share(request):
+    return render(request, 'community/book_share.html')
+
 class BookSearchView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_search.html'
 
     def get(self, request):
         query = request.GET.get('query', '')
+        display_count = 20 # 매개변수 (최대 100)
         context = {'books': None}
 
         if query:
@@ -30,7 +34,10 @@ class BookSearchView(APIView):
                 "X-Naver-Client-Id": os.getenv('CLIENT_ID'),
                 "X-Naver-Client-Secret": os.getenv('CLIENT_SECRET'),
             }
-            params = {'query': query}
+            params = {
+                'query': query, 
+                'display': display_count,  # 결과 수 조정
+                }
             response = requests.get(url, headers=headers, params=params)
             
             if response.status_code == 200:
@@ -42,9 +49,12 @@ class BookSearchView(APIView):
     
     
 class BookCompleteView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'community/book_complete.html'
+    
     def get(self, request, isbn):
         
-        # 로그인 구현 전 커스텀 User 모델을 사용하여 임시 유저 생성
+        ## 로그인 구현 전 커스텀 User 모델을 사용하여 임시 유저 생성
         # ttemp_user = User.objects.create(
         #     oauth_provider='some_provider',
         #     oauth_identifier='some_identifier',  # 필요에 따라 설정
@@ -69,7 +79,10 @@ class BookCompleteView(APIView):
         #     UserRequestBook.objects.create(user=request.user, request=book_request)
         UserRequestBook.objects.create(user=ttemp_user, request=book_request)
         
-        return Response({
-            'isbn': isbn,
-            'request_count': book_request.request_count
-        }, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
+
+def book_inquiry(request):
+    return render(request, 'community/book_inquiry.html')
+
+def book_faq(request):
+    return render(request, 'community/book_faq.html')
