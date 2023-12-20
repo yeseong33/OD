@@ -7,3 +7,6 @@ def index(request):
 
 def template(request):
     return render(request, 'audiobook/template.html')
+
+def login(request):
+    return render(request, 'audiobook/login.html')
