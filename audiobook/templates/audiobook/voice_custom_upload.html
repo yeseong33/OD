@@ -1,0 +1,84 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" />
+    <title>template</title>
+</head>
+<style>
+    .blue-box {
+        background-color: #007BFF;
+        padding: 20px;
+        color: #fff;
+        border-radius: 10px;
+    }
+
+    .upload-section {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .bold-text {
+        font-weight: bold;
+    }
+</style>
+<body class="d-flex flex-column min-vh-100">
+
+    <div class="container flex-grow-1">
+        <!-- 첫 번째 행 -->
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="bold-text">나만의 목소리</h1>
+            </div>
+        </div>
+
+        <!-- 두 번째 행 -->
+        <div class="row mt-3 mb-4">
+            <div class="col text-center">
+                <img src="path_to_image1.jpg" alt="Image 1" class="img-fluid mx-2">
+                <img src="path_to_image2.jpg" alt="Image 2" class="img-fluid mx-2">
+                <img src="path_to_image3.jpg" alt="Image 3" class="img-fluid mx-2">
+            </div>
+        </div>
+
+        <!-- 세 번째 행 -->
+        <div class="row upload-section mb-4">
+            <div class="col">
+                음성 파일 업로드
+            </div>
+        </div>
+
+        <!-- 네 번째 행 -->
+        <div class="row mt-3 mb-4">
+            <div class="col">
+                <h2 class="bold-text text-center">내 목소리의 이름을 정해주세요</h2>
+            </div>
+        </div>
+
+        <!-- 다섯 번째 행 -->
+        <div class="row mt-3">
+            <div class="col">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="내 목소리의 이름" aria-label="내 목소리의 이름" aria-describedby="duplicate-check">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" id="duplicate-check">중복 확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-dark-subtle">
+        <div class="container text-center">
+            <!-- 푸터 내용 -->
+        </div>
+    </footer>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</html>
