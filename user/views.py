@@ -7,6 +7,7 @@ from .models import *
 from dotenv import load_dotenv
 import os
 import requests
+import bcrypt
 
 load_dotenv() 
 
@@ -41,8 +42,9 @@ def kakao_callback(request):
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
-    #DB 조회 로직 추가.
-    print(f"nickname :{user_inform['profile']['nickname']}, email :{user_inform['email']}")
+    # name, email을 이용해 jwt token 발급
+    jwt_token = sign_in(user_inform['profile']['nickname'],user_inform['email'], 'Kakao')
+    
     return redirect('audiobook:main')
 
 def google_login(request):
@@ -68,8 +70,23 @@ def google_callback(request):
     url  = "https://www.googleapis.com/oauth2/v2/userinfo"
     headers = {"Authorization" : f"Bearer {access_token}"}
     response =  requests.get(url = url, headers=headers)
-    name  = response.json()['name']
-    email  = response.json()['email']
-    print(f"user name : {name}, user email : {email}")
+
     
+    jwt_token = sign_in(response.json()['name'],response.json()['email'], 'Google') # name, email을 이용해 jwt token 발급
     return redirect('audiobook:main')
+
+def sign_in(name, email, social_inform):
+    print(f"sing in method name : {name}, email :{email}, social_inform : {social_inform}")
+    
+    if not User.objects.filter(user_name = name, user_email = email).exists():
+        print("User Is Not Exists So create User")
+        temp_password = email+os.getenv("USER_PASSWORD")
+        new_user = User.objects.create(
+                                        user_name=name, 
+                                        user_email = email,
+                                        user_password = bcrypt.hashpw(temp_password.encode("utf-8"),bcrypt.gensalt()).decode("utf-8"),
+                                        oauth_provider = social_inform)
+        new_user.save()
+    
+    
+    return "hello"
