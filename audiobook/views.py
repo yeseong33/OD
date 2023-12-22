@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+import requests
 from django.shortcuts import render, redirect
 from django.urls.base import reverse
 from rest_framework.views import APIView
@@ -7,24 +10,18 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import VoiceSerializer
 from .models import *
-from dotenv import load_dotenv
-import os
-import requests
 from user.views import decode_jwt
+
 load_dotenv()
 
 
 user_id = 1  # request.user
 
-# 로그인
+# 첫 화면
 
 
 def index(request):
     return render(request, 'audiobook/index.html')
-
-
-def login(request):
-    return render(request, 'audiobook/login.html')
 
 
 # 메인화면

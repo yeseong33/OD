@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>문서 제목</title>
+{% extends 'community/template.html' %}
+{% load static %}
+
+{% block title %}책 신청 완료{% endblock %}
+{% block style %}
 <style>
   /* 기본 스타일 */
   body, html {
@@ -42,25 +41,25 @@
     font-size: 48px; /* 아이콘 크기 */
   }
 </style>
-</head>
-<body>
+{% endblock %}
 
-<div class="navigator">
-  <!-- 버튼들 -->
-  <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-  <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-  <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-  <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
-</div>
-
-<!-- 컨텐츠 중앙 배치 컨테이너 -->
-<div class="center-container">
-  <div class="content">
-    <!-- 아이콘과 문구 -->
-    <div class="icon">📚</div> <!-- 실제 아이콘으로 교체 필요 -->
-    <p>신청이 완료되었습니다.</p>
+{% block content %}
+  <div class="navigator">
+    <!-- 버튼들 -->
+    <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
+    <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
+    <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
+    <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
   </div>
-</div>
 
-</body>
-</html>
+  <!-- 컨텐츠 중앙 배치 컨테이너 -->
+  <div class="center-container">
+    <div class="content">
+      <!-- 아이콘과 문구 -->
+      <div class="icon">📚</div> <!-- 실제 아이콘으로 교체 필요 -->
+      <p>신청이 완료되었습니다.</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block script %}{% endblock %}

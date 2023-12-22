@@ -4,9 +4,6 @@ from . import views
 app_name = 'community'
 
 urlpatterns = [
-    # 템플릿
-    # path('', views.index, name='community_index'),
-
     # 토론방
     path('books/share/', views.book_share, name='book_share'),
 

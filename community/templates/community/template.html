@@ -30,7 +30,7 @@
                         <ul class="navbar-nav align-items-center">
                             <!-- 메뉴 -->
                             <li class="nav-item"><a class="nav-link me-2" href="#">장르별</a></li>
-                            <li class="nav-item"><a class="nav-link me-2" href="#">커뮤니티</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'community:book_share' %}">커뮤니티</a></li>
                         </ul>
                     </div>
     
@@ -46,11 +46,24 @@
                         </form>
     
                         <!-- 로그인 -->
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <button class="btn btn-secondary btn-sm">로그인</button>
+                        {% if request.user.is_authenticated %}
+                            <div>{{ request.user.username }}</div>
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <a href="{% url 'user:logout' %}" class="btn btn-secondary btn-sm">
+                                        로그아웃
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <a href="{% url 'user:login' %}" class="btn btn-secondary btn-sm">
+                                        로그인
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}  
                     </div>
                 </div>
             </div>

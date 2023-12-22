@@ -38,11 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'rest_framework',
     'audiobook',
     'user',
     'community',
-    'rest_framework',
     'manager',  # 관리자 페이지
+]
+
+AUTHENTICATION_BACKENDS = [
+    'user.backends.JWTAuthenticationBackend',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +58,10 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'user.middleware.JWTMiddleware'
 ]
+
+AUTH_USER_MODEL = 'user.User'  # AUTH_USER_MODEL을 커스터마이징
 
 ROOT_URLCONF = 'config.urls'
 
