@@ -1,9 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls.base import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
+from dotenv import load_dotenv
+import os
+import requests
+
+load_dotenv() 
 
 def index(request):
     return render(request, 'audiobook/index.html')
@@ -11,11 +16,6 @@ def index(request):
 
 def template(request):
     return render(request, 'audiobook/template.html')
-
-
-def login(request):
-    return render(request, 'audiobook/login.html')
-
 
 user_id = 1 # request.user
 class MainView(APIView):

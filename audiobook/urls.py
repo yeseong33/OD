@@ -5,6 +5,7 @@ app_name = 'audiobook'  # audiobook:search
 
 
 urlpatterns = [
+    path('', views.index, name='index'),
     path('template', views.template, name='template'),
     path('main/', views.MainView.as_view(), name='main'),
     path('genre', views.genre, name='genre'),
@@ -15,8 +16,9 @@ urlpatterns = [
     path('voice/celebrity', views.voice_celebrity, name='voice_celebrity'),
     path('voice/custom/upload', views.voice_custom_upload, name='vioce_custom_upload'),
     path('voice/custom/complete', views.voice_custom_complete, name='vioce_custom_complete'),
-    path('login', views.login, name='login'),
-    path('', views.index, name='index'),
+    
+    
+    
     
     
 ]

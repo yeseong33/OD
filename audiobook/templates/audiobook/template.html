@@ -1,5 +1,4 @@
 {% load static %}
-{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +18,7 @@
                         <div>{{request.user.username}}</div>
                         <a href="/accounts/logout"><div>로그아웃</div></a>
                     {% else %}
-                        <a href="login">
+                        <a href="{% url 'user:login'%}">
                             <div>로그인</div>
                         </a>
                     {% endif %}
