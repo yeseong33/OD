@@ -4,6 +4,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.files.base import ContentFile
 from community.models import BookRequest
 from .serializers import BookSerializer
+from audiobook.models import Book
 from user.models import User
 import requests
 from django.shortcuts import render, get_object_or_404
@@ -76,6 +77,17 @@ class BookRegisterCompleteView(APIView):
     template_name = 'manager/book_register_complete.html'
     
     def post(self, request, book_isbn):
+        # ISBN으로 이미 존재하는 책을 확인
+        try:
+            existing_book = Book.objects.get(book_isbn=book_isbn)
+            # 책이 이미 존재하면 에러 메시지와 함께 종료
+            return Response({
+                'status': 'error',
+                'message': 'Book with this ISBN already exists.'
+            }, status=400)
+        except Book.DoesNotExist:
+            # 책이 존재하지 않으면 처리를 계속
+            pass
         
         # 임시 사용자, 실제로는 인증된 사용자 또는 다른 방법으로 사용자를 얻어야 함
         # 로그인 구현 전 커스텀 User 모델을 사용하여 임시 유저 생성
