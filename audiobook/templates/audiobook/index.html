@@ -1,6 +1,8 @@
 {% extends 'audiobook/template.html' %}
 {% load static %}
 
+{% block title %}메인페이지{% endblock %}
+
 {% block content %}
-    <a href='main'><div>둘러 보기</div></a>
+    <a href="{% url 'audiobook:main' %}"><div>둘러보기</div></a>
 {% endblock %}

@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'logo-font';
+    src: url('/static/fonts/Pacifico-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'menu-font';
+    src: url('/static/fonts/Stylish-Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'text-font';
+    src: url('/static/fonts/NotoSansKR-Light.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'text-font', sans-serif;
+}
+
+.navbar-brand {
+    font-family: 'logo-font', sans-serif;
+}
+
+.nav-link {
+    font-family: 'menu-font', sans-serif;
+}

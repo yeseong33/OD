@@ -18,13 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    
     path('', include('audiobook.urls')),
     path('admin/', admin.site.urls),
     path('community/', include('community.urls')),
     path('user/', include('user.urls')),
-    path('accounts/',include('allauth.urls')),
-    
-    
-    
+    path('accounts/', include('allauth.urls')),
 ]

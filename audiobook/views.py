@@ -5,19 +5,21 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
 
+
+user_id = 1  # request.user
+
+# 로그인
+
+
 def index(request):
     return render(request, 'audiobook/index.html')
-
-
-def template(request):
-    return render(request, 'audiobook/template.html')
 
 
 def login(request):
     return render(request, 'audiobook/login.html')
 
 
-user_id = 1 # request.user
+# 메인화면
 class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main.html'
@@ -33,6 +35,7 @@ class MainView(APIView):
             'hot_books': hot_books
         })
 
+
 def genre(request):
     pass
 
@@ -41,6 +44,7 @@ def search(request):
     pass
 
 
+# 청취
 def content(request):
     pass
 
@@ -49,6 +53,7 @@ def content_play(request):
     pass
 
 
+# 성우
 def voice_custom(request):
     pass
 

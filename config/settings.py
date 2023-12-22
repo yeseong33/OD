@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
-import os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -26,14 +25,11 @@ load_dotenv()  # 환경 변수를 로드함
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-j$--pf6djf(g-bg6m5=yhowt-v%!vy@(boe(#)ia^z18%9jp5r'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+# Debug
+# Debug는 settings_local.py를 참고
+ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,12 +41,10 @@ INSTALLED_APPS = [
     'audiobook',
     'user',
     'community',
+    'rest_framework',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.kakao',
-    'allauth.socialaccount.providers.google',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +58,6 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -84,22 +77,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    }
-}
+# settings_local.py를 참고
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -138,9 +120,6 @@ USE_TZ = True
 STATIC_URL = '/static/'  # 정적 파일 경로
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
 # 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
-STATIC_URL = '/static/'  # 정적 파일 경로
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
-# 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -148,12 +127,12 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 3
+
+SITE_ID = 1
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = 'main'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_ON_GET = True 
+ACCOUNT_LOGOUT_ON_GET = True
