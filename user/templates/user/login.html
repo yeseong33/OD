@@ -1,13 +1,13 @@
-{% load socialaccount %}
+
 
 <html>
     <body>
         <div class = "container">
-            <a href="{% provider_login_url 'kakao' %}">
+            <a href= "{% url 'user:kakao_login' %}">
                 <div>KAKAO 로그인</div>
             </a>
 
-            <a href="{% provider_login_url 'google' %}">
+            <a href= "{% url 'user:google_login'%}">
                 <div>구글 로그인</div>
             </a>
         </div>

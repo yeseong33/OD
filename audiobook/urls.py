@@ -15,8 +15,8 @@ urlpatterns = [
     path('content/play', views.content_play, name='content_play'),
     path('voice/custom', views.voice_custom, name='voice_custom'),
     path('voice/celebrity', views.voice_celebrity, name='voice_celebrity'),
-    path('voice/custom/upload', views.voice_custom_upload, name='voice_custom_upload'),
-    path('voice/custom/complete', views.voice_custom_complete, name='voice_custom_complete'),
+    path('voice/custom/upload', views.voice_custom_upload, name='vioce_custom_upload'),
+    path('voice/custom/complete', views.voice_custom_complete, name='vioce_custom_complete'),
     path('login', views.login, name='login'),
-    path("voice/custom/upload/", voice_search, name="voice_custom_upload_post"),
+    
 ]

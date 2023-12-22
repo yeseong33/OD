@@ -1,5 +1,4 @@
 {% load static %}
-{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,14 +14,11 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <!-- 네비게이션 항목 추가 예정 -->
-                    {% if request.user.is_authenticated %}
                         <div>{{request.user.username}}</div>
-                        <a href="/accounts/logout"><div>로그아웃</div></a>
-                    {% else %}
-                        <a href="login">
+                        <a href="{% url 'user:logout' %}"><div>로그아웃</div></a>
+                        <a href="{% url 'user:login'%}">
                             <div>로그인</div>
                         </a>
-                    {% endif %}
                 </ul>
             </div>
         </div>

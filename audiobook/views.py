@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls.base import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -6,7 +7,11 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from .serializers import VoiceSerializer
 from .models import *
-
+from dotenv import load_dotenv
+import os
+import requests
+from user.views import decode_jwt
+load_dotenv() 
 
 def index(request):
     return render(request, 'audiobook/index.html')
@@ -14,11 +19,6 @@ def index(request):
 
 def template(request):
     return render(request, 'audiobook/template.html')
-
-
-def login(request):
-    return render(request, 'audiobook/login.html')
-
 
 user_id = 1 # request.user
 class MainView(APIView):
@@ -29,11 +29,14 @@ class MainView(APIView):
         top_books = Book.objects.all().order_by('-book_likes')[:10]
         user_books = Book.objects.filter(user=user_id)
         hot_books = Book.objects.all().order_by('?')[:10]
-
+        
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
         return Response({
             'top_books': top_books,
             'user_books': user_books,
-            'hot_books': hot_books
+            'hot_books': hot_books,
+            'user' : user,
         })
 
 def genre(request):
