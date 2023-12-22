@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 import os
 import requests
 import bcrypt
+from jose import jwt
+from datetime import timedelta, datetime
+from django.http import HttpResponse
 
 load_dotenv() 
 
@@ -16,6 +19,13 @@ def index(request):
 
 def login(request):
     return render(request, 'user/login.html')
+
+
+def logout(request):
+    response = redirect('user:login')
+    response.delete_cookie('jwt')
+    return response
+    
 
 def kakao_login(request):
     print("kakao Login 클릭")
@@ -42,10 +52,12 @@ def kakao_callback(request):
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
-    # name, email을 이용해 jwt token 발급
-    jwt_token = sign_in(user_inform['profile']['nickname'],user_inform['email'], 'Kakao')
-    
-    return redirect('audiobook:main')
+    # name, email을 이용해 jwt token 발급, main 페이지로 전달.
+    user = sign_in(user_inform['profile']['nickname'],user_inform['email'], 'Kakao')
+    token  = get_jwt_token(user)
+    response = redirect("audiobook:main")
+    response.set_cookie("jwt", token)
+    return response
 
 def google_login(request):
     print("google Login 클릭")
@@ -72,21 +84,42 @@ def google_callback(request):
     response =  requests.get(url = url, headers=headers)
 
     
-    jwt_token = sign_in(response.json()['name'],response.json()['email'], 'Google') # name, email을 이용해 jwt token 발급
-    return redirect('audiobook:main')
+    # user DB조회, JWT 발급
+    user = sign_in(response.json()['name'],response.json()['email'], 'Google') 
+    token  = get_jwt_token(user)
+    response = redirect("audiobook:main")
+    response.set_cookie("jwt", token)
+    return response
 
+# 사용자 정보를 DB에서 조회.
 def sign_in(name, email, social_inform):
     print(f"sing in method name : {name}, email :{email}, social_inform : {social_inform}")
     
     if not User.objects.filter(user_name = name, user_email = email).exists():
         print("User Is Not Exists So create User")
         temp_password = email+os.getenv("USER_PASSWORD")
-        new_user = User.objects.create(
+        user = User.objects.create(
                                         user_name=name, 
                                         user_email = email,
                                         user_password = bcrypt.hashpw(temp_password.encode("utf-8"),bcrypt.gensalt()).decode("utf-8"),
                                         oauth_provider = social_inform)
-        new_user.save()
+        user.save()
+    else:
+        user = User.objects.get(user_name = name, user_email = email, oauth_provider = social_inform)
+    return user
+
+# 사용자 정보를 바탕으로 JWT 토큰 발급.
+def get_jwt_token(user):
+    print(f"create jwt 메소드 진입.")
+    payload = {"user_id" : user.user_id, "user_email" : user.user_email, "exp" : datetime.utcnow() + timedelta(hours=1)}
+    secret_key = os.getenv("JWT_SECRET_KEY")
+    token = jwt.encode(payload, secret_key, algorithm=os.getenv("JWT_ALGORITHM"))
     
-    
-    return "hello"
+    print(f"JWT token 생성 완료 : {token}")
+    decode_jwt(token)
+    return token
+
+#JWT 복호화
+def decode_jwt(token):
+    user_inform = jwt.decode(token, key = os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+    return user_inform

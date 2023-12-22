@@ -7,7 +7,7 @@ from .models import *
 from dotenv import load_dotenv
 import os
 import requests
-
+from user.views import decode_jwt
 load_dotenv() 
 
 def index(request):
@@ -26,11 +26,14 @@ class MainView(APIView):
         top_books = Book.objects.all().order_by('-book_likes')[:10]
         user_books = Book.objects.filter(user=user_id)
         hot_books = Book.objects.all().order_by('?')[:10]
-
+        
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
         return Response({
             'top_books': top_books,
             'user_books': user_books,
-            'hot_books': hot_books
+            'hot_books': hot_books,
+            'user' : user,
         })
 
 def genre(request):
