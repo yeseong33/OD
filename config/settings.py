@@ -43,6 +43,13 @@ INSTALLED_APPS = [
     'audiobook',
     'user',
     'community',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.google',
+    'rest_framework',
+    'manager',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +89,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv(''),
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
@@ -134,3 +140,24 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+SITE_ID = 4
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+LOGIN_REDIRECT_URL = 'audiobook:main'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_ON_GET = True 
+
+
+# AWS S3 설정
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = 'ap-northeast-2' 
+
+# 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' 
