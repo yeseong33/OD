@@ -62,11 +62,11 @@ def voice_celebrity(request):
 
 
 def voice_custom_upload(request):
-    pass
+    return render(request, 'audiobook/voice_custom_upload.html')
 
 
 def voice_custom_complete(request):
-    return render(request, 'audiobook/voice_custom.html')
+    return render(request, 'audiobook/voice_custom_complete.html')
 
 
 @api_view(['GET'])
