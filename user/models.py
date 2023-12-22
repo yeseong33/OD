@@ -24,6 +24,6 @@ class Subscription(models.Model):
     sub_start_date = models.DateTimeField(null=True, blank=True)
     sub_end_date = models.DateTimeField(null=True, blank=True)
     sub_payment_status = models.CharField(
-        max_length=255, null=True, blank=True, default="pending")
+    max_length=255, null=True, blank=True, default="pending")
     sub_billing_key = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
