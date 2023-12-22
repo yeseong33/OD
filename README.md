@@ -8,6 +8,7 @@
 4. [코드 작성 규칙](#4-코드-작성-규칙)
 5. [자주 발생하는 문제](#5-자주-발생하는-문제)
 6. [참고 자료](#6-참고-자료)
+7. [개인 파트](#7-개인-파트)
 
 ## 1. 개요
 
@@ -367,6 +368,7 @@ USE_GPU=off bash start_docker.sh
 
 - serializers가 잘 작동하는지 확인하는 방법입니다.
 
+```python
 python manage.py shell
 
 from audiobook.models import Voice, User
@@ -383,6 +385,7 @@ serializer = VoiceSerializer(v)
 serializer.Meta.fields
 
 serializer.data
+```
 
 ### (6) 전명규
 
