@@ -8,7 +8,12 @@ Django==5.0
 django-allauth==0.59.0
 djangorestframework==3.14.0
 idna==3.6
+django-allauth==0.59.0
+djangorestframework==3.14.0
+ecdsa==0.18.0
+idna==3.6
 numpy==1.26.2
+oauthlib==3.2.2
 oauthlib==3.2.2
 pandas==2.1.4
 psycopg2==2.9.9

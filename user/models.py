@@ -8,14 +8,16 @@ class User(models.Model):
     oauth_identifier = models.CharField(max_length=255, null=True, blank=True)
     user_name = models.CharField(max_length=255)
     user_email = models.CharField(max_length=255)
-    user_phone_number = models.CharField(max_length=255)
+    user_password = models.TextField()
+    # user_phone_number = models.CharField(max_length=255)
     user_created_date = models.DateTimeField(auto_now_add=True)
     user_updated_date = models.DateTimeField(auto_now=True)
-    user_book_history = ArrayField(models.IntegerField())
+    user_book_history = ArrayField(models.IntegerField(), null = True)
     user_favorite_books = ArrayField(
         models.IntegerField(), null=True, blank=True)
     user_favorite_voices = ArrayField(
         models.IntegerField(), null=True, blank=True)
+    is_admin = models.BooleanField(default=False)
 
 
 class Subscription(models.Model):
@@ -24,6 +26,6 @@ class Subscription(models.Model):
     sub_start_date = models.DateTimeField(null=True, blank=True)
     sub_end_date = models.DateTimeField(null=True, blank=True)
     sub_payment_status = models.CharField(
-        max_length=255, null=True, blank=True, default="pending")
+    max_length=255, null=True, blank=True, default="pending")
     sub_billing_key = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -1,10 +1,13 @@
 from django.urls import path
 from . import views
+from .views import helloAPI, voice_search
 
 app_name = 'audiobook'  # audiobook:search
 
+
 urlpatterns = [
     # 로그인
+    path('', views.index, name='index'),
     path('', views.index, name='index'),
     path('login/', views.login, name='login'),
 

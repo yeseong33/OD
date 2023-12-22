@@ -20,7 +20,7 @@
             {% endfor %}
         </div>
 
-        <h2>User님이 청취 중인 오디오북</h2>
+        <h2>{{user.user_name}}님이 청취 중인 오디오북</h2>
         <div class="book-section">
             {% for book in user_books %}
             <div class="book">
@@ -31,7 +31,7 @@
             {% endfor %}
         </div>
 
-        <h2>이번주 HOT 음섬 구경하기</h2>
+        <h2>이번주 HOT 음성 구경하기</h2>
         <div class="book-section">
             {% for book in hot_books %}
             <div class="book">
