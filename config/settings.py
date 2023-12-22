@@ -151,7 +151,7 @@ AUTHENTICATION_BACKENDS = [
     
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 3
+SITE_ID = 4
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = 'main'

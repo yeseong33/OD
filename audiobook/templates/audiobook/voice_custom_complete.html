@@ -1,0 +1,171 @@
+{% extends 'audiobook/template.html' %}
+{% load static %}
+
+
+{% block content %}
+    <!-- 첫 번째 행 -->
+    <div class="row mb-4">
+        <div class="col">
+            <p class="fs-3 fw-bold">나만의 목소리</p>
+        </div>
+    </div>
+
+    <!-- 첫 번째 행 -->
+    <div class="row mb-4">
+        <div class="col">
+            <p class="fs-2 fw-bold">면접 볼 때의 나</p>
+        </div>
+    </div>
+
+    <!-- 두 번째 행 -->
+    <div class="row justify-content-around">
+        <div class="col-2">
+            <p class="fw-bold">목소리 들어보기</p>
+        </div>
+        <div class="col-1">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="flexRadio" id="public" value="true" checked>
+                <label class="form-check-label" for="public">
+                    public
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="flexRadio" id="private" value="false">
+                <label class="form-check-label" for="private">
+                    private
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 세 번째 행 -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-8">
+            <textarea class="form-control" rows="5" placeholder="여기에 글을 작성하세요"></textarea>
+        </div>
+    </div>
+
+    <!-- 네 번째 행 -->
+    <div class="row justify-content-end">
+        <div class="col-3">
+            <button class="btn btn-primary">Play</button>
+        </div>
+    </div>
+
+    <!-- 공백  -->
+    <div class="row justify-content-end mt-5"> </div>
+            
+
+    <div class="row mb-4 justify-content-center">
+        <div class="col-8">
+            <form>
+                <div class="form-group">
+                    <p class="fw-bold">썸네일 선택</p>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="fileInput">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 다섯 번째 행 -->
+    <div class="row justify-content-center">
+        <div class="col-3">
+            <button id="save-btn" class="btn btn-success btn-lg">저장하기</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 클릭 활성화
+            document.getElementById('save-btn').addEventListener('click', submit);
+
+
+            // voice_name
+            var voice_name = localStorage.getItem('voice_name');
+            console.log(voice_name)
+
+            //voice_path
+
+            // voice_image_path
+            var voice_image_path = '';
+            // 파일 인풋 요소에 이벤트 리스너 등록
+            document.getElementById('fileInput').addEventListener('change', function (event) {
+                var files = event.target.files;
+                if (files.length > 0) {
+                    // 파일 경로 - s3 버킷에 저장
+                    voice_image_path = "test voice image"
+                }
+            });           
+
+            // is_public
+            var is_public = true;
+            // 라디오 버튼의 변경 이벤트를 감지
+            var radioButtons = document.getElementsByName('flexRadio');
+            radioButtons.forEach(function (radioButton) {
+                radioButton.addEventListener('change', function () {
+                    if (radioButton.checked) {
+                        is_public = radioButton.value === 'true'
+                        console.log('선택된 값:', is_public);
+                    }
+                });
+            });
+
+            // user
+            // 로그인 정보에서 유저 아이디 가져오기
+
+
+            function submit() {
+                // 폼 데이터 수집
+                const data = {
+                    voice_name: voice_name,
+                    // s3에 저장
+                    voice_path: "우엉의.목소리",
+                    voice_image_path: voice_image_path,
+                    voice_is_public: is_public,
+                    // 로그인 된 user의 정보를 받아와 넣어줘야 함
+                    user: 1,
+                };
+        
+                // Fetch API를 사용하여 Django REST framework에 POST 요청 보내기
+                fetch('{% url "audiobook:voice_custom_upload_post" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'), // CSRF 토큰 추가
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 서버 응답 처리
+                    console.log('서버 응답:', data);
+                })
+                .catch(error => {
+                    console.error('에러 발생:', error);
+                });
+            }
+
+            // CSRF 토큰을 쿠키에서 가져오는 함수
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        // 쿠키 이름으로 시작하는 경우
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+       });
+
+    </script>
+
+{% endblock %}
