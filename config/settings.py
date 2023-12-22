@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.google',
     'rest_framework',
+    'manager',
 ]
 
 MIDDLEWARE = [
@@ -59,12 +60,12 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -84,8 +85,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-WSGI_APPLICATION = 'config.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -138,9 +137,6 @@ USE_TZ = True
 STATIC_URL = '/static/'  # 정적 파일 경로
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
 # 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
-STATIC_URL = '/static/'  # 정적 파일 경로
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토리 경로
-# 실제 배포시에는 STATIC_ROOT 설정으로 정적 파일을 웹 서버가 접근할 수 있는 디렉토리를 모아야 함(collectstatic 사용)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -151,9 +147,19 @@ AUTHENTICATION_BACKENDS = [
     
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-SITE_ID = 3
+SITE_ID = 4
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
-LOGIN_REDIRECT_URL = 'main'
+LOGIN_REDIRECT_URL = 'audiobook:main'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True 
+
+
+# AWS S3 설정
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = 'ap-northeast-2' 
+
+# 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' 

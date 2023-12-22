@@ -1,0 +1,27 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Publisher</th>
+                <th>Request Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in book_list %}
+            <tr>
+                <td><a href="{% url 'manager:book_register' book.isbn %}">{{ book.title }}</a></td>
+                <td>{{ book.publisher }}</td>
+                <td>{{ book.request_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No book requests found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -8,7 +8,6 @@ class User(models.Model):
     oauth_identifier = models.CharField(max_length=255, null=True, blank=True)
     user_name = models.CharField(max_length=255)
     user_email = models.CharField(max_length=255)
-    user_phone_number = models.CharField(max_length=255)
     user_created_date = models.DateTimeField(auto_now_add=True)
     user_updated_date = models.DateTimeField(auto_now=True)
     user_book_history = ArrayField(models.IntegerField())
@@ -16,6 +15,7 @@ class User(models.Model):
         models.IntegerField(), null=True, blank=True)
     user_favorite_voices = ArrayField(
         models.IntegerField(), null=True, blank=True)
+    is_admin = models.BooleanField(default=False)
 
 
 class Subscription(models.Model):

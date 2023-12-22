@@ -3,9 +3,8 @@ from . import views
 
 app_name = 'audiobook'  # audiobook:search
 
-app_name = 'audiobook'  # audiobook:search
-
 urlpatterns = [
+    path('', views.index, name='index'),
     path('template', views.template, name='template'),
     path('main/', views.MainView.as_view(), name='main'),
     path('genre', views.genre, name='genre'),
