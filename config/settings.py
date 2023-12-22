@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'user',
     'community',
     'rest_framework',
-    'manager',
+    'manager', # 관리자 페이지
 ]
 
 MIDDLEWARE = [
@@ -135,18 +135,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-SITE_ID = 4
-
-SOCIALACCOUNT_LOGIN_ON_GET = True
-LOGIN_REDIRECT_URL = 'audiobook:main'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_ON_GET = True 
-
 
 # AWS S3 설정
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
