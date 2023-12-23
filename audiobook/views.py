@@ -28,7 +28,7 @@ def index(request):
 class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main.html'
-
+    
     def get(self, request):
         top_books = Book.objects.all().order_by('-book_likes')[:10]
         user_books = Book.objects.filter(user=user_id)

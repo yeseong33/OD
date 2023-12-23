@@ -35,7 +35,6 @@ def kakao_login(request):
 
 
 def kakao_callback(request):
-
     # access_token 발급
     code = request.GET.get('code')
     url = "https://kauth.kakao.com/oauth/token"
@@ -104,19 +103,21 @@ def sign_in(name, email, social_inform):
     print(
         f"sing in method name : {name}, email :{email}, social_inform : {social_inform}")
 
-    if not User.objects.filter(user_name=name, user_email=email).exists():
+    if not User.objects.filter(username = name, email = email).exists():
         print("User Is Not Exists So create User")
         temp_password = email+os.getenv("USER_PASSWORD")
         user = User.objects.create(
-            user_name=name,
-            user_email=email,
-            user_password=bcrypt.hashpw(temp_password.encode(
+            username = name,
+            first_name = name[0],
+            last_name = name[1:],
+            email = email,
+            password = bcrypt.hashpw(temp_password.encode(
                 "utf-8"), bcrypt.gensalt()).decode("utf-8"),
             oauth_provider=social_inform)
         user.save()
     else:
         user = User.objects.get(
-            user_name=name, user_email=email, oauth_provider=social_inform)
+            username = name, email = email, oauth_provider=social_inform)
     return user
 
 # 사용자 정보를 바탕으로 JWT 토큰 발급
@@ -124,7 +125,7 @@ def sign_in(name, email, social_inform):
 
 def get_jwt_token(user):
     print(f"create jwt 메소드 진입.")
-    payload = {"user_id": user.user_id, "user_email": user.user_email,
+    payload = {"user_id": user.user_id, "user_email": user.email,
                "exp": datetime.utcnow() + timedelta(hours=24)}
     secret_key = os.getenv("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key,
