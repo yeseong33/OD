@@ -1,0 +1,35 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="book-container">
+    
+    <img src="{{ image }}" alt="Cover image of {{ title }}">
+    <p>저자: {{ author }}</p>
+    <p>제목: {{ title }}</p>
+    <p>출판사: {{ publisher }}</p>
+    {% comment %} <p>책 소개: {{ description }}</p> {% endcomment %}
+    
+    <!-- Start of the form -->
+    <form method="post" action="{% url 'manager:book_register_complete' isbn %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <label for="book_genre">장르:</label>
+      <select name="book_genre" id="book_genre">
+          <option value="novel">소설</option>
+          <option value="humanities">인문</option>
+          <option value="nature">자연</option>
+          <option value="self_improvement">자기계발</option>
+          <option value="children">아동</option>
+          <option value="etc">기타</option>
+      </select>
+
+      <input type="file" name="book_content">
+
+      <!-- The submit button -->
+      <button type="submit">새 도서 등록하기</button>
+    </form>
+    <!-- End of the form -->
+
+  </div>
+{% endblock %}

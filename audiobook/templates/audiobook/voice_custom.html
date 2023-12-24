@@ -1,0 +1,241 @@
+{% extends 'audiobook/template.html' %}
+{% load static %}
+
+{% block title %}성우 선택{% endblock %}
+{% block style %}
+<style>
+    .content-item {
+        width: 120px; /* 가로 크기 */
+        height: 120px; /* 세로 크기 */
+        padding: 0px;
+        border: 1px solid #ccc;
+    }
+
+    .content-item img {
+        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
+        height: 100%; /* 가로 비율 유지 */
+        display: block; /* 인라인 요소의 기본 여백 제거 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    }
+
+    .content-item img:hover {
+        z-index: 1;
+        transform: scale(1.5); /* 확대 비율 */
+      }
+
+    .custom-mt {
+        margin-top: 120px;
+    }
+
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #fff;
+        color: #A4A4A4;
+        padding: 1px;
+        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    }
+    
+    .custom-focus {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #F2E7C4;
+        color: #000;
+        padding: 1px;
+    }
+
+    .category-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .center-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .center-icon svg {
+        width: 60px; /* 아이콘의 너비 */
+        height: 60px; /* 아이콘의 높이 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    }
+
+    .center-icon:hover svg {
+        transform: scale(1.2); /* 호버 시 크기 조절 */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 페이지 별 콘텐츠 위치 -->
+<div class="container text-center">
+    <div class="row mt-3 justify-content-end">
+        <div class="col-6">
+            <div class="input-group gap-4">
+                <div class="col">
+                    <input type="text" class="form-control rounded-start rounded-end" placeholder="음성 입력" aria-label="음성 입력" aria-describedby="basic-addon2">
+                </div>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button">음성 검색</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-evenly custom-mt">
+    <div id="custom-title" class="col-md-3 nav-link title" data-section="custom-voice">
+        <p class="text-center fs-4">개인</p>
+    </div>
+    <div id='celebrity-title' class="col-md-3 nav-link title" data-section="celebrity-voice">
+        <p class="text-center fs-4">인기</p>
+    </div>
+</div>
+
+{% comment %} 첫번째 {% endcomment %}
+<div id='custom-content' style="display: none;">
+    <div class="category-title">내 음성</div>
+    <div class="row gap-3 justify-content-start">
+        <div class="col-md-1 content-item">
+            <img src="/static/images/go.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/jin.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/young.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/wo.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/oh.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item center-icon">
+            <a href="{% url 'audiobook:voice_custom_upload' %} ">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="category-title">다른 사람 음성</div>
+    <div class="row gap-3 justify-content-start">
+        <div class="col-md-1 content-item">
+            <img src="/static/images/go.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/jin.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/young.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/wo.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/oh.png" class="img" alt="고슴">
+        </div>
+    </div>
+</div>
+
+
+
+{% comment %} 두번째 {% endcomment %}
+<div id='celebrity-content' style="display: none;">
+    <div class="category-title">좋아요한 음성</div>
+    <div class="row gap-3 justify-content-start">
+        <div class="col-md-1 content-item">
+            <img src="/static/images/chz.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/jam.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/young2.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/yaho.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/gu.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item center-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+        </div>
+
+    </div>
+
+    <div class="category-title">현재 TOP 10 음성</div>
+    <div class="row gap-3 justify-content-start">
+        <div class="col-md-1 content-item">
+            <img src="/static/images/chz.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/jam.png" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/young2.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/yaho.jpg" class="img" alt="고슴">
+        </div>
+        <div class="col-md-1 content-item">
+            <img src="/static/images/gu.jpg" class="img" alt="고슴">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 초기 상태 설정
+        var isCustom = true; // 처음에는 개인 섹션을 보여줍니다.
+
+        // 개인, 인기 섹션 요소 가져오기
+        var customTitle = document.getElementById("custom-title");
+        var celebrityTitle = document.getElementById("celebrity-title");
+
+        // 개인 섹션을 초기 선택으로 설정
+        customTitle.classList.add("custom-focus");
+       
+        // 초기 상태에 맞게 컨텐츠 로드
+        var initialSectionId = isCustom ? 'custom-content':'celebrity-content';
+        document.getElementById(initialSectionId).style.display = 'block';
+
+        // 이벤트 리스너 등록
+        customTitle.addEventListener("click", function () {
+            isCustom = true; // "개인" 섹션 클릭
+            updateContent();
+            customTitle.classList.add("custom-focus");
+            celebrityTitle.classList.remove("custom-focus");
+        });
+
+        celebrityTitle.addEventListener("click", function () {
+            isCustom = false; // "인기" 섹션 클릭
+            updateContent();
+            customTitle.classList.remove("custom-focus");
+            celebrityTitle.classList.add("custom-focus");
+        });
+
+        function updateContent() {
+            // 모든 섹션 숨기기
+            document.getElementById('custom-content').style.display = 'none';
+            document.getElementById('celebrity-content').style.display = 'none';
+
+            // 선택한 섹션 보여주기
+            var targetSectionId = isCustom ? 'custom-content':'celebrity-content';
+            document.getElementById(targetSectionId).style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}
