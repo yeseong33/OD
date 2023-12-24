@@ -262,8 +262,37 @@ python manage.py runserver
 
 ## 5. 자주 발생하는 문제
 
-- 배가 고파요. 😣
-  > - 밥을 먹도록 합니다. 😯
+### DB 관련 문제
+
+1. DB에서 모든 SCHEMA를 제거합니다.
+
+```sql
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+```
+
+2. Django의 모든 앱(audiobook, community, manager, user)의 migrations 폴더에서 `__init.py__`를 제외한 `0001_`과 같이 숫자로 시작하는 모든 `.py`파일을 삭제합니다.
+
+3. migrations를 재생성합니다.
+
+```sh
+python manage.py makemigrations
+```
+
+4. migrate를 통해 DB에 다시 SCHEMA를 생성합니다.
+
+```sh
+python manage.py migrate --settings=Config.Setting_local
+```
+
+5. 더 좋은 방법이 있다면 알려주세요.
+
+### User matching query does not exist.
+
+1. DB를 초기화했는데, 여전히 Cookie에 JWT가 남아있을 시 발생합니다.
+
+2. 개발자 콘솔(F12)로 들어가서 전부 JWT를 직접 삭제해주도록 합니다.
+   ![jwt](/description_images/jwt.png)
 
 ## 6. 참고 자료
 

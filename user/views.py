@@ -101,23 +101,23 @@ def google_callback(request):
 
 def sign_in(name, email, social_inform):
     print(
-        f"sing in method name : {name}, email :{email}, social_inform : {social_inform}")
+        f"sign_in 시작: {name}, email :{email}, social_inform : {social_inform}")
 
-    if not User.objects.filter(username = name, email = email).exists():
-        print("User Is Not Exists So create User")
+    if not User.objects.filter(username=name, email=email).exists():
+        print("User is not exists. So, User is created.")
         temp_password = email+os.getenv("USER_PASSWORD")
         user = User.objects.create(
-            username = name,
-            first_name = name[0],
-            last_name = name[1:],
-            email = email,
-            password = bcrypt.hashpw(temp_password.encode(
+            username=name,
+            first_name=name[0],
+            last_name=name[1:],
+            email=email,
+            password=bcrypt.hashpw(temp_password.encode(
                 "utf-8"), bcrypt.gensalt()).decode("utf-8"),
             oauth_provider=social_inform)
         user.save()
     else:
         user = User.objects.get(
-            username = name, email = email, oauth_provider=social_inform)
+            username=name, email=email, oauth_provider=social_inform)
     return user
 
 # 사용자 정보를 바탕으로 JWT 토큰 발급
