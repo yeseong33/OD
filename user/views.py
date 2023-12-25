@@ -96,7 +96,7 @@ def google_login(request):
 
 def google_callback(request):
     # 환경에 따른 redirect_uri 설정
-    if settings.SETTINGS_MODULE == 'Config.settings_local':
+    if settings.SETTINGS_MODULE == 'config.settings_local':
         redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
     else:
         redirect_uri = os.getenv('GOOGLE_REDIRECT_URI_PRODUCTION')
