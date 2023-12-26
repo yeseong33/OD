@@ -10,15 +10,6 @@ class User(AbstractUser):
     oauth_provider = models.CharField(max_length=255)
     oauth_identifier = models.CharField(max_length=255, blank=True)
     username = models.CharField(max_length=20, unique = False)
-    
-    # AbstractUser 상속 받을때 auth_user에 이미 존재하는 속성이여서 삭제.
-    # user_name = models.CharField(max_length=255, unique = False)
-    # user_email = models.CharField(max_length=255)
-    # user_password = models.TextField()
-    
-    #필요 없는 정보
-    # user_phone_number = models.CharField(max_length=255)
-    
     user_created_date = models.DateTimeField(auto_now_add=True)
     user_updated_date = models.DateTimeField(auto_now=True)
     user_book_history = ArrayField(models.IntegerField(), null=True)
@@ -40,6 +31,7 @@ class User(AbstractUser):
         related_name="custom_user_set",
         related_query_name="custom_user",
     )
+    
     user_permissions = models.ManyToManyField(
         'auth.Permission',
         verbose_name=_('user permissions'),
@@ -59,8 +51,3 @@ class Subscription(models.Model):
         max_length=255, null=True, blank=True, default="pending")
     sub_billing_key = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
-# error 
-# 1. 같은 계정으로 서로 다른 소셜로그인하면 error 
-    # 이유는 user_name 필드가 unique 속성이 적용되어았는것같음. 그래서 unique=False를 줫는대 migrate가 안됨, 혹시 unique 기본값이 False인가?
