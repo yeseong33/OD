@@ -4,6 +4,7 @@ import requests
 import bcrypt
 from jose import jwt
 from datetime import timedelta, datetime
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls.base import reverse
@@ -31,10 +32,26 @@ def logout(request):
 
 def kakao_login(request):
     print("kakao Login 클릭")
-    return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={os.getenv('KAKAO_CLIENT_ID')}&redirect_uri={os.getenv('KAKAO_REDIRECT_URI')}&response_type=code")
+    # 환경에 따른 redirect_uri 설정
+    if settings.SETTINGS_MODULE == 'config.settings_local':
+        redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
+        print('in local')
+    else:
+        redirect_uri = os.getenv('KAKAO_REDIRECT_URI_PRODUCTION')
+        print('in production')
+
+    return redirect(f"https://kauth.kakao.com/oauth/authorize?client_id={os.getenv('KAKAO_CLIENT_ID')}&redirect_uri={redirect_uri}&response_type=code")
 
 
 def kakao_callback(request):
+    # 환경에 따른 redirect_uri 설정
+    if settings.SETTINGS_MODULE == 'config.settings_local':
+        redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
+        print('in local')
+    else:
+        redirect_uri = os.getenv('KAKAO_REDIRECT_URI_PRODUCTION')
+        print('in production')
+
     # access_token 발급
     code = request.GET.get('code')
     url = "https://kauth.kakao.com/oauth/token"
@@ -42,7 +59,7 @@ def kakao_callback(request):
     data = {
         "grant_type": "authorization_code",
         "client_id": os.getenv('KAKAO_CLIENT_ID'),
-        "redirect_uri":  os.getenv('KAKAO_REDIRECT_URI'),
+        "redirect_uri":  redirect_uri,
         "code": request.GET.get('code')
     }
     response = requests.post(url, headers=headers, data=data)
@@ -66,10 +83,23 @@ def kakao_callback(request):
 
 def google_login(request):
     print("google Login 클릭")
-    return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={os.getenv('GOOGLE_CLIENT_ID')}&redirect_uri={os.getenv('GOOGLE_REDIRECT_URI')}&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email")
+    # 환경에 따른 redirect_uri 설정
+    if settings.SETTINGS_MODULE == 'config.settings_local':
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+        print('in local')
+    else:
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI_PRODUCTION')
+        print('in production')
+
+    return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={os.getenv('GOOGLE_CLIENT_ID')}&redirect_uri={redirect_uri}&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email")
 
 
 def google_callback(request):
+    # 환경에 따른 redirect_uri 설정
+    if settings.SETTINGS_MODULE == 'config.settings_local':
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+    else:
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI_PRODUCTION')
 
     # access_token 발급 받기
     url = "https://oauth2.googleapis.com/token"
@@ -79,7 +109,7 @@ def google_callback(request):
         "client_id": os.getenv('GOOGLE_CLIENT_ID'),
         "client_secret":  os.getenv('GOOGLE_SECRET_KEY'),
         "code": request.GET.get('code'),
-        "redirect_uri": os.getenv('GOOGLE_REDIRECT_URI'),
+        "redirect_uri": redirect_uri,
     }
     response = requests.post(url, headers=headers, data=data)
     access_token = response.json().get('access_token')
@@ -101,23 +131,23 @@ def google_callback(request):
 
 def sign_in(name, email, social_inform):
     print(
-        f"sing in method name : {name}, email :{email}, social_inform : {social_inform}")
+        f"sign_in 시작: {name}, email :{email}, social_inform : {social_inform}")
 
-    if not User.objects.filter(username = name, email = email).exists():
-        print("User Is Not Exists So create User")
+    if not User.objects.filter(username=name, email=email).exists():
+        print("User is not exists. So, User is created.")
         temp_password = email+os.getenv("USER_PASSWORD")
         user = User.objects.create(
-            username = name,
-            first_name = name[0],
-            last_name = name[1:],
-            email = email,
-            password = bcrypt.hashpw(temp_password.encode(
+            username=name,
+            first_name=name[0],
+            last_name=name[1:],
+            email=email,
+            password=bcrypt.hashpw(temp_password.encode(
                 "utf-8"), bcrypt.gensalt()).decode("utf-8"),
             oauth_provider=social_inform)
         user.save()
     else:
         user = User.objects.get(
-            username = name, email = email, oauth_provider=social_inform)
+            username=name, email=email, oauth_provider=social_inform)
     return user
 
 # 사용자 정보를 바탕으로 JWT 토큰 발급

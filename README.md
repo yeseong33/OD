@@ -108,33 +108,23 @@ git push origin [branch_name]
 
 2. PostgreSQL 서버 실행: 저는 같이 설치되는 pgAdmin4를 실행해서 사용합니다. 커맨드로 쓸꺼 아니여서요.
 
-### 가상환경 사용해서 의존성 관리하기
+### 아나콘다 가상환경 사용해서 의존성 관리하기
 
-1. 가상 환경을 생성할 경로로 이동하기: 저는 귀찮아서 C:\로 했습니다.
+1. Anaconda Prompt 실행
 
-```bash
-cd [path]
-```
-
-2. 가상 환경 생성
+2. Python 3.10.12으로 가상환경 생성(우진님이 설정한 AI 환경에 맞췄습니다)
 
 ```bash
-python -m venv [virtual_environment_name]
+conda create -n [virtual_environment_name] python=3.10.12
 ```
 
-3. 가상 환경 활성화
+3. 가상환경 진입
 
 ```bash
-[virtual_environment_path_name]\Scripts\activate
+conda activate [virtual_environment_name]
 ```
 
-4. 해당 프로젝트 경로로 다시 이동하기
-
-```bash
-cd [path]
-```
-
-5. 필요한 패키지 설치하기
+4. 필요한 패키지 설치하기
 
 ```bash
 pip install -r requirements.txt
@@ -151,7 +141,7 @@ pip freeze > requirements.txt
 - 가상환경 종료하기
 
 ```bash
-deactivate
+conda deactivate
 ```
 
 ### Django 시작하기
@@ -262,8 +252,37 @@ python manage.py runserver
 
 ## 5. 자주 발생하는 문제
 
-- 배가 고파요. 😣
-  > - 밥을 먹도록 합니다. 😯
+### DB 관련 문제
+
+1. DB에서 모든 SCHEMA를 제거합니다.
+
+```sql
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+```
+
+2. Django의 모든 앱(audiobook, community, manager, user)의 migrations 폴더에서 `__init.py__`를 제외한 `0001_`과 같이 숫자로 시작하는 모든 `.py`파일을 삭제합니다.
+
+3. migrations를 재생성합니다.
+
+```sh
+python manage.py makemigrations
+```
+
+4. migrate를 통해 DB에 다시 SCHEMA를 생성합니다.
+
+```sh
+python manage.py migrate --settings=Config.Setting_local
+```
+
+5. 더 좋은 방법이 있다면 알려주세요.
+
+### User matching query does not exist.
+
+1. DB를 초기화했는데, 여전히 Cookie에 JWT가 남아있을 시 발생합니다.
+
+2. 개발자 콘솔(F12)로 들어가서 전부 JWT를 직접 삭제해주도록 합니다.
+   ![jwt](/description_images/jwt.png)
 
 ## 6. 참고 자료
 

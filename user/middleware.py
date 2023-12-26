@@ -24,18 +24,22 @@ class JWTMiddleware:
                 if user:
                     request.user = user
             except ExpiredSignatureError:
-                # 토큰이 만료된 경우 새 토큰 발급
-                user_info = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[
-                                       os.getenv("JWT_ALGORITHM")], options={"verify_exp": False})
-                user = get_user_model().objects.get(pk=user_info['user_id'])
+                try:
+                    # 토큰이 만료된 경우 새 토큰 발급
+                    user_info = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[
+                        os.getenv("JWT_ALGORITHM")], options={"verify_exp": False})
 
-                # 새 토큰 생성
-                new_token = create_jwt_token(user)
+                    # 새 토큰 생성
+                    user = get_user_model().objects.get(
+                        pk=user_info['user_id'])
+                    new_token = create_jwt_token(user)
 
-                # 새 토큰을 쿠키에 설정
-                response = self.get_response(request)
-                response.set_cookie('jwt', new_token)
-                return response
+                    # 새 토큰을 쿠키에 설정
+                    response = self.get_response(request)
+                    response.set_cookie('jwt', new_token)
+                    return response
+                except Exception as e:
+                    print(f"JWT 처리 중 오류 발생: {e}")
 
         return self.get_response(request)
 

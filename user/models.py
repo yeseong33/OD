@@ -50,3 +50,8 @@ class Subscription(models.Model):
         max_length=255, null=True, blank=True, default="pending")
     sub_billing_key = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+# error 
+# 1. 같은 계정으로 서로 다른 소셜로그인하면 error 
+    # 이유는 user_name 필드가 unique 속성이 적용되어았는것같음. 그래서 unique=False를 줫는대 migrate가 안됨, 혹시 unique 기본값이 False인가?
