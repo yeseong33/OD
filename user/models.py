@@ -8,7 +8,6 @@ from django.utils.translation import gettext_lazy as _  # i18n에서 사용하�
 class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)
     oauth_provider = models.CharField(max_length=255)
-    oauth_identifier = models.CharField(max_length=255, blank=True)
     username = models.CharField(max_length=20, unique = False)
     user_created_date = models.DateTimeField(auto_now_add=True)
     user_updated_date = models.DateTimeField(auto_now=True)
