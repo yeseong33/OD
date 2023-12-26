@@ -5,7 +5,12 @@ app_name = 'community'
 
 urlpatterns = [
     # 토론방
-    path('books/share/', views.book_share, name='book_share'),
+    path('books/share/', views.BookShareContentList.as_view(), name='book_share'),
+    path('books/share/content/<int:book_id>', views.BookShareContent.as_view(), name='book_share_content'),
+    path('books/share/content/post/', views.BookShareContentPost.as_view(), name='book_share_content_post'),
+    path('books/share/content/post/detail/<int:post_id>', views.BookShareContentPostDetail.as_view(), name='book_share_content_post_detail'),
+
+
 
     # 신규 도서 신청
     # http://127.0.0.1:8000/community/books/search
