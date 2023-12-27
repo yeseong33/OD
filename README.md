@@ -390,12 +390,13 @@ USE_GPU=off bash start_docker.sh
 ```python
 python manage.py shell
 
-from audiobook.models import Voice, User
+from audiobook.models import Voice, User, Book
+from community.models import Post
 from audiobook.serializers import VoiceSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
-u = User(oauth_provider="kakao", user_name="df2", user_phone_number="231233", user_book_history=[1])
+u = User(oauth_provider="kakao", username="df2", user_book_history=[1])
 u.save()
 v = Voice(voice_name="test",voice_like=0, voice_path="dd", voice_image_path="dd", voice_created_date="2023-03-01", voice_is_public=False, user=u)
 v.save()
