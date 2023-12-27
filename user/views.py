@@ -71,10 +71,12 @@ def kakao_callback(request):
                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
-
+    
     # name, email을 이용해 jwt token 발급, main 페이지로 전달
     user = sign_in(user_inform['profile']['nickname'],
-                   user_inform['email'], 'Kakao')
+                    user_inform['email'],
+                    response.json().get('properties')['thumbnail_image'],
+                    'Kakao')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -120,7 +122,10 @@ def google_callback(request):
     response = requests.get(url=url, headers=headers)
 
     # user DB조회, JWT 발급
-    user = sign_in(response.json()['name'], response.json()['email'], 'Google')
+    user = sign_in(response.json()['name'], 
+                    response.json()['email'],
+                    response.json()['picture'] ,
+                    'Google')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -129,7 +134,7 @@ def google_callback(request):
 # 사용자 정보를 DB에서 조회
 
 
-def sign_in(nickname, email, social_inform):
+def sign_in(nickname, email, user_profile_path ,social_inform):
     print(
         f"sign_in 시작: {nickname}, email :{email}, social_inform : {social_inform}")
 
@@ -139,7 +144,8 @@ def sign_in(nickname, email, social_inform):
         user = User.objects.create_user(
             email = email,
             nickname = nickname,
-            oauth_provider = social_inform)
+            oauth_provider = social_inform,
+            user_profile_path = user_profile_path,)
         user.save()
     else:
         user = User.objects.get(username = email)

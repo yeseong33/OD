@@ -10,7 +10,7 @@ load_dotenv()
 
 # Django에 있는 기존의 User model을 상속받아서 사용함
 class UserManager(BaseUserManager):
-    def create_user(self, email, nickname, oauth_provider, password=None, **extra_fields):
+    def create_user(self, email, nickname, oauth_provider, user_profile_path ,password=None, **extra_fields):
         if password is None:
             password = os.getenv("USER_PASSWORD")
         if not email:
@@ -19,7 +19,7 @@ class UserManager(BaseUserManager):
         # Assuming you have a predefined password in your .env file
         email = self.normalize_email(email)
         user = self.model(email=email, username=email, nickname=nickname, 
-                          oauth_provider=oauth_provider, **extra_fields)
+                            oauth_provider=oauth_provider, user_profile_path = user_profile_path ,**extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         models.IntegerField(), null=True, blank=True)
     is_active = models.BooleanField(default = True)
     is_admin = models.BooleanField(default=False)
+    user_profile_path = models.TextField() 
 
     objects = UserManager()
     USERNAME_FIELD = 'email'
