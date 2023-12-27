@@ -1,0 +1,164 @@
+{% extends 'community/template.html' %}
+{% load static %}
+
+{% block title %}공유 및 커뮤니티{% endblock %}
+{% block style %}
+<style>
+    /* 기본 스타일 */
+    body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    }
+    /* 네비게이터 스타일 */
+    .navigator {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: #f5f5f5;
+    }
+    .navigator button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    }
+    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
+    .center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
+    }
+    /* 내용 스타일 */
+    .content {
+    text-align: center;
+    /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
+    }
+    .icon {
+    font-size: 48px; /* 아이콘 크기 */
+    }
+    
+
+
+
+    .content-item {
+        width: 120px; /* 가로 크기 */
+        height: 120px; /* 세로 크기 */
+        padding: 0px;
+        border: 1px solid #ccc;
+    }
+
+    .content-item img {
+        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
+        height: 100%; /* 가로 비율 유지 */
+        display: block; /* 인라인 요소의 기본 여백 제거 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    }
+
+    .content-item img:hover {
+        z-index: 1;
+        transform: scale(1.5); /* 확대 비율 */
+        }
+
+    .custom-mt {
+        margin-top: 120px;
+    }
+
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #fff;
+        color: #A4A4A4;
+        padding: 1px;
+        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    }
+    
+    .custom-focus {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #F2E7C4;
+        color: #000;
+        padding: 1px;
+    }
+
+    .category-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .center-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .center-icon svg {
+        width: 60px; /* 아이콘의 너비 */
+        height: 60px; /* 아이콘의 높이 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    }
+
+    .center-icon:hover svg {
+        transform: scale(1.2); /* 호버 시 크기 조절 */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-end mt-5"> </div>
+    <div class="row justify-content-end mt-5"> </div>
+    <div class="row justify-content-end mt-5"> </div>
+
+
+    <form method="post" action="{% url 'community:book_share_content_post' %}">
+        {% csrf_token %}
+        <div class="row">
+            <!-- 첫 번째 칸: 제목과 내용 -->
+            <div class="col-md-1">
+                <p class="fs-4 fw-bold">제목</p>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="title1" placeholder="제목을 입력하세요" name="post_title">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-1">
+                <p class="fs-4 fw-bold">내용</p>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group">
+                    <textarea class="form-control" id="content1" rows="8" placeholder="내용을 입력하세요" name='post_content'></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-end mt-5"> </div>
+
+
+        <!-- 글쓰기 버튼 -->
+        <div class="row">
+            <div class="col-md-11 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary btn-block mb-3">글쓰기</button>
+            </div>
+        </div>
+    </form> 
+{% endblock %}
+
+{% block script %}
+<script>
+    {% if result %}
+    // 서버에서 리디렉션 URL이 전달되었다면, 해당 URL로 리디렉션
+    var bookId = 1;
+    window.location.href = "{% url 'community:book_share_content' book_id=123 %}".replace('123', bookId);
+    {% endif %}
+
+</script>
+
+{% endblock %}
