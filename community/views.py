@@ -191,7 +191,11 @@ class BookCompleteView(APIView):
         #     UserRequestBook.objects.create(user=request.user, request=book_request)
         UserRequestBook.objects.create(user=ttemp_user, request=book_request)
 
-        return Response(status=status.HTTP_200_OK)
+        context = {
+            'active_tab': 'book_search',
+        }
+
+        return Response(context, status=status.HTTP_200_OK)
 
 # 1:1 문의
 
