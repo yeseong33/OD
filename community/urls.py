@@ -9,6 +9,7 @@ urlpatterns = [
     path('books/share/content/<int:book_id>', views.BookShareContent.as_view(), name='book_share_content'),
     path('books/share/content/post/', views.BookShareContentPost.as_view(), name='book_share_content_post'),
     path('books/share/content/post/detail/<int:post_id>', views.BookShareContentPostDetail.as_view(), name='book_share_content_post_detail'),
+    path('books/share/content/post/detail/comment/', views.BookShareContentPostComment.as_view(), name='book_share_content_post_detail_comment'),
 
 
 

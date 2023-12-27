@@ -18,6 +18,7 @@ from django.template.response import TemplateResponse
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 load_dotenv()  # 환경 변수를 로드함
 
 
@@ -143,12 +144,13 @@ class BookShareContentPost(APIView):
         return Response({'result': False, 'message': 'GET 요청은 허용되지 않습니다.'})
     
     def post(self, request):
-        # POST 요청에서 폼 데이터를 처리하고 책을 생성
+        print(request.data)
+        # POST 요청에서 폼 데이터를 처리하고 게시물 
         post_serializer = PostSerializer(data=request.data, context={'request': request})
         if post_serializer.is_valid():
             post = post_serializer.save()           
             # 책을 성공적으로 생성했을 때의 로직 추가 가능
-            return Response({'result': True, 'post_id': post, 'message': '게시물이 성공적으로 생성되었습니다.'})
+            return Response({'result': True, 'post': post, 'message': '게시물이 성공적으로 생성되었습니다.'})
         else:
             # 폼 데이터가 유효하지 않을 때의 로직 추가 가능
             return Response({'result': False, 'errors': post_serializer.errors}, status=400, template_name=self.template_name)
@@ -160,7 +162,6 @@ class BookShareContentPostDetail(APIView):
     
     def get(self, request, post_id):
         # 수정: post에 맞게
-        post_id = 1
         try:
             post = Post.objects.get(pk=post_id)
         except Post.DoesNotExist:
@@ -175,4 +176,21 @@ class BookShareContentPostDetail(APIView):
         
         # JSON 데이터를 Response로 반환
         return Response({'post': post_serializer.data}, template_name= self.template_name)
+
+
+class BookShareContentPostComment(APIView):
+    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
+    template_name = 'community/book_share_content_post_detail.html'
     
+    def get(self, request):
+        return Response({'result': False, 'message': 'GET 요청은 허용되지 않습니다.'})
+    
+    def post(self, request):
+        # POST 요청에서 폼 데이터를 처리하고 책을 생성
+        comment_serializer = CommentSerializer(data=request.data, context={'post_id': request.data['post']})
+        if comment_serializer.is_valid():
+            post = comment_serializer.save()      
+            return Response({'result': True, 'comment': comment_serializer.data, 'message': '게시물이 성공적으로 생성되었습니다.'})
+        else:
+            # 폼 데이터가 유효하지 않을 때의 로직 추가 가능
+            return Response({'result': False, 'errors': comment_serializer.errors}, status=400, template_name=self.template_name)
