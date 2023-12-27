@@ -102,11 +102,22 @@
         <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
     </div>
 
-    <h1>신규 도서 등록</h1>
-    <form method="get" action="{% url 'community:book_search' %}">
-        <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." style="width:400px;" />
-        <button type="submit">검색하기</button>
-    </form>
+    <!--mt-* (margin-top) 및 mb-* (margin-bottom) -->
+    <div class="container mt-3 mb-3">
+      <div class="row justify-content-center">
+          <div class="col-sm-8">
+              <form class="form-inline" method="get" action="{% url 'community:book_search' %}">
+                  <div class="input-group w-90">
+                      <input type="text" class="form-control" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." aria-label="Search">
+                      <div class="input-group-append">
+                          <button class="btn btn-success" type="submit">검색하기</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+      </div>
+    </div>
+
     {% if books %}
     <div class="books-grid">
         {% for book in books %}
