@@ -142,7 +142,7 @@ def sign_in(nickname, email, social_inform):
             oauth_provider = social_inform)
         user.save()
     else:
-        user = User.objects.get(username=email)
+        user = User.objects.get(username = email)
     return user
 
 # 사용자 정보를 바탕으로 JWT 토큰 발급
