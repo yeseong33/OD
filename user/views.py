@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
+from rest_framework.views import APIView
+from rest_framework.renderers import TemplateHTMLRenderer
+
 
 load_dotenv()
 
@@ -173,3 +176,22 @@ def decode_jwt(token):
     user_inform = jwt.decode(token, key=os.getenv(
         "JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
     return user_inform
+
+class SubscribeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    def get(self, request):
+        if request.COOKIES.get("jwt") == None: # User가 로그인 안했을시.
+            print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
+            return redirect('user:login')
+        else:
+            user_inform = decode_jwt(request.COOKIES.get("jwt"))
+            user = User.objects.get(user_id=user_inform['user_id'])
+            is_subscribe = user.is_subscribe
+            if is_subscribe:
+                print(f"{user.nickname} : {user.is_subscribe}")
+                template_name = 'user/pay_inform.html'
+                return Response({'user' : user}, template_name=template_name)
+            else:
+                print(f"{user.nickname} : {user.is_subscribe}")
+                template_name = 'user/non_pay_inform.html'
+                return Response(template_name=template_name)
