@@ -27,7 +27,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     oauth_provider = models.CharField(max_length=255)
-    username = models.CharField(max_length=20)
+    username = models.CharField(max_length=255)
     email = models.EmailField(unique = True)
     nickname = models.CharField(max_length = 20)
     user_created_date = models.DateTimeField(auto_now_add=True)
@@ -78,9 +78,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.is_admin
 
-
-    
-
 class Subscription(models.Model):
     sub_id = models.AutoField(primary_key=True)
     is_subscribed = models.BooleanField(default=False)
@@ -92,6 +89,3 @@ class Subscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
-# error 
-# 1. 같은 계정으로 서로 다른 소셜로그인하면 error 
-    # 이유는 user_name 필드가 unique 속성이 적용되어았는것같음. 그래서 unique=False를 줫는대 migrate가 안됨, 혹시 unique 기본값이 False인가?
