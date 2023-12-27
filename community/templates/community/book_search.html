@@ -3,155 +3,39 @@
 
 {% block title %}도서 검색{% endblock %}
 {% block style %}
-<style>
-    /* 기본 스타일 */
-    body, html {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    /* 네비게이터 스타일 */
-    .navigator {
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      background-color: #f5f5f5;
-    }
-
-    .navigator button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-
-    /* 도서 목록을 그리드 레이아웃으로 표시합니다. */
-    .book-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .book-info .title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 150px;   /* 최대 너비를 설정, 필요에 따라 조정 */
-      display: block;    /* 블록 요소로 설정하여 한 줄에 표시 */
-      font-weight: bold;
-    }
-
-    .book-info .author {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 120px;   /* 최대 너비를 설정, 필요에 따라 조정 */
-      display: block;    /* 블록 요소로 설정하여 한 줄에 표시 */
-      font-style: italic;
-    }
-
-    .books-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .book-item {
-      display: flex;
-      flex-direction: column; /* 항목을 세로 방향으로 쌓음 */
-      justify-content: space-between; /* 내용 사이에 공간을 균일하게 분배 */
-    }
-    
-
-    .book-item img {
-        width: 80%;      /* 이미지의 너비를 부모 요소의 100%로 설정 */
-        height: 200px;    /* 이미지의 높이를 150픽셀로 설정 */
-        object-fit: cover; /* 이미지의 비율을 유지하면서 요소에 맞게 조정 */
-        object-position: center; /* 이미지를 중앙에 위치시킴 */
-    }
-
-
-    /* 내용 스타일 */
-    .content {
-      text-align: center;
-      /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-      font-size: 48px; /* 아이콘 크기 */
-    }
-  </style>
 {% endblock %}
 
 {% block content %}
-    <!-- 서브 네비게이션바 -->
-    <ul class="d-flex justify-content-center nav nav-pills my-5" id="pills-tab" role="tablist">
-      <li class="nav-item mx-4" role="presentation">
-        <button class="nav-link fs-3" id="pills-book-share" data-bs-toggle="pill" data-bs-target="#book-share" type="button" role="tab">공유 및 토론</button>
-      </li>
-      <li class="nav-item mx-4" role="presentation">
-        <button class="nav-link active fs-3" id="pills-book-search" data-bs-toggle="pill" data-bs-target="#book-search" type="button" role="tab">신규 도서 신청</button>
-      </li>
-      <li class="nav-item mx-4" role="presentation">
-        <button class="nav-link fs-3" id="pills-book-inquiry" data-bs-toggle="pill" data-bs-target="#book-inquiry" type="button" role="tab">1:1 문의</button>
-      </li>
-      <li class="nav-item mx-4" role="presentation">
-        <button class="nav-link fs-3" id="pills-book-faq" data-bs-toggle="pill" data-bs-target="#book-faq" type="button" role="tab">FAQ</button>
-      </li>
-    </ul>
+    <!-- 서브 네비게이션 바 -->
+    {% include 'community/sub_navbar.html' %}
 
-    <!-- 컨텐츠 -->
-    <div class="tab-content" id="pills-tabContent">
-      <!-- 공유 및 토론 -->
-      <div class="tab-pane fade" id="book-share" role="tabpanel" tabindex="0">
-        <h1>공유 및 토론 구현해주세요.</h1>     
-      </div>
-
-      <!-- 신규 도서 신청 -->
-      <div class="tab-pane fade show active" id="book-search" role="tabpanel" tabindex="0">
-            <h1>신규 도서 등록</h1>
-    <form method="get" action="{% url 'community:book_search' %}">
-        <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." style="width:400px;" />
-        <button type="submit">검색하기</button>
-    </form>
-    {% if books %}
-    <div class="books-grid">
-        {% for book in books %}
-        <div class="book-item">
-            <a href="{% url 'community:book_complete' book.isbn %}">  <!-- get 요청 -->
-                <img src="{{ book.image }}" alt="{{ book.title }}" />
-            </a>
-            <div class="book-info">
-                <p class="title">{{ book.title }}</p>
-                <p class="author">저자: {{ book.author }}</p>
-            </div>
-            {% endfor %}
-        </div>
-        {% elif query %}
-        <p>검색 결과가 없습니다.</p>
-        {% endif %}
-      </div>
-
-      <!-- 1:1 문의 -->
-      <div class="tab-pane fade" id="book-inquiry" role="tabpanel" tabindex="0">
-        <h1>1:1 문의 구현해주세요.</h1>        
-      </div>
-
-      <!-- FAQ -->
-      <div class="tab-pane fade" id="book-faq" role="tabpanel" tabindex="0">
-        <h1>FAQ 구현해주세요.</h1>
-      </div>
-    </div>
+    <!-- 신규 도서 신청 -->
+    <div class="container mt-4">
+      <form method="get" action="{% url 'community:book_search' %}" class="d-flex justify-content-center mb-4">
+          <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." class="form-control w-50" />
+          <button type="submit" class="btn btn-primary ms-2">검색하기</button>
+      </form>
+      {% if books %}
+          <div class="row row-cols-1 row-cols-md-4 g-4">
+              {% for book in books %}
+                  <div class="col">
+                      <div class="card h-100">
+                          <img src="{{ book.image }}" class="card-img-top" alt="{{ book.title }}" style="height: 200px; object-fit: cover;">
+                          <div class="card-body">
+                              <h5 class="card-title">{{ book.title }}</h5>
+                              <p class="card-text">저자: {{ book.author }}</p>
+                          </div>
+                          <div class="card-footer">
+                              <a href="{% url 'community:book_complete' book.isbn %}" class="btn btn-secondary">자세히 보기</a>
+                          </div>
+                      </div>
+                  </div>
+              {% endfor %}
+          </div>
+      {% elif query %}
+          <p class="text-center">검색 결과가 없습니다.</p>
+      {% endif %}
+  </div>
 
 {% endblock %}
 
