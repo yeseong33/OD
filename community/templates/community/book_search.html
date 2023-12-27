@@ -94,15 +94,32 @@
 {% endblock %}
 
 {% block content %}
-    <div class="navigator">
-        <!-- 버튼들 -->
-        <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-        <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-        <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-        <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
-    </div>
+    <!-- 서브 네비게이션바 -->
+    <ul class="d-flex justify-content-center nav nav-pills my-5" id="pills-tab" role="tablist">
+      <li class="nav-item mx-4" role="presentation">
+        <button class="nav-link fs-3" id="pills-book-share" data-bs-toggle="pill" data-bs-target="#book-share" type="button" role="tab">공유 및 토론</button>
+      </li>
+      <li class="nav-item mx-4" role="presentation">
+        <button class="nav-link active fs-3" id="pills-book-search" data-bs-toggle="pill" data-bs-target="#book-search" type="button" role="tab">신규 도서 신청</button>
+      </li>
+      <li class="nav-item mx-4" role="presentation">
+        <button class="nav-link fs-3" id="pills-book-inquiry" data-bs-toggle="pill" data-bs-target="#book-inquiry" type="button" role="tab">1:1 문의</button>
+      </li>
+      <li class="nav-item mx-4" role="presentation">
+        <button class="nav-link fs-3" id="pills-book-faq" data-bs-toggle="pill" data-bs-target="#book-faq" type="button" role="tab">FAQ</button>
+      </li>
+    </ul>
 
-    <h1>신규 도서 등록</h1>
+    <!-- 컨텐츠 -->
+    <div class="tab-content" id="pills-tabContent">
+      <!-- 공유 및 토론 -->
+      <div class="tab-pane fade" id="book-share" role="tabpanel" tabindex="0">
+        <h1>공유 및 토론 구현해주세요.</h1>     
+      </div>
+
+      <!-- 신규 도서 신청 -->
+      <div class="tab-pane fade show active" id="book-search" role="tabpanel" tabindex="0">
+            <h1>신규 도서 등록</h1>
     <form method="get" action="{% url 'community:book_search' %}">
         <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." style="width:400px;" />
         <button type="submit">검색하기</button>
@@ -118,12 +135,25 @@
                 <p class="title">{{ book.title }}</p>
                 <p class="author">저자: {{ book.author }}</p>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% elif query %}
+        <p>검색 결과가 없습니다.</p>
+        {% endif %}
+      </div>
+
+      <!-- 1:1 문의 -->
+      <div class="tab-pane fade" id="book-inquiry" role="tabpanel" tabindex="0">
+        <h1>1:1 문의 구현해주세요.</h1>        
+      </div>
+
+      <!-- FAQ -->
+      <div class="tab-pane fade" id="book-faq" role="tabpanel" tabindex="0">
+        <h1>FAQ 구현해주세요.</h1>
+      </div>
     </div>
-    {% elif query %}
-    <p>검색 결과가 없습니다.</p>
-    {% endif %}
+
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+{% endblock %}
