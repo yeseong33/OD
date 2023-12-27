@@ -3,104 +3,13 @@
 
 {% block title %}도서 검색{% endblock %}
 {% block style %}
-<style>
-    /* 기본 스타일 */
-    body, html {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    /* 네비게이터 스타일 */
-    .navigator {
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      background-color: #f5f5f5;
-    }
-
-    .navigator button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-
-    /* 도서 목록을 그리드 레이아웃으로 표시합니다. */
-    .book-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .book-info .title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 150px;   /* 최대 너비를 설정, 필요에 따라 조정 */
-      display: block;    /* 블록 요소로 설정하여 한 줄에 표시 */
-      font-weight: bold;
-    }
-
-    .book-info .author {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 120px;   /* 최대 너비를 설정, 필요에 따라 조정 */
-      display: block;    /* 블록 요소로 설정하여 한 줄에 표시 */
-      font-style: italic;
-    }
-
-    .books-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .book-item {
-      display: flex;
-      flex-direction: column; /* 항목을 세로 방향으로 쌓음 */
-      justify-content: space-between; /* 내용 사이에 공간을 균일하게 분배 */
-    }
-    
-    .book-item img {
-        width: 80%;      /* 이미지의 너비를 부모 요소의 100%로 설정 */
-        height: 200px;    /* 이미지의 높이를 150픽셀로 설정 */
-        object-fit: cover; /* 이미지의 비율을 유지하면서 요소에 맞게 조정 */
-        object-position: center; /* 이미지를 중앙에 위치시킴 */
-    }
-
-    /* 내용 스타일 */
-    .content {
-      text-align: center;
-      /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-      font-size: 48px; /* 아이콘 크기 */
-    }
-  </style>
 {% endblock %}
 
 {% block content %}
-    <div class="navigator">
-        <!-- 버튼들 -->
-        <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-        <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-        <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-        <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
-    </div>
+    <!-- 서브 네비게이션 바 -->
+    {% include 'community/sub_navbar.html' %}
 
-    <!--mt-* (margin-top) 및 mb-* (margin-bottom) -->
+    <!-- 신규 도서 신청 -->
     <div class="container mt-3 mb-3">
       <div class="row justify-content-center">
           <div class="col-sm-8">
@@ -133,6 +42,8 @@
     {% elif query %}
     <p>검색 결과가 없습니다.</p>
     {% endif %}
+
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+{% endblock %}
