@@ -136,7 +136,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = 'ap-northeast-2'
 
-# # 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# 로컬 디버깅용
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+SITE_ID = 1 #DB -> django.site 접속. http:127.0.0.1:8000 DB에 넣기.
