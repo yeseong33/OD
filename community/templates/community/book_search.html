@@ -10,38 +10,32 @@
     {% include 'community/sub_navbar.html' %}
 
     <!-- 신규 도서 신청 -->
-    <div class="container mt-3 mb-3">
-      <div class="row justify-content-center">
-          <div class="col-sm-8">
-              <form class="form-inline" method="get" action="{% url 'community:book_search' %}">
-                  <div class="input-group w-90">
-                      <input type="text" class="form-control" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." aria-label="Search">
-                      <div class="input-group-append">
-                          <button class="btn btn-success" type="submit">검색하기</button>
+    <div class="container my-4">
+      <form method="get" action="{% url 'community:book_search' %}" class="d-flex justify-content-center mb-4">
+          <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." class="form-control w-50" />
+          <button type="submit" class="btn btn-outline-orange-400 ms-2">검색</button>
+      </form>
+      {% if books %}
+          <div class="row row-cols-1 row-cols-md-4 g-4">
+              {% for book in books %}
+                  <div class="col">
+                      <div class="card h-100">
+                          <img src="{{ book.image }}" class="card-img-top" alt="{{ book.title }}" style="height: 200px; object-fit: contain;">
+                          <div class="card-body">
+                              <h5 class="card-title">{{ book.title }}</h5>
+                              <p class="card-text">저자: {{ book.author }}</p>
+                          </div>
+                          <div class="card-footer d-flex justify-content-end">
+                              <a href="{% url 'community:book_complete' book.isbn %}" class="btn btn-secondary">신청하기</a>
+                          </div>
                       </div>
                   </div>
-              </form>
+              {% endfor %}
           </div>
-      </div>
-    </div>
-
-    {% if books %}
-    <div class="books-grid">
-        {% for book in books %}
-        <div class="book-item">
-            <a href="{% url 'community:book_complete' book.isbn %}">  <!-- get 요청 -->
-                <img src="{{ book.image }}" alt="{{ book.title }}" />
-            </a>
-            <div class="book-info">
-                <p class="title">{{ book.title }}</p>
-                <p class="author">저자: {{ book.author }}</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% elif query %}
-    <p>검색 결과가 없습니다.</p>
-    {% endif %}
+      {% elif query %}
+          <p class="text-center">검색 결과가 없습니다.</p>
+      {% endif %}
+  </div>
 
 {% endblock %}
 
