@@ -1,5 +1,6 @@
 {% extends 'user/template.html' %}
 {% load static %}
+{% block title %}O: D - 구독정보{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -72,7 +73,6 @@
             }
             .left-days{
                 width: 70%;
-                background: #ffd599;
                 margin-bottom: 30px;
                 font-size: x-large;
                 border-radius: 10px;
@@ -80,7 +80,6 @@
             }
             .payment-days{
                 width: 70%;
-                background: #ffd599;
                 font-size: x-large;
                 border-radius: 10px;
                 padding: 5px;
@@ -103,7 +102,8 @@
                 font-size: large;
             }
             .cancel-subscribe:hover {
-                background-color: #ffd599; 
+                cursor: pointer;
+                background-color: #ffd599;;
             }
         
         </style>
@@ -111,7 +111,7 @@
     <body>
         <div class = "container">
             <div class = "nav-bar">
-                <div style = "background-color: #ffd599;;">구독 정보</div>
+                <div class ="bg-orange-400">구독 정보</div>
                 <div>회원 정보</div>
                 <div>좋아요 내역</div>
                 <div>독서 이력</div>
@@ -124,8 +124,8 @@
                         <p>고객님의 구독 정보 입니다.</p>
                     </div>
                     <div class = "payment-inform-container">
-                        <div class = "left-days">잔여 일수: 15일</div>
-                        <div class = "payment-days">자동 결제일: 2023년 1월 25일</div>
+                        <div class = "left-days bg-orange-400">잔여 일수: {{left_days}}일</div>
+                        <div class = "payment-days bg-orange-400">자동 결제일: 2023년 1월 25일</div>
                     </div>
                 </div>
                 <div class = "subscribe-container">

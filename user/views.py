@@ -14,7 +14,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
-
+from django.utils import timezone
 
 load_dotenv()
 
@@ -185,13 +185,13 @@ class SubscribeView(APIView):
             return redirect('user:login')
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
-            user = User.objects.get(user_id=user_inform['user_id'])
-            is_subscribe = user.is_subscribe
-            if is_subscribe:
-                print(f"{user.nickname} : {user.is_subscribe}")
-                template_name = 'user/pay_inform.html'
-                return Response({'user' : user}, template_name=template_name)
-            else:
-                print(f"{user.nickname} : {user.is_subscribe}")
-                template_name = 'user/non_pay_inform.html'
+            user = User.objects.get(user_id = user_inform['user_id'])
+            
+            try:
+                subscribe = Subscription.objects.get(user_id = user.user_id)
+            except Subscription.DoesNotExist:
+                template_name = "user/non_pay_inform.html"
                 return Response(template_name=template_name)
+            template_name = 'user/pay_inform.html'
+            left_days = (subscribe.sub_end_date - timezone.now()).days
+            return Response({'user':user, 'left_days':left_days}, template_name = template_name)            

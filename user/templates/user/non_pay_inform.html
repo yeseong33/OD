@@ -1,5 +1,6 @@
 {% extends 'user/template.html' %}
 {% load static %}
+{% block title %}O: D - 구독정보{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -48,12 +49,12 @@
             
             .content-describe {
                 text-align: center;
-                font-size: xx-large; /* Adjust the font size as needed */
-                margin-bottom: 20px; /* Optional: Add margin to create space between content-describe and 'a' tag */
+                font-size: xx-large; 
+                margin-bottom: 20px; 
             }
             
             .content a {
-                margin-top: 20px; /* Optional: Add margin for spacing between the 'a' tag and other elements */
+                margin-top: 20px; 
             }
             
             
@@ -73,7 +74,7 @@
     <body>
         <div class = "container">
             <div class = "nav-bar">
-                <div style = "background-color: lightblue;">구독 정보</div>
+                <div class="bg-orange-400">구독 정보</div>
                 <div>회원 정보</div>
                 <div>좋아요 내역</div>
                 <div>독서 이력</div>
@@ -84,7 +85,7 @@
                     책을 원하는 목소리로 들을 수 있는 기회를 누려보세요!
                 </div>
                 <a>
-                    <div>구독하기</div>
+                    <div class ="bg-orange-400">구독하기</div>
                 </a>
             </div>
         </div>

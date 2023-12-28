@@ -37,7 +37,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         models.IntegerField(), null=True, blank=True)
     user_favorite_voices = ArrayField(
         models.IntegerField(), null=True, blank=True)
-    is_subscribe = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_admin = models.BooleanField(default=False)
     user_profile_path = models.TextField() 
