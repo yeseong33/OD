@@ -3,60 +3,28 @@
 
 {% block title %}도서 검색{% endblock %}
 {% block style %}
-<style>
-    /* 기본 스타일 */
-    body, html {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-    /* 네비게이터 스타일 */
-    .navigator {
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-      background-color: #f5f5f5;
-    }
-    .navigator button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-    /* 내용 스타일 */
-    .content {
-      text-align: center;
-      /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-      font-size: 48px; /* 아이콘 크기 */
-    }
-  </style>
 {% endblock %}
 
 {% block content %}
-    <div class="navigator">
-        <!-- 버튼들 -->
-        <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-        <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-        <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-        <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
+    <!-- 서브 네비게이션 바 -->
+    {% include 'community/sub_navbar.html' %}
+
+    <!-- 신규 도서 신청 -->
+    <div class="container mt-3 mb-3">
+      <div class="row justify-content-center">
+          <div class="col-sm-8">
+              <form class="form-inline" method="get" action="{% url 'community:book_search' %}">
+                  <div class="input-group w-90">
+                      <input type="text" class="form-control" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." aria-label="Search">
+                      <div class="input-group-append">
+                          <button class="btn btn-success" type="submit">검색하기</button>
+                      </div>
+                  </div>
+              </form>
+          </div>
+      </div>
     </div>
 
-    <h1>신규 도서 등록</h1>
-    <form method="get" action="{% url 'community:book_search' %}">
-        <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." style="width:400px;" />
-        <button type="submit">검색하기</button>
-    </form>
     {% if books %}
     <div class="books-grid">
         {% for book in books %}
@@ -65,7 +33,7 @@
                 <img src="{{ book.image }}" alt="{{ book.title }}" />
             </a>
             <div class="book-info">
-                <h4>{{ book.title }}</h4>
+                <p class="title">{{ book.title }}</p>
                 <p class="author">저자: {{ book.author }}</p>
             </div>
         </div>
@@ -74,6 +42,8 @@
     {% elif query %}
     <p>검색 결과가 없습니다.</p>
     {% endif %}
+
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+{% endblock %}

@@ -2,7 +2,39 @@
 {% load static %}
 
 {% block title %}O: D{% endblock %}
+{% block style %}
+{% endblock %}
 
 {% block content %}
-    <a href="{% url 'audiobook:main' %}"><div>둘러보기</div></a>
+
+    <!-- 캐러셀 -->
+    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active" data-bs-interval="5000">
+            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="wo">
+            </div>
+            <div class="carousel-item" data-bs-interval="5000">
+            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="oh">
+            </div>
+            <div class="carousel-item" data-bs-interval="5000">
+            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="young">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <!-- 무료 시작 버튼 -->
+    <div class="d-flex justify-content-center align-items-end my-4">
+        <a href="{% url 'user:login' %}" class="btn btn-indigo-100">첫 달 무료로 독서 시작하기</a>
+    </div>
+
 {% endblock %}
+
+{% block script %}{% endblock %}
