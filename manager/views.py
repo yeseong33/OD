@@ -11,8 +11,20 @@ from django.shortcuts import render, get_object_or_404
 from dotenv import load_dotenv
 import datetime
 import os
+from community.views import send_async_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 load_dotenv()  # 환경 변수를 로드함
+
+# 책 수요 변화
+def book_view(request):
+    return Response({'message': 'Good'})
+
+def book_view_count(request):
+    return Response({'message': 'Good'})
+
+
 
 ## 도서 신청 확인 페이지
 def get_book_details_from_naver(isbn):
@@ -159,16 +171,47 @@ class BookRegisterCompleteView(APIView):
                 'message': 'Registration failed.',
                 'errors': serializer.errors
             }, status=400)
+            
         
-        # BookRequest, UserRequest 삭제
+        # 이메일 보내기
         book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
         user_request_books = UserRequestBook.objects.filter(request=book_request)
+        for user_request_book in user_request_books:
+            user = user_request_book.user
+            if user.email:
+                try:
+                    subject = '[오디 알림] 신청하신 책 등록 완료'
+                    html_content = render_to_string('manager/email_template.html', {'nickname': user.nickname})
+                    plain_message = strip_tags(html_content)
+                    from_email = '오디 <wooyoung9654@gmail.com>' 
+                    send_async_mail(subject, plain_message, from_email, [user.email])
+                    print('Email sent successfully')
+                except Exception as e:
+                    # 로그 기록, 오류 처리 등
+                    print(f'Error sending email: {e}')
+                
+        # BookRequest, UserRequest 삭제      
         book_request.delete()
         user_request_books.delete()
+        
 
         return Response({
             'status': 'success',
             'message': 'Book registered successfully.'
         }, status=200)
         
-        
+
+
+# 문의 답변
+
+def inquiry(request):
+    return Response({'message': 'Good'})
+
+
+# 구독 및 수익 관리
+def revenue(request):
+    return Response({'message': 'Good'})
+
+# FAQ 관리
+def faq(request):
+    return Response({'message': 'Good'})

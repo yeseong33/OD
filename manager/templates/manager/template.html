@@ -35,41 +35,12 @@
                     <div class="col-6 ps-5 fs-4">
                         <ul class="navbar-nav align-items-center">
                             <!-- 메뉴 -->
-                            <li class="nav-item"><a class="nav-link me-2" href="#">장르별</a></li>
-                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'community:book_share' %}">커뮤니티</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'manager:book_view' %}">책 수요 변화</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'manager:book_request' %}">도서 신청 내역</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'manager:inquiry' %}">1:1 문의</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'manager:revenue' %}">구독 및 수익 현황</a></li>
+                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'manager:faq' %}">FAQ</a></li>
                         </ul>
-                    </div>
-    
-                    <div class="col-6 d-flex justify-content-end">
-                        <!-- 검색창 -->
-                        <form class="row g-2 align-items-center me-5">
-                            <div class="col-auto">
-                                <input class="form-control" type="search" placeholder="원하시는 책을 찾아보세요." aria-label="Search" style="width:300px;">
-                            </div>
-                            <div class="col-auto">
-                                <button class="btn btn-outline-orange-400 btn-sm" type="submit">검색</button>
-                            </div>                            
-                        </form>
-    
-                        <!-- 로그인 -->
-                        {% if request.user.is_authenticated %}
-                            <div class="row align-items-center">
-                                <div class="col-auto d-flex align-items-center">
-                                    <span class="me-3">{{ request.user.username }}</span>
-                                    <a href="{% url 'user:logout' %}" class="btn btn-secondary btn-sm">
-                                        로그아웃
-                                    </a>
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <a href="{% url 'user:login' %}" class="btn btn-secondary btn-sm">
-                                        로그인
-                                    </a>
-                                </div>
-                            </div>
-                        {% endif %}         
                     </div>
                 </div>
             </div>
