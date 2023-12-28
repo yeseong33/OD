@@ -8,9 +8,9 @@ urlpatterns = [
     path('books/share/', views.BookShareContentList.as_view(), name='book_share'),
     path('books/share/content/<int:book_id>', views.BookShareContent.as_view(), name='book_share_content'),
     path('books/share/content/post/', views.BookShareContentPost.as_view(), name='book_share_content_post'),
+    path('books/share/content/post/<int:post_id>', views.BookShareContentPost.as_view(), name='book_share_content_post_update'),
     path('books/share/content/post/detail/<int:post_id>', views.BookShareContentPostDetail.as_view(), name='book_share_content_post_detail'),
     path('books/share/content/post/detail/comment/', views.BookShareContentPostComment.as_view(), name='book_share_content_post_detail_comment'),
-
 
 
     # 신규 도서 신청

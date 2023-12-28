@@ -148,17 +148,23 @@
                 <button type="submit" class="btn btn-primary btn-block mb-3">글쓰기</button>
             </div>
         </div>
+        <input id="book_id_input" type="hidden" name="book_id" value="">
     </form> 
 {% endblock %}
 
 {% block script %}
 <script>
-    {% if result %}
     // 서버에서 리디렉션 URL이 전달되었다면, 해당 URL로 리디렉션
-    var bookId = 1;
-    window.location.href = "{% url 'community:book_share_content' book_id=123 %}".replace('123', bookId);
+    var bookId = localStorage.getItem('current_book_id');
+    var bookIdInput = document.getElementById('book_id_input');
+    console.log(bookId)
+    if (bookId && bookIdInput) {
+        bookIdInput.value = bookId;
+        console.log(bookId)
+    }
+    {% if result %}
+        window.location.href = "{% url 'community:book_share_content' book_id=123 %}".replace('123', bookId);
     {% endif %}
 
 </script>
-
 {% endblock %}

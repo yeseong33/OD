@@ -14,11 +14,13 @@ from .models import BookRequest, UserRequestBook
 from .serializers import *
 from django.db import transaction
 from django.db.models import F
-from django.template.response import TemplateResponse
+from django.shortcuts import redirect
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
+from jose import jwt
+
 load_dotenv()  # 환경 변수를 로드함
 
 
@@ -123,38 +125,64 @@ class BookShareContent(APIView):
     template_name = 'community/book_share_content.html'
     
     def get(self, request, book_id):
-        book_id = 1
         try:
             book = Book.objects.get(pk=book_id)
         except Book.DoesNotExist:
-            print('책이 존재하지 않습니다.')
+            print('book not exist.')
             return Response(status=404, template_name=self.template_name)
         posts = Post.objects.all()
         book_serializer = BookSerializer(book)
         posts_serializer = PostSerializer(posts, many=True)
-        
         return Response({'book': book_serializer.data, 'posts': posts_serializer.data}, template_name= self.template_name)
     
     
 class BookShareContentPost(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
+    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
     template_name = 'community/book_share_content_post.html'
     
     def get(self, request):
         return Response({'result': False, 'message': 'GET 요청은 허용되지 않습니다.'})
-    
+
     def post(self, request):
         print(request.data)
-        # POST 요청에서 폼 데이터를 처리하고 게시물 
-        post_serializer = PostSerializer(data=request.data, context={'request': request})
+        user_inform = jwt.decode(request.COOKIES.get("jwt"), key=os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        user_id = user_inform['user_id']
+        book_id = request.data['book_id']
+        context={
+            'book_id': book_id, 
+            'user_id':user_id
+        }
+        # POST 요청에서 폼 데이터를 처리하고 게시물
+        post_serializer = PostSerializer(data=request.data, context=context)
         if post_serializer.is_valid():
-            post = post_serializer.save()           
+            post = post_serializer.save()
             # 책을 성공적으로 생성했을 때의 로직 추가 가능
             return Response({'result': True, 'post': post, 'message': '게시물이 성공적으로 생성되었습니다.'})
         else:
             # 폼 데이터가 유효하지 않을 때의 로직 추가 가능
             return Response({'result': False, 'errors': post_serializer.errors}, status=400, template_name=self.template_name)
 
+
+    def put(self, request, post_id):
+        print(request.data)
+        new_title = request.data.get('new_title')
+        new_content = request.data.get('new_content')
+        try:
+            self.update_post(post_id, new_title, new_content)
+            redirect_url = reverse('community:book_share_content_post_detail', kwargs={'post_id': post_id})    
+            response_data = {'result': True, 'message': '게시물 내용이 업데이트되었습니다.', 'redirect_url': redirect_url}
+        except Post.DoesNotExist:
+            response_data = {'result': False, 'message': '게시물이 존재하지 않습니다.'}
+        except Exception as e:
+            response_data = {'result': False, 'message': str(e)}
+        return Response(response_data)
+    
+    def update_post(self, post_id, new_title, new_content):
+        post = get_object_or_404(Post, pk=post_id)
+        post.post_title = new_title
+        post.post_content = new_content
+        post.save()
+    
 
 class BookShareContentPostDetail(APIView):
     renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
@@ -164,33 +192,48 @@ class BookShareContentPostDetail(APIView):
         # 수정: post에 맞게
         try:
             post = Post.objects.get(pk=post_id)
+            comments = Comment.objects.filter(post__post_id=post_id)
         except Post.DoesNotExist:
-            print('게시글이 존재하지 않습니다.')
+            print('post not exist.')
             return Response(status=404, template_name=self.template_name)
         post_serializer = PostSerializer(post)
+        comment_serializer = CommentSerializer(comments, many=True)
+                
         if self.request.accepted_renderer.format == 'html':
             # HTML 요청인 경우에는 HTML 렌더링을 위한 데이터를 사용하여 템플릿을 렌더링합니다.
             # 이때, 게시글 데이터와 함께 템플릿을 렌더링
-            context = {'post': post_serializer.data} # html에 사용할 data
+            context = {
+                'post': post_serializer.data,
+                'comments': comment_serializer.data,
+            }
             return Response(context, template_name=self.template_name)
-        
         # JSON 데이터를 Response로 반환
         return Response({'post': post_serializer.data}, template_name= self.template_name)
-
-
+    
+    def delete(self, request, post_id):
+        post = get_object_or_404(Post, post_id=post_id)
+        book_id = post.book.book_id
+        post.delete()
+        redirect_url = reverse('community:book_share_content', kwargs={'book_id': book_id})    
+        return Response({'result': True, 'redirect_url': redirect_url})
+    
+    
+    
 class BookShareContentPostComment(APIView):
-    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
+    renderer_classes = [JSONRenderer]
     template_name = 'community/book_share_content_post_detail.html'
     
     def get(self, request):
-        return Response({'result': False, 'message': 'GET 요청은 허용되지 않습니다.'})
+        return Response({'result': False, 'message': 'GET request not allow.'})
     
     def post(self, request):
         # POST 요청에서 폼 데이터를 처리하고 책을 생성
         comment_serializer = CommentSerializer(data=request.data, context={'post_id': request.data['post']})
         if comment_serializer.is_valid():
-            post = comment_serializer.save()      
-            return Response({'result': True, 'comment': comment_serializer.data, 'message': '게시물이 성공적으로 생성되었습니다.'})
+            comment = comment_serializer.save()  
+            post_id = comment.post.post_id
+            redirect_url = reverse('community:book_share_content_post_detail', kwargs={'post_id': post_id})    
+            return Response({'result': True, 'comment': comment_serializer.data, 'message': 'comment created.', "redirect_url": redirect_url})
         else:
             # 폼 데이터가 유효하지 않을 때의 로직 추가 가능
             return Response({'result': False, 'errors': comment_serializer.errors}, status=400, template_name=self.template_name)
