@@ -15,8 +15,7 @@ class Voice(models.Model):
         return self.voice_name
 
 
-#  FileField와 ImageField를 사용할 때, 이 필드들은 기본적으로 파일 시스템의 경로를 데이터베이스에 저장하지만, 
-# 실제 파일은 settings.py에서 설정한 DEFAULT_FILE_STORAGE에 의해 결정된 스토리지 시스템에 업로드
+
 class Book(models.Model):
     book_id = models.AutoField(primary_key=True)
     book_title = models.CharField(max_length=255)
@@ -30,3 +29,4 @@ class Book(models.Model):
     book_likes = models.IntegerField(default=0)
     book_isbn = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book_view_count = models.IntegerField(null = True)

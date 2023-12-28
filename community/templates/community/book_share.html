@@ -4,54 +4,153 @@
 {% block title %}공유 및 커뮤니티{% endblock %}
 {% block style %}
 <style>
-    /* 기본 스타일 */
-    body, html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+    .content-item {
+        width: 120px; /* 가로 크기 */
+        height: 120px; /* 세로 크기 */
+        padding: 0px;
+        border: 1px solid #ccc;
     }
-    /* 네비게이터 스타일 */
-    .navigator {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #f5f5f5;
+
+    .content-item img {
+        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
+        height: 100%; /* 가로 비율 유지 */
+        display: block; /* 인라인 요소의 기본 여백 제거 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
     }
-    .navigator button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
+
+    .content-item img:hover {
+        z-index: 1;
+        transform: scale(1.5); /* 확대 비율 */
+        }
+
+    .custom-mt {
+        margin-top: 120px;
     }
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
+
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #fff;
+        color: #A4A4A4;
+        padding: 1px;
+        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
     }
-    /* 내용 스타일 */
-    .content {
-    text-align: center;
-    /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
+    
+    .custom-focus {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #F2E7C4;
+        color: #000;
+        padding: 1px;
     }
-    .icon {
-    font-size: 48px; /* 아이콘 크기 */
+
+    .category-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .center-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .center-icon svg {
+        width: 60px; /* 아이콘의 너비 */
+        height: 60px; /* 아이콘의 높이 */
+        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    }
+
+    .center-icon:hover svg {
+        transform: scale(1.2); /* 호버 시 크기 조절 */
     }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="navigator">
-        <!-- 버튼들 -->
-        <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-        <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-        <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-        <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
+    {% include 'community/sub_navbar.html' %}
+    <div class="container text-center">
+        <div class="row mt-3 justify-content-end">
+            <div class="col-6">
+                <div class="input-group gap-4">
+                    <div class="col">
+                        <input type="text" class="form-control rounded-start rounded-end" placeholder="음성 입력" aria-label="음성 입력" aria-describedby="basic-addon2">
+                    </div>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button">음성 검색</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <h1>공유 및 커뮤니티 구현해주세요</h1>
+
+    <div class="row justify-content-end mt-5"> </div>
+    
+
+    <div id='custom-content'>
+        <div class="row gap-3 justify-content-start">
+            {% for book in books %}
+                <div class="col-md-1 content-item">
+                    <img src="{{ book.image.url }}" class="img" alt="{{ book.title }}">
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="row gap-3 justify-content-start">
+            
+            <div class="col-md-1 content-item">
+                <img src="/static/images/go.jpg" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/jin.png" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/young.png" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/wo.jpg" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/oh.png" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/go.jpg" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/jin.png" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/young.png" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/wo.jpg" class="img" alt="고슴">
+            </div>
+            <div class="col-md-1 content-item">
+                <img src="/static/images/oh.png" class="img" alt="고슴">
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row justify-content-end mt-5"> </div>
+    <div class="row justify-content-end mt-5"> </div>
+
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
+        </li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">4</a></li>
+        <li class="page-item"><a class="page-link" href="#">5</a></li>
+        <li class="page-item">
+            <a class="page-link" href="#">다음</a>
+        </li>
+    </ul>
+
 {% endblock %}
 
 {% block script %}{% endblock %}

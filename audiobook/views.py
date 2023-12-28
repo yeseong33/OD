@@ -15,26 +15,29 @@ from user.views import decode_jwt
 load_dotenv()
 
 
-user_id = 1  # request.user
-
 # 첫 화면
 
 
 def index(request):
-    return render(request, 'audiobook/index.html')
+    if request.user.is_authenticated:  # 로그인 되어 있으면 main 페이지로 리다이렉트
+        return redirect('audiobook:main')
+
+    else:  # 로그인 되어 있지 않으면 index 페이지를 렌더링
+        return render(request, 'audiobook/index.html')
 
 
 # 메인화면
 class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main.html'
-    
+
     def get(self, request):
         top_books = Book.objects.all().order_by('-book_likes')[:10]
-        user_books = Book.objects.filter(user=user_id)
+        user_books = Book.objects.filter(user=request.user.user_id)
         hot_books = Book.objects.all().order_by('?')[:10]
 
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        print(user_inform)
         user = User.objects.get(user_id=user_inform['user_id'])
         return Response({
             'top_books': top_books,
