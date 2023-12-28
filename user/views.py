@@ -194,4 +194,32 @@ class SubscribeView(APIView):
                 return Response(template_name=template_name)
             template_name = 'user/pay_inform.html'
             left_days = (subscribe.sub_end_date - timezone.now()).days
-            return Response({'user':user, 'left_days':left_days}, template_name = template_name)  
+            return Response({'user':user, 'left_days':left_days}, template_name = template_name)
+
+class UserInformView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    def get(self, request):
+        template_name = 'user/user_inform.html'
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
+        
+        return Response({'user':user}, template_name=template_name)
+    def post(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
+        user_image = request.FILES.get('file')
+        nickname = request.POST.get('nickname')
+        
+        # 사진 저장 로직 구현 필요.
+        
+        if nickname:
+            user.nickname = nickname
+        user.save()
+        return redirect('user:inform')
+            
+            
+
+
+
+# http://k.kakaocdn.net/dn/cbyZGU/btsnnNZpOi5/SGuiSwwKWRKEAPUTNDCIT0/img_110x110.jpg
+            
