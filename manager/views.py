@@ -79,9 +79,10 @@ class BookRegisterCompleteView(APIView):
     def post(self, request):
         # ISBN으로 이미 존재하는 책을 확인
         book_isbn = request.POST.get('book_isbn')
-        print(book_isbn, "book_isbn")
+        # print(book_isbn, "book_isbn")
         try:
             existing_book = Book.objects.get(book_isbn=book_isbn)
+            print("Book with this ISBN already exists.")
             # 책이 이미 존재하면 에러 메시지와 함께 종료
             return Response({
                 'status': 'error',
@@ -158,16 +159,13 @@ class BookRegisterCompleteView(APIView):
                 'message': 'Registration failed.',
                 'errors': serializer.errors
             }, status=400)
-            
-            
-        # BookRequest 삭제
+        
+        # BookRequest, UserRequest 삭제
         book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
-        book_request.delete()
-        
-        # 해당 book_rquest의 UserRequest 삭제
         user_request_books = UserRequestBook.objects.filter(request=book_request)
+        book_request.delete()
         user_request_books.delete()
-        
+
         return Response({
             'status': 'success',
             'message': 'Book registered successfully.'
