@@ -140,3 +140,11 @@ AWS_S3_REGION_NAME = 'ap-northeast-2'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 SITE_ID = 1 #DB -> django.site 접속. http:127.0.0.1:8000 DB에 넣기.
+
+# SMTP 서버에 대한 정보
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
