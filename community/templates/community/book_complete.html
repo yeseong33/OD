@@ -12,8 +12,8 @@
   <!-- 신청 완료 메시지 -->
   <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="text-center">
-      <div class="fs-1 mb-3">📚</div> 
-      <p class="fs-4">신청이 완료되었습니다.</p>
+      <img src="{{ image }}" alt="Status Image" class="status-image" />
+      <p>{{ message|safe }}</p>
     </div>
   </div>
 {% endblock %}
