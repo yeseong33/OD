@@ -194,4 +194,4 @@ class SubscribeView(APIView):
                 return Response(template_name=template_name)
             template_name = 'user/pay_inform.html'
             left_days = (subscribe.sub_end_date - timezone.now()).days
-            return Response({'user':user, 'left_days':left_days}, template_name = template_name)            
+            return Response({'user':user, 'left_days':left_days}, template_name = template_name)  
