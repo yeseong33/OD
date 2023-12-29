@@ -100,13 +100,15 @@
     <script>
         const audio = document.getElementById("audioPlayer");
         const progressBar = document.getElementById("progress-bar");
-    
+        let animationFrameId;
 
         document.getElementById("play").addEventListener("click", function() {
             if (audio.paused) {
                 audio.play();
+                animateProgressBar();
             } else {
                 audio.pause();
+                cancelAnimationFrame(animationFrameId);
             }
         });
 
@@ -135,5 +137,10 @@
 
         // 소리 파일의 재생 중에 프로그래스 바 업데이트
         audio.addEventListener("timeupdate", updateProgressBar);
+
+        function animateProgressBar() {
+            updateProgressBar();
+            animationFrameId = requestAnimationFrame(animateProgressBar);
+        }
     </script>
 {% endblock %}
