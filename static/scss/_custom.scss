@@ -1,19 +1,28 @@
 @import "../bootstrap/scss/functions";
 @import "../bootstrap/scss/variables";
 
-$indigo-colors: (
-  "100": $indigo-100,
-  "200": $indigo-200,
-  "300": $indigo-300,
-  "400": $indigo-400,
-  "500": $indigo-500,
-  "600": $indigo-600,
-  "700": $indigo-700,
-  "800": $indigo-800,
-  "900": $indigo-900,
+// orange 색상
+$orange-colors: (
+  "100": $orange-100,
+  "200": $orange-200,
+  "300": $orange-300,
+  "400": $orange-400,
+  "500": $orange-500,
+  "600": $orange-600,
+  "700": $orange-700,
+  "800": $orange-800,
+  "900": $orange-900,
 );
 
-$theme-colors: map-merge($theme-colors, $indigo-colors);
+// nav-pills 색상 재정의
+.nav {
+  --#{$prefix}link-color: #{$orange-400};
+  --#{$prefix}link-hover-color: #{$orange-500};
+}
+$nav-pills-link-active-bg: $orange-400; // pills 배경 색깔
+
+// 기존의 테마 색상에 orange 색상 추가
+$theme-colors: map-merge($theme-colors, $orange-colors);
 
 // Bootstrap 불러오기
 @import "../bootstrap/scss/bootstrap.scss";
@@ -21,20 +30,20 @@ $theme-colors: map-merge($theme-colors, $indigo-colors);
 @import "../bootstrap/scss/utilities/api";
 
 // 새로운 배경색 유틸리티 클래스 생성
-@each $color, $value in $indigo-colors {
-  .bg-indigo-#{$color} {
+@each $color, $value in $orange-colors {
+  .bg-orange-#{$color} {
     background-color: $value !important;
   }
 }
 
 // 새로운 버튼 스타일 유틸리티 클래스 생성
-@each $color, $value in $indigo-colors {
-    .btn-indigo-#{$color} {
+@each $color, $value in $orange-colors {
+    .btn-orange-#{$color} {
         @include button-variant($value, $value);
     }
 
     // 새로운 아웃라인 버튼 스타일 유틸리티 클래스 생성
-    .btn-outline-indigo-#{$color} {
+    .btn-outline-orange-#{$color} {
         @include button-outline-variant($value);
     }
 }

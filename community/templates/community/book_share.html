@@ -4,46 +4,6 @@
 {% block title %}공유 및 커뮤니티{% endblock %}
 {% block style %}
 <style>
-    /* 기본 스타일 */
-    body, html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    }
-    /* 네비게이터 스타일 */
-    .navigator {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #f5f5f5;
-    }
-    .navigator button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    }
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-    /* 내용 스타일 */
-    .content {
-    text-align: center;
-    /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-    font-size: 48px; /* 아이콘 크기 */
-    }
-    
-
-
-
     .content-item {
         width: 120px; /* 가로 크기 */
         height: 120px; /* 세로 크기 */
@@ -109,6 +69,7 @@
 {% endblock %}
 
 {% block content %}
+    {% include 'community/sub_navbar.html' %}
     <div class="container text-center">
         <div class="row mt-3 justify-content-end">
             <div class="col-6">
@@ -124,14 +85,6 @@
         </div>
     </div>
 
-    <div class="row justify-content-end mt-5"> </div>
-    <div class="navigator">
-        <!-- 버튼들 -->
-        <button onclick="location.href='{% url 'community:book_share' %}'">공유 및 토론</button>
-        <button onclick="location.href='{% url 'community:book_search' %}'">신규 도서 신청</button>
-        <button onclick="location.href='{% url 'community:book_inquiry' %}'">1:1 문의</button>
-        <button onclick="location.href='{% url 'community:book_faq' %}'">FAQ</button>
-    </div>
     <div class="row justify-content-end mt-5"> </div>
     
     <div class="row justify-content-end mt-5"> </div>
@@ -153,7 +106,7 @@
         <li class="page-item disabled">
             <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
         </li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">1</a></li>
         <li class="page-item"><a class="page-link" href="#">2</a></li>
         <li class="page-item"><a class="page-link" href="#">3</a></li>
         <li class="page-item"><a class="page-link" href="#">4</a></li>

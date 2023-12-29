@@ -102,6 +102,32 @@ git push -u origin [branch_name]
 git push origin [branch_name]
 ```
 
+### 로컬 develop branch를 날리고 원격 develop branch(origin/develop)으로 동기화하기
+
+1. 로컬 develop 브랜치로 이동
+
+```bash
+git checkout develop
+```
+
+2. 로컬 develop 브랜치를 최신 상태로 업데이트:
+
+```bash
+git fetch origin
+```
+
+3. 로컬 develop 브랜치를 원격의 develop 브랜치 상태로 리셋:
+
+```bash
+git reset --hard origin/develop
+```
+
+4. 로컬에서 이전에 커밋되지 않은 변경사항이 있었다면, 정리하기
+
+```bash
+git clean -fd
+```
+
 ### PostgreSQL 설치하기
 
 1. PostgreSQL 설치 [[참고1]](https://www.postgresql.org/download/), [[참고2]](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)

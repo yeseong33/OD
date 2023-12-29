@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
+from rest_framework.views import APIView
+from rest_framework.renderers import TemplateHTMLRenderer
+from django.utils import timezone
 
 load_dotenv()
 
@@ -71,10 +74,12 @@ def kakao_callback(request):
                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
-
+    
     # name, email을 이용해 jwt token 발급, main 페이지로 전달
     user = sign_in(user_inform['profile']['nickname'],
-                   user_inform['email'], 'Kakao')
+                    user_inform['email'],
+                    response.json().get('properties')['thumbnail_image'],
+                    'Kakao')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -120,7 +125,10 @@ def google_callback(request):
     response = requests.get(url=url, headers=headers)
 
     # user DB조회, JWT 발급
-    user = sign_in(response.json()['name'], response.json()['email'], 'Google')
+    user = sign_in(response.json()['name'], 
+                    response.json()['email'],
+                    response.json()['picture'] ,
+                    'Google')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -129,7 +137,7 @@ def google_callback(request):
 # 사용자 정보를 DB에서 조회
 
 
-def sign_in(nickname, email, social_inform):
+def sign_in(nickname, email, user_profile_path ,social_inform):
     print(
         f"sign_in 시작: {nickname}, email :{email}, social_inform : {social_inform}")
 
@@ -139,7 +147,8 @@ def sign_in(nickname, email, social_inform):
         user = User.objects.create_user(
             email = email,
             nickname = nickname,
-            oauth_provider = social_inform)
+            oauth_provider = social_inform,
+            user_profile_path = user_profile_path,)
         user.save()
     else:
         user = User.objects.get(username = email)
@@ -167,3 +176,22 @@ def decode_jwt(token):
     user_inform = jwt.decode(token, key=os.getenv(
         "JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
     return user_inform
+
+class SubscribeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    def get(self, request):
+        if request.COOKIES.get("jwt") == None: # User가 로그인 안했을시.
+            print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
+            return redirect('user:login')
+        else:
+            user_inform = decode_jwt(request.COOKIES.get("jwt"))
+            user = User.objects.get(user_id = user_inform['user_id'])
+            
+            try:
+                subscribe = Subscription.objects.get(user_id = user.user_id)
+            except Subscription.DoesNotExist:
+                template_name = "user/non_pay_inform.html"
+                return Response(template_name=template_name)
+            template_name = 'user/pay_inform.html'
+            left_days = (subscribe.sub_end_date - timezone.now()).days
+            return Response({'user':user, 'left_days':left_days}, template_name = template_name)  
