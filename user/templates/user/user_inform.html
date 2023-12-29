@@ -1,0 +1,70 @@
+{% extends 'user/template.html' %}
+{% load static %}
+
+{% block title %}회원 정보{% endblock %}
+{% block style %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-3 custom-nav">
+            <ul class="nav flex-column nav-pills my-5">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user:profile'%}">구독 정보</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'user:inform' %}">회원 정보</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'user:books' %}">좋아요 내역</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href = "#">독서 이력</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href = "#">1:1 문의</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-9">
+            <div class="row-10 mb-20">
+                <h1>나의 정보</h1>
+                <h3>{{user.nickname}}님께서 가입한 회원 정보 입니다.</h3>
+            </div>
+            <div class="row-10">
+                <img src = "{{user.user_profile_path}}" class = "img-thumbnail">
+            </div>
+            <div class="row-10  mb-30">
+                <div class="row bg-orange-300 mb-30">
+                    <div class="col-2">닉네임</div>
+                    <div class="col-10">{{user.nickname}}</div>
+                </div>
+            </div>
+            <div class="row-10  mb-30">
+                <div class="row bg-orange-300">
+                    <div class="col-2">이메일</div>
+                    <div class="col-10">{{user.email}}</div>
+                </div>
+            </div>
+            <div class="row-10">
+                <form method = "post" action = "{% url 'user:inform'%}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">사용자 이미지 수정</label>
+                        <input class="form-control" type="file" id="file" name = "file">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleFormControlInput1" class="form-label">닉네임 수정</label>
+                        <input type="text" class="form-control" id="exampleFormControlInput1" name = "nickname" placeholder= {{user.nickname}}>
+                    </div>
+                    <div class="row-10 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-outline-orange-200 btn-sm">수정 하기</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

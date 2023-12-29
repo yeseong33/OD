@@ -1,0 +1,41 @@
+{% extends 'audiobook/template.html' %}
+{% load static %}
+
+{% block content %}
+  <link rel="stylesheet" href="/static/css/bottomContainer.css">
+  <link rel="stylesheet" href="/static/css/scrollContainer.css">
+  
+  <style> /* 상단 네비게이터와의 여백을 20px로 수정 */
+    .scrolling-wrapper h2 {
+      margin-bottom: 40px;
+    }
+  </style>
+  
+  <div class="scrolling-wrapper">
+    <h2>이용 가능한 도서 검색 결과</h2>
+    <button class="scroll-left-button">‹</button>
+    <div class="scrolling-container">
+        {% for book in book_list %}
+        <div class="book-card">
+          <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
+            <img class="book-img" src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+          </a>
+          <div class="book-info">
+            <h5>{{ book.book_title }}</h5>
+            <p>저자: {{ book.book_author }}</p>
+          </div>
+        </div>
+        {% endfor %}
+    </div>
+    <button class="scroll-right-button">›</button>
+  </div>
+
+  <div class="bottom-container">
+    <p>찾고 계시는 도서가 없으세요? 신규 도서 신청을 해보세요.</p>
+    <a href="{% url 'community:book_search' %}">신규 도서 신청하기</a>
+  </div>  
+{% endblock %}
+
+{% block script %}
+  <script src="/static/js/scrollContainer.js"></script>
+{% endblock %}
