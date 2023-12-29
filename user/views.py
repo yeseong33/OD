@@ -1,20 +1,18 @@
 import os
 from dotenv import load_dotenv
 import requests
-import bcrypt
-from jose import jwt
 from datetime import timedelta, datetime
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls.base import reverse
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from jose import jwt
+import bcrypt
 from .models import *
-from rest_framework.views import APIView
-from rest_framework.renderers import TemplateHTMLRenderer
-from django.utils import timezone
 from audiobook.models import *
 
 load_dotenv()
@@ -179,36 +177,47 @@ def decode_jwt(token):
     return user_inform
 
 
-class SubscribeView(APIView):
+class UserSubscriptionView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        if request.COOKIES.get("jwt") == None:  # User가 로그인 안했을시.
+        if request.COOKIES.get("jwt") == None:  # User가 로그인 안했을 시
             print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
             return redirect('user:login')
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
             user = User.objects.get(user_id=user_inform['user_id'])
+            context = {
+                'user': user,
+                'active_tab': 'user_subscription',
+                'is_subscribed': False,  # 구독 여부
+                'left_days': 0  # 남은 일수. 기본값은 0.
+            }
 
             try:
                 subscribe = Subscription.objects.get(user_id=user.user_id)
+                context['is_subscribed'] = True
+                context['left_days'] = (
+                    subscribe.sub_end_date - timezone.now()).days
             except Subscription.DoesNotExist:
-                template_name = "user/non_pay_inform.html"
-                return Response(template_name=template_name)
-            template_name = 'user/pay_inform.html'
-            left_days = (subscribe.sub_end_date - timezone.now()).days
-            return Response({'user': user, 'left_days': left_days}, template_name=template_name)
+                pass  # 구독 정보가 없으면 context['is_subscribed']는 False로 유지됨
+
+            template_name = 'user/subscription.html'
+            return Response(context, template_name=template_name)
 
 
-class UserInformView(APIView):
+class UserInformationView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        template_name = 'user/user_inform.html'
+        template_name = 'user/information.html'
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
-
-        return Response({'user': user}, template_name=template_name)
+        context = {
+            'user': user,
+            'active_tab': 'user_information'
+        }
+        return Response(context, template_name=template_name)
 
     def post(self, request):
 
@@ -222,7 +231,7 @@ class UserInformView(APIView):
         if nickname:
             user.nickname = nickname
         user.save()
-        return redirect('user:inform')
+        return redirect('user:information')
 
 
 class UserLikeBooksView(APIView):
@@ -233,12 +242,15 @@ class UserLikeBooksView(APIView):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_favorite_books
+        context = {
+            'active_tab': 'user_like'
+        }
 
         if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
-            context = {'books': None}
+            context['books'] = None
         else:
             books = Book.objects.filter(pk__in=book_id_list)
-            context = {'books': books}
+            context['books'] = books
         return render(request, self.template_name, context)
 
 
@@ -257,3 +269,27 @@ class UserLikeVoicesView(APIView):
             voices = Voice.objects.filter(pk__in=voice_id_list)
             context = {'voices': voices}
         return render(request, self.template_name, context)
+
+
+class UserBookHistoryView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/book_history.html'
+
+    def get(self, request):
+        context = {
+            'active_tab': 'user_book_history'
+        }
+
+        return Response(context)
+
+
+class UserFAQView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/faq.html'
+
+    def get(self, request):
+        context = {
+            'active_tab': 'user_faq'
+        }
+
+        return Response(context)

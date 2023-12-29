@@ -1,34 +1,28 @@
-import requests
 import os
+import requests
 from pathlib import Path
 from dotenv import load_dotenv
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.template.response import TemplateResponse
+from django.templatetags.static import static
+from django.conf import settings
+from django.db import transaction
+from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework import status
-from audiobook.models import Book
-from .models import Post
-from user.models import User
-from .models import BookRequest, UserRequestBook
-from .serializers import *
-from django.db import transaction
-from django.db.models import F
-from django.shortcuts import redirect
-
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse
 from jose import jwt
-from django.template.response import TemplateResponse
-from django.templatetags.static import static
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse
-from django.core.mail import send_mail, EmailMessage
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from audiobook.models import Book
+from user.models import User
+from .models import Post, BookRequest, UserRequestBook
+from .serializers import *
 import threading
 
 load_dotenv()  # 환경 변수를 로드함
@@ -235,9 +229,11 @@ class BookCompleteView(APIView):
     template_name = 'community/book_complete.html'
 
     def get(self, request, isbn):
-        context = {}
+        context = {
+            'active_tab': 'book_search'
+        }
         if Book.objects.filter(book_isbn=isbn).exists():
-            context['message'] = '<br>이미 등록되어 사용 가능한 책입니다.'
+            context['message'] = '이미 등록되어 사용 가능한 책입니다.'
             context['image'] = static('images/exist.png')
             return Response(context)
 
@@ -254,7 +250,7 @@ class BookCompleteView(APIView):
             UserRequestBook.objects.create(
                 user=request.user, request=book_request)
 
-            context['message'] = '<br>신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
+            context['message'] = '신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
             context['image'] = static('images/complete_book.png')
 
             # 이메일 보내기

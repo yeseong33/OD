@@ -11,7 +11,7 @@ from rest_framework import status
 from .serializers import VoiceSerializer
 from .models import *
 from user.views import decode_jwt
-from config.settings import AWS_S3_CUSTOM_DOMAIN
+from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from django.templatetags.static import static
 from community.models import BookRequest
 from django.db.models import Q
@@ -40,15 +40,23 @@ class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main.html'
 
+    # 데이터 저장 위치를 .env의 FILE_SAVE_POINT에 따라 결정
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request):
         # 이달의 TOP 10 책
         top_books = Book.objects.all().order_by('-book_likes')[:10]
 
         # 최근 이용한 책
         user_history_book = []  # 최신 이용한 책 순서로 보이기 위해서 filter를 사용하지 않고 리스트를 만들어서 사용
-        for book_id in request.user.user_book_history:
-            book = get_object_or_404(Book, book_id=book_id)
-            user_history_book.append(book)
+        if request.user.user_book_history is not None:
+            for book_id in request.user.user_book_history:
+                book = get_object_or_404(Book, book_id=book_id)
+                user_history_book.append(book)
 
         # 이달의 TOP 10 음성
         top_voices = Voice.objects.all().order_by('-voice_like')[:10]
@@ -56,12 +64,13 @@ class MainView(APIView):
         # for voice in top_voices:
         # voice.voice_sample_path = convert_sample_voice(voice.voice_path) # 객체 속성(필드) 동적 추가
         # voice.voice_sample_path = static('voices/voice_sample.mp3')
+
         return Response({
             'top_books': top_books,
             'user_history_book': user_history_book,
             'top_voices': top_voices,
             'user': request.user,
-            'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN,
+            'AWS_S3_CUSTOM_DOMAIN': self.get_file_path(),
         })
 
 
@@ -69,11 +78,22 @@ class MainSearchView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_search.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request):
         query = request.query_params.get('query', '')
         book_list = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query))
-        return Response({'book_list': book_list, 'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN})
+
+        file_path = self.get_file_path()
+        for book in book_list:
+            book.book_image_path = f"{file_path}{book.book_image_path}"
+
+        return Response({'book_list': book_list, 'file_path': file_path})
 
 
 def genre(request):

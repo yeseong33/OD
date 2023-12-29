@@ -15,7 +15,7 @@
         <p><strong>출판사:</strong> {{ publisher }}</p>
         <p><strong>책 소개</strong>: {{ description }}</p>
 
-        <!-- Start of the form -->
+        <!-- 책 정보 입력하기 -->
         <form method="post" action="{% url 'manager:book_register_complete' %}" enctype="multipart/form-data">
           {% csrf_token %}
           <input type="hidden" name="book_isbn" value="{{isbn}}">
@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <!-- The submit button -->
+          <!-- 등록 버튼 -->
           <div class="text-end">
             <button type="submit" class="btn btn-orange-400">새 도서 등록하기</button>
           </div>

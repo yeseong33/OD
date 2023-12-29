@@ -81,6 +81,20 @@ TEMPLATES = [
     },
 ]
 
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://default:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+    }
+}
+
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
@@ -130,6 +144,17 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # 정적 파일 디렉토
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
+FILE_SAVE_POINT = os.getenv('FILE_SAVE_POINT')
+if (FILE_SAVE_POINT == 'local'):
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+else:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
+MEDIA_ROOT = 'C:\\S3_bucket'  # 파일이 저장될 로컬 경로
+MEDIA_URL = '/media/'
+
 # AWS S3 설정
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -137,8 +162,6 @@ AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
 AWS_S3_CUSTOM_DOMAIN = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/'
 
-# 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 SITE_ID = 1  # DB -> django.site 접속. http:127.0.0.1:8000 DB에 넣기.
 
