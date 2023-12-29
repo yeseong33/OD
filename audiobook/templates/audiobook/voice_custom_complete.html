@@ -80,8 +80,11 @@
         document.addEventListener("DOMContentLoaded", function () {
 
             // 클릭 활성화
-            document.getElementById('save-btn').addEventListener('click', submit);
-
+            {% comment %} document.getElementById('save-btn').addEventListener('click', submit); {% endcomment %}
+            // book 이미지를 클릭했을 때의 동작을 정의
+            document.getElementById('save-btn').addEventListener('click', function() {
+                window.location.href = "{% url 'audiobook:voice_custom' %}"
+            })
 
             // voice_name
             var voice_name = localStorage.getItem('voice_name');
@@ -117,7 +120,7 @@
             // 로그인 정보에서 유저 아이디 가져오기
 
 
-            function submit() {
+            {% comment %} function submit() {
                 // 폼 데이터 수집
                 const data = {
                     voice_name: voice_name,
@@ -146,7 +149,8 @@
                 .catch(error => {
                     console.error('에러 발생:', error);
                 });
-            }
+            }  {% endcomment %}
+
 
             // CSRF 토큰을 쿠키에서 가져오는 함수
             function getCookie(name) {
