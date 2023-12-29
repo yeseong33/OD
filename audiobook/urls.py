@@ -6,8 +6,10 @@ app_name = 'audiobook'  # audiobook:search
 
 
 urlpatterns = [
-    # 첫 화면
-    path('', views.index, name='index'),
+     # 첫 화면
+     path('', views.index, name='index'),
+     
+     path('test/', views.test, name='test'),
 
     # 메인화면
     path('main/', views.MainView.as_view(), name='main'),
@@ -15,9 +17,10 @@ urlpatterns = [
     path('genre/', views.genre, name='genre'),
     path('search/', views.search, name='search'),
 
-    # 청취
-    path('content/<int:book_id>', views.content, name='content'),
-    path('content/play/', views.content_play, name='content_play'),
+
+     # 청취
+     path('content/<int:book_id>', views.Content.as_view(), name='content'),
+     path('content/play/<int:book_id>', views.ContentPlay.as_view(), name='content_play'),
 
     # 성우
     path('voice/custom/', views.voice_custom, name='voice_custom'),
