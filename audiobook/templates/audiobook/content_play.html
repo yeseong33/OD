@@ -2,24 +2,6 @@
 {% load static %}
 
 {% block title %}청취{% endblock %}
-<style>
-    body {
-      background-color: #f8f9fa;
-    }
-
-    .container {
-      margin-top: 50px;
-    }
-
-    .column {
-      padding: 20px;
-      text-align: center;
-    }
-
-    .listen-btn {
-      margin-top: 20px;
-    }
-  </style>
 {% block style %}
 {% endblock %}
 
@@ -27,50 +9,131 @@
     <!-- 공백 -->
     <div class="row mt-5"> </div>
     <div class="row mt-5"> </div>
-    <div class="row mt-5"> </div>
 
-    <div class="row">
-        <!-- 첫번째 컬럼 -->
-        <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
-            <img src="/static/images/ocean.jpg" alt="사진" class="img-fluid">
+    <div class="row">    
+        <!-- First Column -->
+        <div class="col-md-6">
+            <!-- First Row -->
+            <div class="row mb-4 justify-content-center gap-3 align-items-center">
+                <div class="col-6 d-flex align-content-center flex-wrap">
+                    <p class="fs-2 align-middle">{{book.book_title}}</p>
+                </div>
+                <div class="col-1 offset-md-3" style="margin-right: -35px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="27" height="27" class="bi bi-hand-thumbs-up" viewBox="0 0 16 16">
+                            <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2.144 2.144 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a9.84 9.84 0 0 0-.443.05 9.365 9.365 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111L8.864.046zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a8.908 8.908 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.224 2.224 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.866.866 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                    </svg>
+                </div>
+                <div class="col-1">
+                    <span class="align-bottom fw-bold">{{book.book_likes}}</span>
+                </div>
+            </div>
+
+            <!-- Second Row -->
+            <div class="row">
+                    <p>&nbsp;기타큐슈 모지항이라는 조용한 항구에 자리한 텐더니스 편의점은 오늘도 시끌벅적하다. 꽃미남 점장의 사소한 몸짓, 말 한마디, 표정 하나에 그의 팬을 자처하는 여성들이 연달아 터트리는 환호성 때문. 그럴 때마다 고개를 절레절레 흔드는 아르바이트생 옆에서 파트타임 직원 미쓰리는 눈을 반짝이며 남모르게 미소 짓는다. 곧이어 수염을 덥수룩하게 기른 남자가 들어와 편의점을 제집처럼 활보하고, 빨간색 멜빵바지를 입은 할아버지는 시끄럽다며 모두 나가라고 고함을 질러 댄다. 여느 편의점에서는 볼 수 없는 수상쩍은 광경. 대체 이곳에서 무슨 일이 벌어지고 있는 걸까?현재 왕성한 집필 활동으로 주목받는 마치다 소노코 작가의 연작 소설 『바다가 들리는 편의점』은 24시간 불이 꺼지지 않는 친근하고 일상적인 장소인 편의점을 무대로 나이, 성별, 취향, 사연, 그리고 편의점을 찾는 목적까지 제각각인 손님들과 어딘지 모르게 미스터리한 직원들이 펼치는 유쾌하고 따뜻한 이야기를 담고 있다. 일본 현지 출간 당시 “이 가상의 편의점에서 빠져나올 수가 없다”, “당장 영화나 드라마로 보고 싶다”</p>
+                    <span>{{book.book_content_path}}</span>
+            </div>
         </div>
 
-        <!-- 두번째 컬럼 -->
-        <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
-            <div class="row mb-5">
-                <h3>바다가 들리는 편의점</h3>
-            </div>
-            <div class="row">
-                <div class="col col-auto">
-                    <button class="btn btn-primary listen-btn">청취하기</button>
-                </div>
-                <div class="col">
-                    <p>청취하기</p>
-                </div>
-            </div>
-        </div>
+        <!-- Second Column -->
+        <div class="col-md-6">
+            <!-- First Row -->
+            <div class="row mb-4 justify-content-end">
+                <div class="col-3">
+                    <div class="col-1">
+                        <h5>BGM</h5>
+                    </div>
+                    <div class="col-1">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
+                            <label class="form-check-label" for="flexSwitchCheckChecked"></label>
+                        </div>
+                    </div>
 
-        <!-- 세번째 컬럼 -->
-        <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
-            <div class="row mb-5">
-                <h3>현재 선택 성우</h3>
-            </div>
-            <div class="row mb-5">
-                <img src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid">
-            </div>
-            <div class="row">
-                <div class="col col-auto">
-                    <button class="btn btn-primary listen-btn">샘플 듣기</button>
-                </div>
-                <div class="col">
-                    <p>샘플 듣기</p>
                 </div>
             </div>
-        
+
+            <!-- Second Row -->
+            <div class="row justify-content-center">
+                <img src="/static/images/ocean.jpg" alt="Your Image" class="img-fluid"  style="max-width: 70%;">
+                {% comment %} <img src="{{book.book_image_path}}" alt="Your Image" class="img-fluid"  style="max-width: 70%;"> {% endcomment %}
+            </div>
+
+            <div class="row mt-5"> </div>
+
+            <div class="row justify-content-center"> 
+                <div class="col-8">
+                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3"> </div>
+            
+            <div class="row justify-content-center"> 
+                <div class="col-2">
+                    <button id="prev" class="action-btn">
+                        <img src="/static/images/back.png" alt="Your Image" class="img-fluid"  style="max-width:100%;">
+                    </button>
+                </div>
+                <div class="col-2">
+                    <button id="play" class="action-btn">
+                        <img src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
+                    </button>
+                </div>
+                <div class="col-2">
+                    <button id="next" class="action-btn">
+                        <img src="/static/images/next.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <audio id="audioPlayer" style="display: none">
+        <source src="/static/sounds/dog_bark.mp3" type="audio/mp3">
+    </audio>
+
 {% endblock %}
 
 {% block script %}
+    <script>
+        const audio = document.getElementById("audioPlayer");
+        const progressBar = document.getElementById("progress-bar");
+    
 
+        document.getElementById("play").addEventListener("click", function() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+
+        function playSample() {
+            var audioPlayer = document.getElementById('audioPlayer');
+            if (!isPlaying) {
+                audioPlayer.play();
+                isPlaying = true;
+            } else {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                isPlaying = false;
+            }
+        }
+
+         // 소리 파일의 재생 시간에 따라 프로그래스 바의 너비를 조절하는 함수
+        function updateProgressBar() {
+            const duration = audio.duration;
+            const currentTime = audio.currentTime;
+            const progress = (currentTime / duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // 소리 파일이 로드될 때 프로그래스 바 업데이트
+        audio.addEventListener("loadeddata", updateProgressBar);
+
+        // 소리 파일의 재생 중에 프로그래스 바 업데이트
+        audio.addEventListener("timeupdate", updateProgressBar);
+    </script>
 {% endblock %}

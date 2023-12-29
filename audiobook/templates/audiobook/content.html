@@ -2,24 +2,7 @@
 {% load static %}
 
 {% block title %}청취{% endblock %}
-<style>
-    body {
-      background-color: #f8f9fa;
-    }
 
-    .container {
-      margin-top: 50px;
-    }
-
-    .column {
-      padding: 20px;
-      text-align: center;
-    }
-
-    .listen-btn {
-      margin-top: 20px;
-    }
-  </style>
 {% block style %}
 {% endblock %}
 
@@ -33,19 +16,28 @@
         <!-- 첫번째 컬럼 -->
         <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
             <img src="/static/images/ocean.jpg" alt="사진" class="img-fluid">
+            {% comment %} <img src="{{book.book_image_path}}" alt="사진" class="img-fluid"> {% endcomment %}
         </div>
 
         <!-- 두번째 컬럼 -->
         <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
             <div class="row mb-5">
-                <h3>바다가 들리는 편의점</h3>
+                <h3>{{book.book_title}}</h3>
             </div>
             <div class="row">
                 <div class="col col-auto">
-                    <button class="btn btn-primary listen-btn">청취하기</button>
+                    <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <rect width="26" height="25" fill="url(#pattern0)"/>
+                        <defs>
+                        <pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+                        <use xlink:href="#image0_832_27" transform="matrix(0.00636943 0 0 0.0066242 0 -0.0928662)"/>
+                        </pattern>
+                        <image id="image0_832_27" width="157" height="179" xlink:href="data:image/png;base64,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"/>
+                        </defs>
+                    </svg>
                 </div>
                 <div class="col">
-                    <p>청취하기</p>
+                    <p id="listen">청취하기</p>
                 </div>
             </div>
         </div>
@@ -56,12 +48,13 @@
                 <h3>현재 선택 성우</h3>
             </div>
             <div class="row mb-5">
-                <img src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid">
+                <img id="voice_img" src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid">
             </div>
             <div class="row">
                 <div class="col col-auto">
-                    <button class="btn btn-primary listen-btn">샘플 듣기</button>
+                    <button id="sampleBtn" class="btn btn-primary listen-btn">샘플 듣기</button>
                 </div>
+        
                 <div class="col">
                     <p>샘플 듣기</p>
                 </div>
@@ -69,8 +62,38 @@
         
         </div>
     </div>
+    <audio id="audioPlayer" style="display: none">
+        <source src="/static/sounds/dog_bark.mp3" type="audio/mp3">
+    </audio>
 {% endblock %}
 
 {% block script %}
+    <script>
+        var isPlaying = false; // 소리가 현재 재생 중인지 여부를 나타내는 변수
 
+        document.getElementById('listen').addEventListener('click', function() {
+            window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}"
+        }); 
+
+        document.getElementById('voice_img').addEventListener('click', function() {
+            window.location.href = "{% url 'audiobook:voice_custom' %}"
+        }); 
+
+        document.getElementById('sampleBtn').addEventListener('click', function() {
+            playSample();
+        });
+
+        function playSample() {
+            var audioPlayer = document.getElementById('audioPlayer');
+            if (!isPlaying) {
+                audioPlayer.play();
+                isPlaying = true;
+            } else {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                isPlaying = false;
+            }
+        }
+
+    </script>
 {% endblock %}

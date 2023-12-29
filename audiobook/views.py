@@ -24,6 +24,9 @@ def index(request):
 
     else:  # 로그인 되어 있지 않으면 index 페이지를 렌더링
         return render(request, 'audiobook/index.html')
+    
+def test(request):
+    return render(request, 'audiobook/ddd.html')
 
 
 # 메인화면
@@ -56,13 +59,38 @@ def search(request):
 
 
 # 청취
-def content(request):
-    return render(request, 'audiobook/content.html')
+class Content(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/content.html'
 
+    def get(self, request, book_id):
+        try:
+            book = Book.objects.get(pk=book_id)
+        except Book.DoesNotExist:
+            print('book not exist.')
+            return Response(status=404, template_name=self.template_name)
+        context = {
+            'result': True,
+            'book': book,
+        }
+        return Response(context, template_name=self.template_name)
+    
+    
+class ContentPlay(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/content_play.html'
 
-def content_play(request):
-    return render(request, 'audiobook/content_play.html')
-
+    def get(self, request, book_id):
+        try:
+            book = Book.objects.get(pk=book_id)
+        except Book.DoesNotExist:
+            print('book not exist.')
+            return Response(status=404, template_name=self.template_name)
+        context = {
+            'result': True,
+            'book': book,
+        }
+        return Response(context, template_name=self.template_name)
 
 # 성우
 def voice_custom(request):
