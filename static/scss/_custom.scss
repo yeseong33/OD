@@ -1,3 +1,6 @@
+// Bootstrap 기본 변수 재정의
+$component-active-bg: #FD9843;
+
 @import "../bootstrap/scss/functions";
 @import "../bootstrap/scss/variables";
 
@@ -14,12 +17,13 @@ $orange-colors: (
   "900": $orange-900,
 );
 
-// nav-pills 색상 재정의
-.nav {
-  --#{$prefix}link-color: #{$orange-400};
-  --#{$prefix}link-hover-color: #{$orange-500};
-}
-$nav-pills-link-active-bg: $orange-400; // pills 배경 색깔
+// nav-link 색상 변경
+$nav-link-color: $orange-400;
+$nav-link-hover-color: $orange-500;
+
+// pagination 색상 변경
+$pagination-color: $orange-400;
+$pagination-hover-color: $orange-500;
 
 // 기존의 테마 색상에 orange 색상 추가
 $theme-colors: map-merge($theme-colors, $orange-colors);
@@ -40,6 +44,11 @@ $theme-colors: map-merge($theme-colors, $orange-colors);
 @each $color, $value in $orange-colors {
     .btn-orange-#{$color} {
         @include button-variant($value, $value);
+        color: #ffffff; 
+        font-weight: bold; 
+        &:hover {
+          color: #ffffff; 
+      }
     }
 
     // 새로운 아웃라인 버튼 스타일 유틸리티 클래스 생성

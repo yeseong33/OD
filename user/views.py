@@ -1,20 +1,18 @@
 import os
 from dotenv import load_dotenv
 import requests
-import bcrypt
-from jose import jwt
 from datetime import timedelta, datetime
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls.base import reverse
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from jose import jwt
+import bcrypt
 from .models import *
-from rest_framework.views import APIView
-from rest_framework.renderers import TemplateHTMLRenderer
-from django.utils import timezone
 from audiobook.models import *
 
 load_dotenv()
@@ -75,12 +73,12 @@ def kakao_callback(request):
                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
-    
+
     # name, email을 이용해 jwt token 발급, main 페이지로 전달
     user = sign_in(user_inform['profile']['nickname'],
-                    user_inform['email'],
-                    response.json().get('properties')['thumbnail_image'],
-                    'Kakao')
+                   user_inform['email'],
+                   response.json().get('properties')['thumbnail_image'],
+                   'Kakao')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -126,10 +124,10 @@ def google_callback(request):
     response = requests.get(url=url, headers=headers)
 
     # user DB조회, JWT 발급
-    user = sign_in(response.json()['name'], 
-                    response.json()['email'],
-                    response.json()['picture'] ,
-                    'Google')
+    user = sign_in(response.json()['name'],
+                   response.json()['email'],
+                   response.json()['picture'],
+                   'Google')
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
     response.set_cookie("jwt", token)
@@ -138,21 +136,21 @@ def google_callback(request):
 # 사용자 정보를 DB에서 조회
 
 
-def sign_in(nickname, email, user_profile_path ,social_inform):
+def sign_in(nickname, email, user_profile_path, social_inform):
     print(
         f"sign_in 시작: {nickname}, email :{email}, social_inform : {social_inform}")
 
-    if not User.objects.filter(username = email).exists():
+    if not User.objects.filter(username=email).exists():
         print("User is not exists. So, User is created.")
         temp_password = email+os.getenv("USER_PASSWORD")
         user = User.objects.create_user(
-            email = email,
-            nickname = nickname,
-            oauth_provider = social_inform,
-            user_profile_path = user_profile_path,)
+            email=email,
+            nickname=nickname,
+            oauth_provider=social_inform,
+            user_profile_path=user_profile_path,)
         user.save()
     else:
-        user = User.objects.get(username = email)
+        user = User.objects.get(username=email)
     return user
 
 # 사용자 정보를 바탕으로 JWT 토큰 발급
@@ -178,82 +176,120 @@ def decode_jwt(token):
         "JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
     return user_inform
 
-class SubscribeView(APIView):
+
+class UserSubscriptionView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
+
     def get(self, request):
-        if request.COOKIES.get("jwt") == None: # User가 로그인 안했을시.
+        if request.COOKIES.get("jwt") == None:  # User가 로그인 안했을 시
             print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
             return redirect('user:login')
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
-            user = User.objects.get(user_id = user_inform['user_id'])
-            
-            try:
-                subscribe = Subscription.objects.get(user_id = user.user_id)
-            except Subscription.DoesNotExist:
-                template_name = "user/non_pay_inform.html"
-                return Response(template_name=template_name)
-            template_name = 'user/pay_inform.html'
-            left_days = (subscribe.sub_end_date - timezone.now()).days
-            return Response({'user':user, 'left_days':left_days}, template_name = template_name)
+            user = User.objects.get(user_id=user_inform['user_id'])
+            context = {
+                'user': user,
+                'active_tab': 'user_subscription',
+                'is_subscribed': False,  # 구독 여부
+                'left_days': 0  # 남은 일수. 기본값은 0.
+            }
 
-class UserInformView(APIView):
+            try:
+                subscribe = Subscription.objects.get(user_id=user.user_id)
+                context['is_subscribed'] = True
+                context['left_days'] = (
+                    subscribe.sub_end_date - timezone.now()).days
+            except Subscription.DoesNotExist:
+                pass  # 구독 정보가 없으면 context['is_subscribed']는 False로 유지됨
+
+            template_name = 'user/subscription.html'
+            return Response(context, template_name=template_name)
+
+
+class UserInformationView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
+
     def get(self, request):
-        template_name = 'user/user_inform.html'
+        template_name = 'user/information.html'
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id = user_inform['user_id'])
-        
-        return Response({'user':user}, template_name=template_name)
+        user = User.objects.get(user_id=user_inform['user_id'])
+        context = {
+            'user': user,
+            'active_tab': 'user_information'
+        }
+        return Response(context, template_name=template_name)
+
     def post(self, request):
-        
-        #cookie에 저장된 jwt 정보를 이용해 유저 받아오기
+
+        # cookie에 저장된 jwt 정보를 이용해 유저 받아오기
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id = user_inform['user_id'])
-        
+        user = User.objects.get(user_id=user_inform['user_id'])
+
         user_image = request.FILES.get('file')
         nickname = request.POST.get('nickname')
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
         if nickname:
             user.nickname = nickname
         user.save()
-        return redirect('user:inform')
-            
-            
+        return redirect('user:information')
+
+
 class UserLikeBooksView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name  ='user/like_books.html'
+    template_name = 'user/like_books.html'
+
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id = user_inform['user_id'])
+        user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_favorite_books
-        
-        if book_id_list == None: # 유저가 좋아요한 목록이 없을 경우.
-            context = {'books': None}
+        context = {
+            'active_tab': 'user_like'
+        }
+
+        if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
+            context['books'] = None
         else:
-            books = Book.objects.filter(pk__in = book_id_list)
-            context = {'books': books}
+            books = Book.objects.filter(pk__in=book_id_list)
+            context['books'] = books
         return render(request, self.template_name, context)
+
 
 class UserLikeVoicesView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name  ='user/like_voices.html'
-    
+    template_name = 'user/like_voices.html'
+
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id = user_inform['user_id'])
+        user = User.objects.get(user_id=user_inform['user_id'])
         voice_id_list = user.user_favorite_voices
-        
+
         if voice_id_list == None:
-            context = {'voices' : None}
+            context = {'voices': None}
         else:
-            voices = Voice.objects.filter(pk__in = voice_id_list)
-            context = {'voices' : voices}
+            voices = Voice.objects.filter(pk__in=voice_id_list)
+            context = {'voices': voices}
         return render(request, self.template_name, context)
-        
-    
-    
 
 
+class UserBookHistoryView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/book_history.html'
 
-            
+    def get(self, request):
+        context = {
+            'active_tab': 'user_book_history'
+        }
+
+        return Response(context)
+
+
+class UserFAQView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/faq.html'
+
+    def get(self, request):
+        context = {
+            'active_tab': 'user_faq'
+        }
+
+        return Response(context)
