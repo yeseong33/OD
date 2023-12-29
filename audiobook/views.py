@@ -83,11 +83,11 @@ def search(request):
 
 # 청취
 def content(request):
-    pass
+    return render(request, 'audiobook/content.html')
 
 
 def content_play(request):
-    pass
+    return render(request, 'audiobook/content_play.html')
 
 
 # 성우
@@ -105,6 +105,10 @@ def voice_custom_upload(request):
 
 def voice_custom_complete(request):
     return render(request, 'audiobook/voice_custom_complete.html')
+
+
+def voice_custom_upload_post(request):
+    return render(request, 'audiobook/voice_custom.html')
 
 
 @api_view(['GET'])

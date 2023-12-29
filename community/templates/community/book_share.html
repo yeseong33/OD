@@ -87,51 +87,16 @@
 
     <div class="row justify-content-end mt-5"> </div>
     
+    <div class="row justify-content-end mt-5"> </div>
 
     <div id='custom-content'>
         <div class="row gap-3 justify-content-start">
             {% for book in books %}
                 <div class="col-md-1 content-item">
-                    <img src="{{ book.image.url }}" class="img" alt="{{ book.title }}">
+                    <img src="{{ book.image.url }}" id='{{book.book_id}}' class="img" alt="{{ book.title }}">
                 </div>
             {% endfor %}
         </div>
-        
-        <div class="row gap-3 justify-content-start">
-            
-            <div class="col-md-1 content-item">
-                <img src="/static/images/go.jpg" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/jin.png" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/young.png" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/wo.jpg" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/oh.png" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/go.jpg" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/jin.png" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/young.png" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/wo.jpg" class="img" alt="고슴">
-            </div>
-            <div class="col-md-1 content-item">
-                <img src="/static/images/oh.png" class="img" alt="고슴">
-            </div>
-
-        </div>
-
     </div>
 
     <div class="row justify-content-end mt-5"> </div>
@@ -153,4 +118,18 @@
 
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+<script>
+    // book 이미지를 클릭했을 때의 동작을 정의
+    document.addEventListener('DOMContentLoaded', function() {
+        var bookImages = document.querySelectorAll('.img'); // 이미지 클래스 선택
+        bookImages.forEach(function(image) {
+            image.addEventListener('click', function() {
+                // 클릭 시 test.html로 리다이렉트
+                var bookId = image.getAttribute('id');
+                window.location.href = "{% url 'community:book_share_content' book_id=0 %}".replace('0', bookId);
+            });
+        });
+    });
+</script>
+{% endblock %}

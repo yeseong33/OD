@@ -13,12 +13,12 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['post_id', 'post_title', 'post_content']
         
     def save(self, **kwargs):
-        # 수정 필요: 로그인
+        book_id = self.context.get('book_id')
+        user_id = self.context.get('user_id')
         # 현재 로그인 유저
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=user_id)
         # 현재 선택된 책
-        book = Book.objects.get(pk=1)
-        
+        book = Book.objects.get(pk=book_id)
         self.validated_data['user'] = user
         self.validated_data['book'] = book
 
