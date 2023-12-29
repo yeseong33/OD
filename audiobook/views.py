@@ -32,6 +32,9 @@ class MainView(APIView):
     template_name = 'audiobook/main.html'
 
     def get(self, request):
+        print(request.user)
+        print(request.user.is_authenticated)
+
         top_books = Book.objects.all().order_by('-book_likes')[:10]
         user_books = Book.objects.filter(user=request.user.user_id)
         hot_books = Book.objects.all().order_by('?')[:10]

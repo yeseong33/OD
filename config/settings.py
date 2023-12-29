@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'audiobook',
     'user',
     'community',
-    'manager',  # 관리자 페이지
+    'manager',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -55,10 +55,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'user.middleware.JWTMiddleware',  # JWT 미들웨어 위치 조정
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'user.middleware.JWTMiddleware'
 ]
 
 AUTH_USER_MODEL = 'user.User'  # AUTH_USER_MODEL을 커스터마이징
@@ -139,7 +139,7 @@ AWS_S3_REGION_NAME = 'ap-northeast-2'
 # 파일을 처리할 때 이 스토리지 시스템을 사용하도록 설정
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-SITE_ID = 1 #DB -> django.site 접속. http:127.0.0.1:8000 DB에 넣기.
+SITE_ID = 1  # DB -> django.site 접속. http:127.0.0.1:8000 DB에 넣기.
 
 # SMTP 서버에 대한 정보
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
