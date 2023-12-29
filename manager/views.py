@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.files.base import ContentFile
-from community.models import BookRequest
+from community.models import BookRequest, UserRequestBook
 from .serializers import BookSerializer
 from audiobook.models import Book
 from user.models import User
@@ -11,16 +11,28 @@ from django.shortcuts import render, get_object_or_404
 from dotenv import load_dotenv
 import datetime
 import os
+from community.views import send_async_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 load_dotenv()  # 환경 변수를 로드함
+
+# 책 수요 변화
+def book_view(request):
+    return Response({'message': 'Good'})
+
+def book_view_count(request):
+    return Response({'message': 'Good'})
+
+
 
 ## 도서 신청 확인 페이지
 def get_book_details_from_naver(isbn):
     
     url = f'https://openapi.naver.com/v1/search/book.json?query={isbn}'
     headers = {
-        "X-Naver-Client-Id": os.getenv('CLIENT_ID'),
-        "X-Naver-Client-Secret": os.getenv('CLIENT_SECRET'),
+        "X-Naver-Client-Id": os.getenv('NAVER_CLIENT_ID'),
+        "X-Naver-Client-Secret": os.getenv('NAVER_CLIENT_SECRET'),
     }
 
     response = requests.get(url, headers=headers)
@@ -76,10 +88,13 @@ class BookRegisterCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register_complete.html'
     
-    def post(self, request, book_isbn):
+    def post(self, request):
         # ISBN으로 이미 존재하는 책을 확인
+        book_isbn = request.POST.get('book_isbn')
+        # print(book_isbn, "book_isbn")
         try:
             existing_book = Book.objects.get(book_isbn=book_isbn)
+            print("Book with this ISBN already exists.")
             # 책이 이미 존재하면 에러 메시지와 함께 종료
             return Response({
                 'status': 'error',
@@ -89,21 +104,8 @@ class BookRegisterCompleteView(APIView):
             # 책이 존재하지 않으면 처리를 계속
             pass
         
-        # 임시 사용자, 실제로는 인증된 사용자 또는 다른 방법으로 사용자를 얻어야 함
-        # 로그인 구현 전 커스텀 User 모델을 사용하여 임시 유저 생성
-        user = User.objects.create(
-            oauth_provider='some_provider',
-            oauth_identifier='some_identifier',  # 필요에 따라 설정
-            user_name='new_user_name',
-            user_email='user@example.com',
-            user_book_history = [1, 2, 3], 
-            user_favorite_books = [4, 5, 6],
-            user_favorite_voices = [7, 8, 9],
-            is_admin = True
-        )
-        
         # 권한 확인
-        if user.is_admin == False:
+        if request.user.is_admin == False:
             print("You are not admin.")
             return Response({
                 'status': 'error',
@@ -140,7 +142,7 @@ class BookRegisterCompleteView(APIView):
         # 가져온 상세 정보와 폼 데이터를 결합합니다.
         book_data = {
             'book_title': book_details['title'],
-            'book_genre': request.data.get('book_genre'), # 사용자 입력
+            'book_genre': request.POST.get('book_genre'), # 사용자 입력
             # 'book_image_path': ,
             'book_author': book_details['author'],
             'book_publisher': book_details['publisher'],
@@ -149,7 +151,7 @@ class BookRegisterCompleteView(APIView):
             'book_description': book_details['description'],
             'book_likes': 0,
             'book_isbn': book_isbn,
-            'user': user.user_id,
+            'user': request.user.user_id,
         }
 
         # Serializer를 통해 데이터 검증 및 저장
@@ -162,12 +164,6 @@ class BookRegisterCompleteView(APIView):
             book_instance.book_content_path.save(content_file.name, content_file, save=False)
             book_instance.save()
             
-            return Response({
-                'status': 'success',
-                'message': 'Book successfully registered.',
-                'data': serializer.data
-            }, status=201)
-            
         else:
             print(serializer.errors)
             return Response({
@@ -175,5 +171,47 @@ class BookRegisterCompleteView(APIView):
                 'message': 'Registration failed.',
                 'errors': serializer.errors
             }, status=400)
+            
         
+        # 이메일 보내기
+        book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
+        user_request_books = UserRequestBook.objects.filter(request=book_request)
+        for user_request_book in user_request_books:
+            user = user_request_book.user
+            if user.email:
+                try:
+                    subject = '[오디 알림] 신청하신 책 등록 완료'
+                    html_content = render_to_string('manager/email_template.html', {'nickname': user.nickname})
+                    plain_message = strip_tags(html_content)
+                    from_email = '오디 <wooyoung9654@gmail.com>' 
+                    send_async_mail(subject, plain_message, from_email, [user.email])
+                    print('Email sent successfully')
+                except Exception as e:
+                    # 로그 기록, 오류 처리 등
+                    print(f'Error sending email: {e}')
+                
+        # BookRequest, UserRequest 삭제      
+        book_request.delete()
+        user_request_books.delete()
         
+
+        return Response({
+            'status': 'success',
+            'message': 'Book registered successfully.'
+        }, status=200)
+        
+
+
+# 문의 답변
+
+def inquiry(request):
+    return Response({'message': 'Good'})
+
+
+# 구독 및 수익 관리
+def revenue(request):
+    return Response({'message': 'Good'})
+
+# FAQ 관리
+def faq(request):
+    return Response({'message': 'Good'})

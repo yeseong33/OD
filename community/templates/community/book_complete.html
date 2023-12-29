@@ -55,9 +55,8 @@
   <!-- 컨텐츠 중앙 배치 컨테이너 -->
   <div class="center-container">
     <div class="content">
-      <!-- 아이콘과 문구 -->
-      <div class="icon">📚</div> <!-- 실제 아이콘으로 교체 필요 -->
-      <p>신청이 완료되었습니다.</p>
+      <img src="{{ image }}" alt="Status Image" class="status-image" />
+      <p>{{ message|safe }}</p>
     </div>
   </div>
 {% endblock %}

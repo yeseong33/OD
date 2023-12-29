@@ -11,9 +11,10 @@
     {% comment %} <p>책 소개: {{ description }}</p> {% endcomment %}
     
     <!-- Start of the form -->
-    <form method="post" action="{% url 'manager:book_register_complete' isbn %}" enctype="multipart/form-data">
+    <form method="post" action="{% url 'manager:book_register_complete' %}" enctype="multipart/form-data">
       {% csrf_token %}
-      
+      <input type="hidden" name="book_isbn" value="{{isbn}}">
+
       <label for="book_genre">장르:</label>
       <select name="book_genre" id="book_genre">
           <option value="novel">소설</option>
