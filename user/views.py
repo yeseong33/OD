@@ -15,6 +15,7 @@ from .models import *
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.utils import timezone
+from audiobook.models import *
 
 load_dotenv()
 
@@ -197,3 +198,62 @@ class SubscribeView(APIView):
             template_name = 'user/pay_inform.html'
             left_days = (subscribe.sub_end_date - timezone.now()).days
             return Response({'user': user, 'left_days': left_days}, template_name=template_name)
+
+
+class UserInformView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        template_name = 'user/user_inform.html'
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+
+        return Response({'user': user}, template_name=template_name)
+
+    def post(self, request):
+
+        # cookie에 저장된 jwt 정보를 이용해 유저 받아오기
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+
+        user_image = request.FILES.get('file')
+        nickname = request.POST.get('nickname')
+        # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
+        if nickname:
+            user.nickname = nickname
+        user.save()
+        return redirect('user:inform')
+
+
+class UserLikeBooksView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/like_books.html'
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        book_id_list = user.user_favorite_books
+
+        if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
+            context = {'books': None}
+        else:
+            books = Book.objects.filter(pk__in=book_id_list)
+            context = {'books': books}
+        return render(request, self.template_name, context)
+
+
+class UserLikeVoicesView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'user/like_voices.html'
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        voice_id_list = user.user_favorite_voices
+
+        if voice_id_list == None:
+            context = {'voices': None}
+        else:
+            voices = Voice.objects.filter(pk__in=voice_id_list)
+            context = {'voices': voices}
+        return render(request, self.template_name, context)
