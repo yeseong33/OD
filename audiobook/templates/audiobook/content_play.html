@@ -136,19 +136,6 @@
             animationFrameId = requestAnimationFrame(animateProgressBar);
         }
         
-        // 프로그래스 바를 클릭했을 때 해당 위치로 이동하는 이벤트
-        progressBar.addEventListener("click", function (e) {
-            if (!isDragging) {
-                const progressBarRect = progressBar.getBoundingClientRect();
-                const clickX = e.clientX - progressBarRect.left;
-                const progressBarWidth = progressBarRect.width;
-                const clickPercentage = clickX / progressBarWidth;
-                const newTime = clickPercentage * audio.duration;
-                audio.currentTime = newTime;
-                updateProgressBar();
-            }
-        });
-        
         progressBarThumb.addEventListener("mousedown", function (e) {
             isDragging = true;
             document.addEventListener("mousemove", handleThumbMove);
@@ -175,5 +162,30 @@
         function updateProgressBarThumbPosition(progress) {
             progressBarThumb.style.left = `calc(${progress}% - 8px)`;
         }
+
+        // "next" 버튼 클릭 시 5초 뒤로 이동
+        document.getElementById("next").addEventListener("click", function() {
+        audio.currentTime += 5;
+        updateProgressBar();
+        });
+
+        // "back" 버튼 클릭 시 5초 앞으로 이동
+        document.getElementById("prev").addEventListener("click", function() {
+            audio.currentTime -= 5;
+            updateProgressBar();
+        });
+
+        document.addEventListener("keydown", function(e) {
+            // 오른쪽 화살표 키
+            if (e.key === "ArrowRight") {
+                audio.currentTime += 1;
+                updateProgressBar();
+            }
+            // 왼쪽 화살표 키
+            else if (e.key === "ArrowLeft") {
+                audio.currentTime -= 1;
+                updateProgressBar();
+            }
+        });
     </script>
 {% endblock %}
