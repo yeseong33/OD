@@ -5,8 +5,8 @@ class Voice(models.Model):
     voice_id = models.AutoField(primary_key=True)
     voice_name = models.CharField(max_length=255)
     voice_like = models.IntegerField(default=0)
-    voice_path = models.TextField()
-    voice_image_path = models.TextField()
+    voice_path = models.TextField()  # RVC 모델
+    voice_image_path = models.TextField() 
     voice_created_date = models.DateTimeField(auto_now_add=True)
     voice_is_public = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
