@@ -15,7 +15,7 @@ from .models import *
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.utils import timezone
-from audiobook.models import Book
+from audiobook.models import *
 
 load_dotenv()
 
@@ -226,9 +226,8 @@ class UserLikeBooksView(APIView):
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id = user_inform['user_id'])
-        user.user_favorite_books
-        
         book_id_list = user.user_favorite_books
+        
         if book_id_list == None: # 유저가 좋아요한 목록이 없을 경우.
             context = {'books': None}
         else:
@@ -238,9 +237,20 @@ class UserLikeBooksView(APIView):
 
 class UserLikeVoicesView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
+    template_name  ='user/like_voices.html'
+    
     def get(self, request):
-        template_name  ='user/like_voices.html'
-        return Response(template_name=template_name)
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
+        voice_id_list = user.user_favorite_voices
+        
+        if voice_id_list == None:
+            context = {'voices' : None}
+        else:
+            voices = Voice.objects.filter(pk__in = voice_id_list)
+            context = {'voices' : voices}
+        return render(request, self.template_name, context)
+        
     
     
 
