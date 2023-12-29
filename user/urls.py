@@ -14,8 +14,8 @@ urlpatterns = [
     path('google/callback/', views.google_callback, name='google_callback'),
     
     # 계정관리
-    path('account/subscribe/', views.SubscribeView.as_view(), name = 'subscribe'),
-    path('account/inform/', views.UserInformView.as_view(), name = 'inform'),
+    path('profile/', views.SubscribeView.as_view(), name = 'profile'),
+    path('profile/inform/', views.UserInformView.as_view(), name = 'inform'),
     path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='books'),
     path('profile/likevoices/', views.UserLikeVoicesView.as_view(), name='voices'),
     
