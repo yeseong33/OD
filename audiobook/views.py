@@ -13,12 +13,13 @@ from .models import *
 from user.views import decode_jwt
 from config.settings import AWS_S3_CUSTOM_DOMAIN
 from django.templatetags.static import static
+from community.models import BookRequest
+from django.db.models import Q
 
 load_dotenv()
 
 
 # 첫 화면
-
 
 def index(request):
     if request.user.is_authenticated:  # 로그인 되어 있으면 main 페이지로 리다이렉트
@@ -62,7 +63,16 @@ class MainView(APIView):
             'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN,
         })
 
-
+class MainSearchView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/main_search.html'
+    
+    def get(self, request):
+        query = request.query_params.get('query', '')
+        book_list = Book.objects.filter( Q(book_title__icontains=query) | Q(book_author__icontains=query))        
+        return Response({'book_list': book_list, 'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN})
+    
+    
 def genre(request):
     pass
 

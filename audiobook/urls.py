@@ -11,6 +11,7 @@ path('', views.index, name='index'),
 
 # 메인화면
 path('main/', views.MainView.as_view(), name='main'),
+path('main/search', views.MainSearchView.as_view(), name='main_search'),
 path('genre/', views.genre, name='genre'),
 path('search/', views.search, name='search'),
 
