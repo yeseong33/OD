@@ -3,87 +3,99 @@
 
 {% block content %}
     <style>
-        /* 컨테이너 스타일 */
-        .scrolling-container {
+      /* 컨테이너 스타일 */
+      .scrolling-container {
             display: flex;
             flex-wrap: nowrap; /* 아이템들이 줄바꿈 되지 않도록 설정 */
             overflow-x: auto; /* 가로 스크롤 가능 */
             -ms-overflow-style: none; /* 인터넷 익스플로러와 엣지 브라우저를 위함 */
             scrollbar-width: none; /* 파이어폭스 브라우저를 위함 */
-          }
+      }
           
-        .scrolling-container::-webkit-scrollbar {
-          display: none; /* 크롬, 사파리, 오페라 브라우저에서 스크롤바를 숨김 */
-        }
+      .scrolling-container::-webkit-scrollbar {
+        display: none; /* 크롬, 사파리, 오페라 브라우저에서 스크롤바를 숨김 */
+      }
 
-        .scrolling-wrapper {
-          position: relative; /* 상대적 위치 지정 */
-        }
-        .scrolling-wrapper + .scrolling-wrapper {
+      .scrolling-wrapper {
+        position: relative; /* 상대적 위치 지정 */
+      }
+
+      .scrolling-wrapper + .scrolling-wrapper {
           margin-top: 60px; /* 첫 번째 요소 이후의 모든 .scrolling-wrapper에 마진 적용 */
       }
-        .scrolling-wrapper h2 {
-          font-weight: bold; /* 제목 글씨를 굵게 설정 */
-          margin-top: 40px; /* 위쪽 여백 설정 */
-          margin-bottom: 20px; /* 상단 네비게이터와의 여백을 20px로 설정 */
-        }
-        .scroll-left-button, .scroll-right-button {
-          position: absolute; /* 절대적 위치 지정 */
-          top: 50%; /* 컨테이너의 중간 높이 */
-          transform: translateY(-50%); /* 버튼을 정중앙으로 조정 */
-          z-index: 10; /* 다른 요소들 위에 표시 */
-        }
-        .scroll-left-button {
-            left: 0; /* 왼쪽 끝 */
-        }
-        .scroll-right-button {
-            right: 0; /* 오른쪽 끝 */
-        }
 
-        /* 아이템 스타일 */
-        .card-list {
-            flex: 0 0 auto; /* 아이템들이 줄어들지 않도록 설정 */
-            width: 200px;
-            height: 300px;
-            margin: 0 10px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            transition: all 0.3s ease-in-out;
-          }
-          
-          .card-list img {
-            width: 100%; /* 이미지 너비를 카드 너비와 동일하게 설정 */
-            height: 100%; /* 이미지 높이를 카드 높이와 동일하게 설정 */
-            object-fit: cover; /* 이미지가 비율을 유지하면서 컨테이너를 채우도록 설정 */
-            object-position: center; /* 이미지가 컨테이너의 중앙에 위치하도록 설정 */
-          }
+      .scrolling-wrapper h2 {
+        font-weight: bold; /* 제목 글씨를 굵게 설정 */
+        margin-top: 40px; /* 위쪽 여백 설정 */
+        margin-bottom: 20px; /* 상단 네비게이터와의 여백을 20px로 설정 */
+      }
+      .scroll-left-button, .scroll-right-button {
+        position: absolute; /* 절대적 위치 지정 */
+        top: 50%; /* 컨테이너의 중간 높이 */
+        transform: translateY(-50%); /* 버튼을 정중앙으로 조정 */
+        z-index: 10; /* 다른 요소들 위에 표시 */
+      }
+      .scroll-left-button {
+          left: 0; /* 왼쪽 끝 */
+      }
+      .scroll-right-button {
+          right: 0; /* 오른쪽 끝 */
+      }
 
-          .card-list:hover {
-            transform: scale(1.08);
-          }
-          
-          .book-info {
-              position: absolute; /* 절대 위치 지정 */
-              top: 50%; /* 상단에서 50% 위치 */
-              left: 50%; /* 좌측에서 50% 위치 */
-              transform: translate(-50%, -50%); /* 요소 중앙 정렬 */
-              text-align: center; /* 글자 중앙 정렬 */
-              opacity: 0; /* 기본 상태에서 보이지 않음 */
-              transition: opacity 0.3s; /* 부드러운 투명도 변환 */
-              pointer-events: none; /* 마우스 이벤트 무시 */
-          }
+      /* 아이템 스타일 */
+      .book-card, .voice-card {
+          flex: 0 0 auto; /* 아이템들이 줄어들지 않도록 설정 */
+          width: 200px;
+          margin: 0 10px;
+          background-color: #fff;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+          overflow: hidden;
+          transition: all 0.3s ease-in-out;
+      }
 
-          .card-list:hover .book-info {
-            opacity: 1; /* 마우스 오버 시 정보 표시 */
-            color: #FFF; /* 글자 색상 */
-          }
+      .book-card {
+        height: 300px;
+      }
+      
+      .voice-card {
+        height: 200px;
+        display: flex; /* Flexbox를 사용하여 아이템들을 유연하게 배치 */
+        align-items: center; /* 수직 방향으로 중앙 정렬 */
+        justify-content: center; /* 수평 방향으로 중앙 정렬 */
+      }
 
-          .card-list:hover .book-img{
-            opacity: 0.5; /* 마우스 오버 시 이미지 투명도 변경 */
-            filter: sepia(60%) brightness(20%);
-          }
+      .book-card img, .voice-card img {
+        width: 100%; /* 이미지 너비를 카드 너비와 동일하게 설정 */
+        height: 100%; /* 이미지 높이를 카드 높이와 동일하게 설정 */
+        object-fit: cover; /* 이미지가 비율을 유지하면서 컨테이너를 채우도록 설정 */
+        object-position: center; /* 이미지가 컨테이너의 중앙에 위치하도록 설정 */
+      }
+
+      .book-card:hover, .voice-card:hover {
+        transform: scale(1.08);
+      }
+      
+      .book-info, .voice-info {
+          position: absolute; /* 절대 위치 지정 */
+          top: 50%; /* 상단에서 50% 위치 */
+          left: 50%; /* 좌측에서 50% 위치 */
+          transform: translate(-50%, -50%); /* 요소 중앙 정렬 */
+          text-align: center; /* 글자 중앙 정렬 */
+          opacity: 0; /* 기본 상태에서 보이지 않음 */
+          transition: opacity 0.3s; /* 부드러운 투명도 변환 */
+          pointer-events: none; /* 마우스 이벤트 무시 */
+      }
+
+      .book-card:hover .book-info, .voice-card:hover .voice-info {
+        opacity: 1; /* 마우스 오버 시 정보 표시 */
+        color: #FFF; /* 글자 색상 */
+      }
+
+      .book-card:hover .book-img, .voice-card:hover .voice-img{
+        opacity: 0.5; /* 마우스 오버 시 이미지 투명도 변경 */
+        filter: sepia(60%) brightness(20%);
+      }
     
     </style>
         
@@ -92,7 +104,7 @@
       <button class="scroll-left-button">‹</button>
       <div class="scrolling-container">
           {% for book in top_books %}
-          <div class="card-list">
+          <div class="book-card">
             <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
               <img class="book-img" src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
             </a>
@@ -111,7 +123,7 @@
         <button class="scroll-left-button">‹</button>
         <div class="scrolling-container">
             {% for book in user_history_book %}
-            <div class="card-list">
+            <div class="book-card">
               <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
                 <img class="book-img" src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
               </a>
@@ -129,16 +141,19 @@
       <h2>이번주 HOT 음성</h2>
       <button class="scroll-left-button">‹</button>
       <div class="scrolling-container">
-          {% for voice in top_voices %}
-          <div class="card-list">
-            <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
-              <img class="book-img" src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
-            </a>
-            <div class="book-info">
-              <h5>{{ book.book_title }}</h5>
-            </div>
+        {% for voice in top_voices %}
+        <div class="voice-card">
+          <div class="voice-img" onmouseenter="playAudio(this)" onmouseleave="stopAudio(this)">   <!-- 이미지에 마우스 올렸을 때 내렸을 때 -->
+            <img src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ voice.voice_image_path }}" alt="{{ voice.voice_name }}">
+<!--          <audio class="voice-sample" src="{{ voice.voice_sample_path }}"></audio>                      샘플 음성 url로 받는 방식 (1)-->
+  <!--          <audio class="voice-sample" src="{% static 'voices/' %}{{ voice.voice_name}}.wav"></audio>  static 폴더에 음성파일 다운 받는 방식 (2)-->
+            <audio class="voice-sample" src="{% static 'voices/' %}sample.mp4"></audio>
           </div>
-          {% endfor %}
+          <div class="voice-info">
+            <h5>{{ voice.voice_name }}</h5>
+          </div>
+        </div>
+        {% endfor %}
       </div>
       <button class="scroll-right-button">›</button>
   </div>
@@ -147,6 +162,18 @@
 
 {% block script %}
   <script>
+    // 오디오를 재생하고 정지하는 함수들
+    function playAudio(element) {
+      var audio = element.querySelector('.voice-sample');
+      audio.play();
+    }
+
+    function stopAudio(element) {
+      var audio = element.querySelector('.voice-sample');
+      audio.pause();
+      audio.currentTime = 0; // 오디오 재생 위치를 처음으로 리셋합니다.
+    }
+
     document.addEventListener('DOMContentLoaded', function() {  
       const wrappers = document.querySelectorAll('.scrolling-wrapper');
       
@@ -160,7 +187,7 @@
         scrollRightButton.style.display = 'none';
 
         // 콘텐츠 너비가 컨테이너 너비보다 크면 버튼을 표시
-        if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
+        if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {  
             scrollLeftButton.style.display = 'block';
             scrollRightButton.style.display = 'block';
         }
@@ -172,8 +199,8 @@
         scrollRightButton.addEventListener('click', function() {
             scrollContainer.scrollBy({ left: 300, behavior: 'smooth' });
         });
-    });
-});
+      });
+  });
 
-</script>
+  </script>
 {% endblock %}
