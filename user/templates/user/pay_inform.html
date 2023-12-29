@@ -1,7 +1,7 @@
 {% extends 'user/template.html' %}
 {% load static %}
 
-{% block title %}도서 검색{% endblock %}
+{% block title %}구독 정보{% endblock %}
 {% block style %}
 {% endblock %}
 
@@ -9,7 +9,7 @@
 <div class="container">
     <div class="row">
         <div class="col-3 custom-nav">
-            <ul class="nav flex-column ">
+            <ul class="nav flex-column nav-pills my-5">
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="{% url 'user:subscribe'%}">구독 정보</a>
                 </li>
@@ -17,7 +17,7 @@
                     <a class="nav-link" href="{% url 'user:inform' %}">회원 정보</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">좋아요 내역</a>
+                    <a class="nav-link" href="{% url 'user:books' %}">좋아요 내역</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href = "#">독서 이력</a>

@@ -16,6 +16,9 @@ urlpatterns = [
     # 계정관리
     path('account/subscribe/', views.SubscribeView.as_view(), name = 'subscribe'),
     path('account/inform/', views.UserInformView.as_view(), name = 'inform'),
+    path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='books'),
+    path('profile/likevoices/', views.UserLikeVoicesView.as_view(), name='voices'),
+    
     
 
     

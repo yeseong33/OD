@@ -1,7 +1,7 @@
 {% extends 'user/template.html' %}
 {% load static %}
 
-{% block title %}구독 정보{% endblock %}
+{% block title %}좋아요 내역{% endblock %}
 {% block style %}
 {% endblock %}
 
@@ -11,13 +11,13 @@
         <div class="col-3 custom-nav">
             <ul class="nav flex-column nav-pills my-5">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'user:subscribe' %}">구독 정보</a>
+                    <a class="nav-link" href="{% url 'user:subscribe' %}">구독 정보</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'user:inform' %}">회원 정보</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user:books' %}">좋아요 내역</a>
+                    <a class="nav-link active "  aria-current="page"  href="{% url 'user:books' %}">좋아요 내역</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href = "#">독서 이력</a>
@@ -28,11 +28,18 @@
             </ul>
         </div>
         <div class="col-9">
-            <div class="row-10 text-center">
-                <h1>책을 원하는 목소리로 들을 수 있는 기회를 누려보세요!</h1>
+            <div class="row-10">
+                <h1>좋아요 내역</h1>
             </div>
-            <div class="row-10 d-flex justify-content-center">
-                <button type="button" class="btn btn-outline-orange-200 btn-sm">구독하기</button>
+            <div class="row-2">
+                <ul class="nav nav-pills nav-justified">
+                    <li class="nav-item">
+                        <a class="nav-link"  href="{% url 'user:books' %}">책</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{% url 'user:voices' %}">성우</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
