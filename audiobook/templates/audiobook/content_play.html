@@ -63,8 +63,9 @@
 
             <div class="row justify-content-center"> 
                 <div class="col-8">
-                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" id="progress-bar" style="width: 0%;"></div>
+                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="cursor: pointer; position: relative;">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%; background-color: #fd9843;"></div>
+                        <div id="progress-bar-thumb" style="position: absolute; height: 16px; width: 16px; background-color: #fd7e14; border-radius: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
                     </div>
                 </div>
             </div>
@@ -100,8 +101,10 @@
     <script>
         const audio = document.getElementById("audioPlayer");
         const progressBar = document.getElementById("progress-bar");
+        const progressBarThumb = document.getElementById("progress-bar-thumb");
+        let isDragging = false;
         let animationFrameId;
-
+        
         document.getElementById("play").addEventListener("click", function() {
             if (audio.paused) {
                 audio.play();
@@ -111,36 +114,66 @@
                 cancelAnimationFrame(animationFrameId);
             }
         });
-
-        function playSample() {
-            var audioPlayer = document.getElementById('audioPlayer');
-            if (!isPlaying) {
-                audioPlayer.play();
-                isPlaying = true;
-            } else {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                isPlaying = false;
-            }
-        }
-
-         // 소리 파일의 재생 시간에 따라 프로그래스 바의 너비를 조절하는 함수
+        
+        // 소리 파일의 재생 시간에 따라 프로그래스 바의 너비를 조절하는 함수
         function updateProgressBar() {
             const duration = audio.duration;
             const currentTime = audio.currentTime;
             const progress = (currentTime / duration) * 100;
             progressBar.style.width = `${progress}%`;
+            updateProgressBarThumbPosition(progress);
         }
-
+        
         // 소리 파일이 로드될 때 프로그래스 바 업데이트
         audio.addEventListener("loadeddata", updateProgressBar);
-
+        
         // 소리 파일의 재생 중에 프로그래스 바 업데이트
         audio.addEventListener("timeupdate", updateProgressBar);
-
+        
+        // 프로그래스 바 부드럽게
         function animateProgressBar() {
             updateProgressBar();
             animationFrameId = requestAnimationFrame(animateProgressBar);
+        }
+        
+        // 프로그래스 바를 클릭했을 때 해당 위치로 이동하는 이벤트
+        progressBar.addEventListener("click", function (e) {
+            if (!isDragging) {
+                const progressBarRect = progressBar.getBoundingClientRect();
+                const clickX = e.clientX - progressBarRect.left;
+                const progressBarWidth = progressBarRect.width;
+                const clickPercentage = clickX / progressBarWidth;
+                const newTime = clickPercentage * audio.duration;
+                audio.currentTime = newTime;
+                updateProgressBar();
+            }
+        });
+        
+        progressBarThumb.addEventListener("mousedown", function (e) {
+            isDragging = true;
+            document.addEventListener("mousemove", handleThumbMove);
+            document.addEventListener("mouseup", function () {
+                isDragging = false;
+                document.removeEventListener("mousemove", handleThumbMove);
+            });
+        });
+        
+        // 동그란 아이콘이 이동할 때 발생하는 이벤트
+        function handleThumbMove(e) {
+            if (isDragging) {
+                const progressBarRect = progressBar.getBoundingClientRect();
+                const clickX = e.clientX - progressBarRect.left;
+                const progressBarWidth = progressBarRect.width;
+                const clickPercentage = clickX / progressBarWidth;
+                const newTime = clickPercentage * audio.duration;
+                audio.currentTime = newTime;
+                updateProgressBar();
+            }
+        }
+        
+        // 동그란 아이콘 위치 업데이트
+        function updateProgressBarThumbPosition(progress) {
+            progressBarThumb.style.left = `calc(${progress}% - 8px)`;
         }
     </script>
 {% endblock %}
