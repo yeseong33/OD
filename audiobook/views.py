@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import requests
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls.base import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +11,7 @@ from rest_framework import status
 from .serializers import VoiceSerializer
 from .models import *
 from user.views import decode_jwt
+from config.settings import AWS_S3_CUSTOM_DOMAIN
 
 load_dotenv()
 
@@ -33,17 +34,18 @@ class MainView(APIView):
 
     def get(self, request):
         top_books = Book.objects.all().order_by('-book_likes')[:10]
-        user_books = Book.objects.filter(user=request.user.user_id)
-        hot_books = Book.objects.all().order_by('?')[:10]
-
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        print(user_inform)
-        user = User.objects.get(user_id=user_inform['user_id'])
+        top_voices = Voice.objects.all().order_by('-voice_like')[:10]
+        user_history_book = []  # 최신 이용한 책 순서로 보이기 위해서 filter를 사용하지 않고 리스트를 만들어서 사용
+        for book_id in request.user.user_book_history:
+            book = get_object_or_404(Book, book_id=book_id)
+            user_history_book.append(book)
+        
         return Response({
             'top_books': top_books,
-            'user_books': user_books,
-            'hot_books': hot_books,
-            'user': user,
+            'user_history_book': user_history_book,
+            'top_voices': top_voices,
+            'user': request.user,
+            'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN,
         })
 
 

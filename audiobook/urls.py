@@ -15,7 +15,7 @@ path('genre/', views.genre, name='genre'),
 path('search/', views.search, name='search'),
 
 # 청취
-path('content/', views.content, name='content'),
+path('content/<int:book_id>', views.content, name='content'),
 path('content/play/', views.content_play, name='content_play'),
 
 # 성우
