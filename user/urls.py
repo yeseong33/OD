@@ -18,6 +18,8 @@ urlpatterns = [
     path('profile/inform/', views.UserInformView.as_view(), name = 'inform'),
     path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='books'),
     path('profile/likevoices/', views.UserLikeVoicesView.as_view(), name='voices'),
+    path('profile/history/', views.BookHistoryView.as_view(), name='history'),
+    
     
     
 

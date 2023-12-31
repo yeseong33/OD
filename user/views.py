@@ -214,7 +214,9 @@ class UserInformView(APIView):
         user_image = request.FILES.get('file')
         nickname = request.POST.get('nickname')
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
-        if nickname:
+        
+        
+        if nickname: # body에 들어있다면 nickname이 들어있다면 변경
             user.nickname = nickname
         user.save()
         return redirect('user:inform')
@@ -242,7 +244,7 @@ class UserLikeVoicesView(APIView):
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id = user_inform['user_id'])
-        voice_id_list = user.user_favorite_voices
+        voice_id_list = user.user_favorite_voices # 유저가 좋아요한 책 Pk를 조회
         
         if voice_id_list == None:
             context = {'voices' : None}
@@ -250,10 +252,20 @@ class UserLikeVoicesView(APIView):
             voices = Voice.objects.filter(pk__in = voice_id_list)
             context = {'voices' : voices}
         return render(request, self.template_name, context)
-        
-    
     
 
+class BookHistoryView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name  ='user/book_history.html'
+    
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id = user_inform['user_id'])
+        book_id_list = user.user_book_history # 유저 독서이력을 조회.
 
-
-            
+        if book_id_list == None: # 유저가 좋아요한 목록이 없을 경우.
+            context = {'books': None}
+        else:
+            books = Book.objects.filter(pk__in = book_id_list)
+            context = {'books': books}
+        return render(request, self.template_name, context)

@@ -4,20 +4,7 @@
 {% block title %}좋아요 내역{% endblock %}
 {% block style %}
 <style>
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;  
-        margin-top: 20px;
-    }
 
-    .card {
-        width: 48%;  
-        margin-bottom: 20px;
-    }
-    .card:hover{
-        background-color:#f0f0f0;
-    }
 </style>
 {% endblock %}
 
@@ -36,7 +23,7 @@
                     <a class="nav-link active "  aria-current="page"  href="{% url 'user:books' %}">좋아요 내역</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href = "#">독서 이력</a>
+                    <a class="nav-link" href = "{% url 'user:history'%}">독서 이력</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href = "#">1:1 문의</a>
@@ -57,6 +44,7 @@
                     </li>
                 </ul>
             </div>
+            
             <div class="row-10 d-flex justify-content-end">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="latest" checked>

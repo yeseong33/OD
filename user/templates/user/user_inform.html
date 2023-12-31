@@ -11,16 +11,16 @@
         <div class="col-3 custom-nav">
             <ul class="nav flex-column nav-pills my-5">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user:profile'%}">구독 정보</a>
+                    <a class="nav-link" href="{% url 'user:profile' %}">구독 정보</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'user:inform' %}">회원 정보</a>
+                    <a class="nav-link active" aria-current="page"  href="{% url 'user:inform' %}">회원 정보</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'user:books' %}">좋아요 내역</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href = "#">독서 이력</a>
+                    <a class="nav-link" href = "{% url 'user:history'%}">독서 이력</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href = "#">1:1 문의</a>
