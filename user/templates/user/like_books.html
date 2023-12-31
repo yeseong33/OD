@@ -72,57 +72,90 @@
 
             <div class="row-10 d-flex justify-content-end">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="latest" checked>
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="latest" value="latest" checked>
                     <label class="form-check-label" for="inlineRadio1">최신순</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="title">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="title" value="title">
                     <label class="form-check-label" for="inlineRadio2">제목순</label>
                 </div>
             </div>
 
-            {% comment %} <div class="row" id="books-container">
-                {% if books %}
-                    {% for book in books %}
-                        <div class="col-6">
-                            <a href="#">
-                                <div class="card gap-1" style="width: 18rem;">
-                                    <img src="{{ book.book_image_path }}" style="height: 400px;" class="card-img-top" alt="book image">
-                                    <div class="card-body">
-                                        <p class="card-text">{{ book.book_title }}</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <h2>좋아요를 눌러 책을 쉽게 찾아보세요!</h2>
-                {% endif %}
-            </div> {% endcomment %}
-
             <div class="row" id="books-container">
-                {% if books %}
-                    {% for book in books %}
-                        <div class="col-6 card-container">
-                            <a href = "{% url 'user:profile' %}">
-                                <div class="card gap-1" style="width: 18rem;">
-                                    <img src="{{ book.book_image_path }}" style="height: 400px;" class="card-img-top blur-on-hover" alt="book image">
-                                    <button type="button" class="btn btn-outline-orange-200 btn-lg listen-button">청취하기</button>
-                                    <div class="card-body">
-                                        <p class="card-text">{{ book.book_title }}</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <h2>좋아요를 눌러 책을 쉽게 찾아보세요!</h2>
-                {% endif %}
+                <!--ajax 통신후 결과 div가 여기에 출력.-->
             </div>
+            
             
 
         </div>
     </div>
 </div>
-
 {% endblock %}
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function(){
+        function loadBooks(orderBy){
+            $.ajax({
+                url: "{% url 'user:books' %}",
+                type: "GET",
+                data: {'orderBy': orderBy},
+                dataType: "json",
+                success: function(data){
+                    updateBooks(data);
+                },
+                error: function(error){
+                    console.log("Error data : ", error);
+                }
+            });
+        }
+
+        $('input[name="inlineRadioOptions"]').change(function(){
+            console.log("Radio Change")
+            var orderBy = $('input[name="inlineRadioOptions"]:checked').val();  // 여기서 오류 수정
+            loadBooks(orderBy);
+        });
+
+        function updateBooks(data) {
+            var booksContainer = $('#books-container');
+            // console.log(data)
+            // 이전 도서 목록 제거
+            booksContainer.empty();
+        
+            if (data.books) {
+                // 받아온 데이터를 사용하여 도서 목록 업데이트
+                for (var i = 0; i < data.books.length; i++) {
+                    var book = data.books[i];
+                    // 새로운 도서 카드 생성
+                    var cardHtml = `
+                        <div class="col-6 card-container">
+                            <div class="card gap-1" style="width: 18rem;">
+                                <a href="#">
+                                    <img src="${book.book_image_path}" style="height: 400px;" class="card-img-top blur-on-hover" alt="book image">
+                                </a>
+                                <button type="button" class="btn btn-outline-orange-200 btn-lg listen-button">청취하기</button>
+                                <div class="card-body">
+                                    <p class="card-text">${book.book_title}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        
+                    // 도서 목록에 새로운 도서 카드 추가
+                    booksContainer.append(cardHtml);
+                }
+            } else {
+                // 좋아요한 도서가 없는 경우 메시지 표시
+                var messageHtml = `<h2>좋아요를 등록하여 책을 쉽게 찾아보세요!</h2>`;
+                booksContainer.append(messageHtml);
+            }
+        }
+        
+
+        // 초기 로딩 시 최신순으로 도서 목록 가져오기
+        loadBooks('latest');
+    });
+</script>
+{% endblock %}
+
+

@@ -16,7 +16,9 @@ from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.utils import timezone
 from audiobook.models import *
-
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+from  community.serializers import BookSerializer
 load_dotenv()
 
 
@@ -220,22 +222,38 @@ class UserInformView(APIView):
             user.nickname = nickname
         user.save()
         return redirect('user:inform')
-            
-            
+
 class UserLikeBooksView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    template_name  ='user/like_books.html'
+    template_name = 'user/like_books.html'
+
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id = user_inform['user_id'])
+        user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_favorite_books
-        
-        if book_id_list == None: # 유저가 좋아요한 목록이 없을 경우.
+
+        if book_id_list is None:  # 유저가 좋아요한 목록이 없을 경우.
             context = {'books': None}
         else:
-            books = Book.objects.filter(pk__in = book_id_list)
-            context = {'books': books}
+            # 정렬 방식을 라디오 버튼 값으로 받아오기
+            order_by = request.GET.get('orderBy', 'latest')
+            books = Book.objects.filter(pk__in=book_id_list)
+            if order_by == 'title':
+                books = books.order_by('book_title')
+            else:
+                books = books.order_by('book_id')
+
+            books_data = [{'book_id' : book.book_id, 'book_title' : book.book_title, 
+                            'book_image_path': str(book.book_image_path)} for book in books] #추후에 AWS 버킷 경로로 변경, Serializer 사용.
+            context = {'books': books_data}
+            
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': # 만약 요청이 Ajax라면 JSON 형식으로 응답       
+            return JsonResponse(context)
+
+        # 일반적인 GET 요청이라면 HTML 렌더링
         return render(request, self.template_name, context)
+
+
 
 class UserLikeVoicesView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -249,9 +267,21 @@ class UserLikeVoicesView(APIView):
         if voice_id_list == None:
             context = {'voices' : None}
         else:
+            order_by = request.GET.get('orderBy','latest')
             voices = Voice.objects.filter(pk__in = voice_id_list)
-            context = {'voices' : voices}
-        return render(request, self.template_name, context)
+            
+            if order_by == 'name':
+                voices = voices.order_by('voice_name')
+            else:
+                voices = voices.order_by('voice_id')
+            voice_data = [{'voice_id' : voice.voice_id, 'voice_image_path' : str(voice.voice_image_path), #추후에 AWS 버킷 경로로 변경, Serializer 사용.
+                            'voice_name' : voice.voice_name} for voice in voices]
+            context = {'voices' : voice_data}
+            
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': #Ajax 요청일경우.
+            return JsonResponse(context)
+        
+        return render(request, self.template_name, context) #Ajax 요청이 아닐경우.
     
 
 class BookHistoryView(APIView):
@@ -263,9 +293,22 @@ class BookHistoryView(APIView):
         user = User.objects.get(user_id = user_inform['user_id'])
         book_id_list = user.user_book_history # 유저 독서이력을 조회.
 
-        if book_id_list == None: # 유저가 좋아요한 목록이 없을 경우.
+        if book_id_list is None:  # 유저가 좋아요한 목록이 없을 경우.
             context = {'books': None}
         else:
+            # 정렬 방식을 라디오 버튼 값으로 받아오기
+            order_by = request.GET.get('orderBy', 'latest')
             books = Book.objects.filter(pk__in = book_id_list)
-            context = {'books': books}
+            if order_by == 'title':
+                books = books.order_by('book_title')
+            else:
+                books = books.order_by('book_id')
+
+            books_data = [{'book_id' : book.book_id, 'book_title' : book.book_title, 
+                            'book_image_path': str(book.book_image_path) ,'book_author' : book.book_author} for book in books] #추후에 AWS 버킷 경로로 변경, Serializer 사용.
+            context = {'books': books_data}
+            
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': # 만약 요청이 Ajax라면 JSON 형식으로 응답       
+            return JsonResponse(context)
+            
         return render(request, self.template_name, context)
