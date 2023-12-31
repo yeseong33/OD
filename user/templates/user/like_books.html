@@ -4,7 +4,32 @@
 {% block title %}좋아요 내역{% endblock %}
 {% block style %}
 <style>
+    .card-container {
+        position: relative;
+    }
 
+    .blur-on-hover {
+        filter: blur(0); 
+        transition: filter 0.5s ease-in-out;
+    }
+
+    .listen-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0; 
+        transition: opacity 0.5s ease-in-out;
+        cursor: pointer;
+    }
+
+    .card-container:hover .blur-on-hover {
+        filter: blur(5px);
+    }
+
+    .card-container:hover .listen-button {
+        opacity: 1; 
+    }
 </style>
 {% endblock %}
 
@@ -44,7 +69,7 @@
                     </li>
                 </ul>
             </div>
-            
+
             <div class="row-10 d-flex justify-content-end">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="latest" checked>
@@ -56,13 +81,33 @@
                 </div>
             </div>
 
-            <div class="row" id="books-container">
+            {% comment %} <div class="row" id="books-container">
                 {% if books %}
                     {% for book in books %}
                         <div class="col-6">
                             <a href="#">
                                 <div class="card gap-1" style="width: 18rem;">
                                     <img src="{{ book.book_image_path }}" style="height: 400px;" class="card-img-top" alt="book image">
+                                    <div class="card-body">
+                                        <p class="card-text">{{ book.book_title }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <h2>좋아요를 눌러 책을 쉽게 찾아보세요!</h2>
+                {% endif %}
+            </div> {% endcomment %}
+
+            <div class="row" id="books-container">
+                {% if books %}
+                    {% for book in books %}
+                        <div class="col-6 card-container">
+                            <a href = "{% url 'user:profile' %}">
+                                <div class="card gap-1" style="width: 18rem;">
+                                    <img src="{{ book.book_image_path }}" style="height: 400px;" class="card-img-top blur-on-hover" alt="book image">
+                                    <button type="button" class="btn btn-outline-orange-200 btn-lg listen-button">청취하기</button>
                                     <div class="card-body">
                                         <p class="card-text">{{ book.book_title }}</p>
                                     </div>
