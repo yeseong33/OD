@@ -159,10 +159,10 @@
         var bookIdInput = document.getElementById('book_id_input');
         if (bookId && bookIdInput) {
             bookIdInput.value = bookId;
-            console.log(bookId)
         }
         // 글쓰기 버튼 클릭 시 이벤트 핸들러
         document.getElementById('postButton').addEventListener('click', function () {
+            event.preventDefault();  // 폼 전송 기본 동작 막기
             // FormData 객체 생성 및 폼 데이터 추가
             var formData = new FormData(document.getElementById('postForm'));
             console.log('pas')
@@ -172,11 +172,10 @@
                 body: formData,
             })
             .then(response => {
-                // 응답이 성공적인지 확인
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json(); // 혹은 response.text() 등으로 응답 데이터 처리
+                return response.json();
             })
             .then(data => {
                 // 성공적으로 데이터를 받아온 경우 실행되는 로직

@@ -5,12 +5,12 @@ app_name = 'community'
 
 urlpatterns = [
     # APIs
-    path('book/', views.BookList.as_view(), name='book_list'),  
-    path('book/<int:pk>', views.BookDetail.as_view(), name='book_detail'),  
-    path('post/', views.PostList.as_view(), name='post_list'),  
-    path('post/<int:pk>', views.PostDetail.as_view(), name='post_detail'),  
-    path('comment/', views.CommentList.as_view(), name='comment_list'),  
-    path('comment/<int:pk>', views.CommentDetail.as_view(), name='comment_detail'),  
+    path('api/book/', views.BookList.as_view(), name='book_list'),  
+    path('api/book/<int:pk>', views.BookDetail.as_view(), name='book_detail'),  
+    path('api/post/', views.PostList.as_view(), name='post_list'),  
+    path('api/post/<int:pk>', views.PostDetail.as_view(), name='post_detail'),  
+    path('api/comment/', views.CommentList.as_view(), name='comment_list'),  
+    path('api/comment/<int:pk>', views.CommentDetail.as_view(), name='comment_detail'),  
     
     # html render
     # 토론

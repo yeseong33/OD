@@ -24,19 +24,19 @@ class PostSerializer(serializers.ModelSerializer):
         self.validated_data['book'] = book
         return super().save(**kwargs)
 
-    
-    def update(self, instance, validated_data):
-        print('xhdrhk')
-        print(validated_data, '벨리드')
-        instance.post_title = validated_data.get('new_title', instance.post_title)
-        instance.post_content = validated_data.get('new_content', instance.post_content)
-        instance.save()
+    # def update(self, instance, validated_data):
+    #     print('xhdrhk')
+    #     print(validated_data, '벨리드')
+    #     instance.post_title = validated_data.get('new_title', instance.post_title)
+    #     instance.post_content = validated_data.get('new_content', instance.post_content)
+    #     instance.save()
 
-        return instance
+    #     return instance
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
         response['user'] = UserSerializer(instance.user).data
+        # response['book'] = BookSerializer(instance.book).data
         return response
     
     

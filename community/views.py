@@ -85,19 +85,9 @@ class BookShareContentHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content.html'
     
-    def get_object(self, pk):
-        try:
-            return Book.objects.get(pk=pk)
-        except Book.DoesNotExist:
-            raise Http404
-
     def get(self, request, pk):
-        book = self.get_object(pk)
-        post = Post.objects.get(pk=4)
-        p_serializer = PostSerializer(post)
-        print(p_serializer.data)
+        book = get_object_or_404(Book,pk=pk)
         serializer = BookSerializer(book)
-        print( serializer.data)
         return Response({'book': serializer.data}, template_name=self.template_name)
 
 class BookShareContentPostHtml(APIView):
@@ -147,10 +137,8 @@ class BookList(APIView):
 
 class BookDetail(APIView):
     renderer_classes = [JSONRenderer]
-    template_name = 'community/book_share_content.html'
-    """
-    Retrieve, update or delete a Book instance.
-    """
+
+
     def get_object(self, pk):
         try:
             return Book.objects.get(pk=pk)
@@ -159,8 +147,8 @@ class BookDetail(APIView):
 
     def get(self, request, pk, format=None):
         book = self.get_object(pk)
-        serializer = BookSerializer(Book)
-        return Response({"book": serializer.data}, template_name=self.template_name)
+        serializer = BookSerializer(book)
+        return Response({"book": serializer.data})
 
     def put(self, request, pk, format=None):
         book = self.get_object(pk)
@@ -186,16 +174,14 @@ class PostList(APIView):
         return Response({"books": serializer.data})
 
     def post(self, request):
+        print('pas')
         user_id = request.user.user_id
         book_id = request.data['book_id']
         context={
             'book_id': book_id, 
             'user_id':user_id
         }
-        print('sd')
-        print(request.data)
         serializer = PostSerializer(data=request.data, context=context)
-        print(serializer.initial_data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -204,27 +190,13 @@ class PostList(APIView):
 
 class PostDetail(APIView):
     renderer_classes = [JSONRenderer]
-    """
-    Retrieve, update or delete a Post instance.
-    """
+
     def get(self, request, pk, format=None):
         post = get_object_or_404(Post, pk=pk)
         serializer = PostSerializer(post)
         print(serializer.data)
         return Response(serializer.data)
 
-    # def put(self, request, pk, format=None):
-    #     post = get_object_or_404(Post, pk=pk)
-    #     print(post)
-    #     post.post_title = request.data.get('new_title')
-    #     post.post_content= request.data.get('new_content')
-    #     print(request.data, '리쿼')
-    #     serializer = PostSerializer(post, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
     def put(self, request, pk, format=None):
         print(request.data)
         new_title = request.data.get('new_title')
@@ -274,11 +246,8 @@ class CommentList(APIView):
     
 
 class CommentDetail(APIView):
-    renderer_classes = [JSONRenderer, TemplateHTMLRenderer]
-    template_name = 'community/book_share_content.html'
-    """
-    Retrieve, update or delete a Comment instance.
-    """
+    renderer_classes = [JSONRenderer]
+
     def get_object(self, pk):
         try:
             return Comment.objects.get(pk=pk)
@@ -288,7 +257,7 @@ class CommentDetail(APIView):
     def get(self, request, pk, format=None):
         comment = self.get_object(pk)
         serializer = CommentSerializer(comment)
-        return Response(serializer.data, template_name=self.template_name)
+        return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         comment = self.get_object(pk)
