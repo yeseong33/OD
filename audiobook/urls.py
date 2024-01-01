@@ -26,5 +26,6 @@ urlpatterns = [
      path('voice/custom/complete/upload', views.voice_custom_upload_post, name='voice_custom_upload_post'),
 
      #rvc train
-     path('rvc_train/', views.RvcTrain.as_view(), name='rvc_train')
+     path('rvc_train/', views.RvcTrain.as_view(), name='rvc_train'),
+     path('tts/', views.TTS, name="TTS")
 ]
