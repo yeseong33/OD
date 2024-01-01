@@ -1,0 +1,9 @@
+<div class="col-3 d-flex align-items-center justify-content-center">
+    <div class="nav flex-column nav-pills me-3 text-center">
+        <a class="nav-link fs-3 my-3 {% if active_tab == 'user_subscription' %}active{% endif %}" href="{% url 'user:profile' %}">구독 정보</a>
+        <a class="nav-link fs-3 my-3 {% if active_tab == 'user_information' %}active{% endif %}" href="{% url 'user:information' %}" >회원 정보</a>
+        <a class="nav-link fs-3 my-3 {% if active_tab == 'user_like' %}active{% endif %}" href="{% url 'user:like_books' %}">좋아요 내역</a>
+        <a class="nav-link fs-3 my-3 {% if active_tab == 'user_book_history' %}active{% endif %}" href="{% url 'user:book_history' %}">독서 이력</a>
+        <a class="nav-link fs-3 my-3 {% if active_tab == 'user_faq' %}active{% endif %}" href="{% url 'user:faq' %}">1:1 문의</a>
+    </div>
+</div>

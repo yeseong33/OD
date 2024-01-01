@@ -23,6 +23,9 @@ class JWTMiddleware:
                 user = authenticate(request, token=token)
                 if user:
                     request.user = user
+                    print(f"JWTMiddleware: User authenticated. User: {user}")
+                else:
+                    print("JWTMiddleware: User authentication failed.")
             except ExpiredSignatureError:
                 try:
                     # 토큰이 만료된 경우 새 토큰 발급
@@ -37,6 +40,7 @@ class JWTMiddleware:
                     # 새 토큰을 쿠키에 설정
                     response = self.get_response(request)
                     response.set_cookie('jwt', new_token)
+                    print(f"Set JWT cookie for path '/'. Token: {token}")
                     return response
                 except Exception as e:
                     print(f"JWT 처리 중 오류 발생: {e}")

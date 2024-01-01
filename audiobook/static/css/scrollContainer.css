@@ -1,0 +1,92 @@
+.scrolling-container {
+    display: flex;
+    flex-wrap: nowrap; /* 아이템들이 줄바꿈 되지 않도록 설정 */
+    overflow-x: auto; /* 가로 스크롤 가능 */
+    -ms-overflow-style: none; /* 인터넷 익스플로러와 엣지 브라우저를 위함 */
+    scrollbar-width: none; /* 파이어폭스 브라우저를 위함 */
+}
+  
+.scrolling-container::-webkit-scrollbar {
+display: none; /* 크롬, 사파리, 오페라 브라우저에서 스크롤바를 숨김 */
+}
+
+.scrolling-wrapper {
+position: relative; /* 상대적 위치 지정 */
+}
+
+.scrolling-wrapper + .scrolling-wrapper {
+  margin-top: 50px; /* 첫 번째 요소 이후의 모든 .scrolling-wrapper에 마진 적용 */
+}
+
+.scrolling-wrapper h2 {
+font-weight: bold; /* 제목 글씨를 굵게 설정 */
+margin-top: 40px; /* 위쪽 여백 설정 */
+margin-bottom: 20px; /* 상단 네비게이터와의 여백을 20px로 설정 */
+}
+.scroll-left-button, .scroll-right-button {
+position: absolute; /* 절대적 위치 지정 */
+top: 50%; /* 컨테이너의 중간 높이 */
+transform: translateY(-50%); /* 버튼을 정중앙으로 조정 */
+z-index: 10; /* 다른 요소들 위에 표시 */
+}
+.scroll-left-button {
+  left: 0; /* 왼쪽 끝 */
+}
+.scroll-right-button {
+  right: 0; /* 오른쪽 끝 */
+}
+
+/* 아이템 스타일 */
+.book-card, .voice-card {
+  flex: 0 0 auto; /* 아이템들이 줄어들지 않도록 설정 */
+  width: 200px;
+  margin: 0 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.book-card {
+height: 300px;
+}
+
+.voice-card {
+height: 200px;
+display: flex; /* Flexbox를 사용하여 아이템들을 유연하게 배치 */
+align-items: center; /* 수직 방향으로 중앙 정렬 */
+justify-content: center; /* 수평 방향으로 중앙 정렬 */
+}
+
+.book-card img, .voice-card img {
+width: 100%; /* 이미지 너비를 카드 너비와 동일하게 설정 */
+height: 100%; /* 이미지 높이를 카드 높이와 동일하게 설정 */
+object-fit: cover; /* 이미지가 비율을 유지하면서 컨테이너를 채우도록 설정 */
+object-position: center; /* 이미지가 컨테이너의 중앙에 위치하도록 설정 */
+}
+
+.book-card:hover, .voice-card:hover {
+transform: scale(1.08);
+}
+
+.book-info, .voice-info {
+  position: absolute; /* 절대 위치 지정 */
+  top: 50%; /* 상단에서 50% 위치 */
+  left: 50%; /* 좌측에서 50% 위치 */
+  transform: translate(-50%, -50%); /* 요소 중앙 정렬 */
+  text-align: center; /* 글자 중앙 정렬 */
+  opacity: 0; /* 기본 상태에서 보이지 않음 */
+  transition: opacity 0.3s; /* 부드러운 투명도 변환 */
+  pointer-events: none; /* 마우스 이벤트 무시 */
+}
+
+.book-card:hover .book-info, .voice-card:hover .voice-info {
+opacity: 1; /* 마우스 오버 시 정보 표시 */
+color: #FFF; /* 글자 색상 */
+}
+
+.book-card:hover .book-img, .voice-card:hover .voice-img{
+opacity: 0.5; /* 마우스 오버 시 이미지 투명도 변경 */
+filter: sepia(60%) brightness(20%);
+}
