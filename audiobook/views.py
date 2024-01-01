@@ -1,23 +1,45 @@
 import os
-from dotenv import load_dotenv
+import time
+import socket
+
 import requests
+import paramiko
+import pygame
+from dotenv import load_dotenv, dotenv_values
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls.base import reverse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
+from django.templatetags.static import static
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework import status
+
 from .serializers import VoiceSerializer
 from .models import *
 from user.views import decode_jwt
-from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
-from django.templatetags.static import static
 from community.models import BookRequest
-from django.db.models import Q
+from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
 load_dotenv()
 
+def play_wav(file_path):
+    pygame.init()
+    pygame.mixer.init()
+    sound = pygame.mixer.Sound(file_path)
+    sound.play()
+
+    # 소리 재생이 끝날 때까지 기다립니다
+    while pygame.mixer.get_busy():
+        pygame.time.Clock().tick(10)
+
+    pygame.mixer.quit()
+    pygame.quit()
 
 # 첫 화면
 
@@ -136,6 +158,152 @@ class MainGenreView(APIView):
 
         return Response(context)
 
+# RvcTrain
+class RvcTrain(APIView):
+    renderer_classes = [JSONRenderer,TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_custom_complete.html'
+
+    def get(self, request):
+        return Response({'result': False, 'message': 'GET 요청은 허용되지 않습니다.'})
+
+    def post(self, request):
+        print(request.data)
+
+        config = dotenv_values(".env")
+        hostname = config.get("RVC_IP")
+        username = config.get("RVC_USER")
+        key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
+
+        voice_file = request.FILES['voice_file']
+        voice_name = request.POST['voice_name']
+
+        # SSH 클라이언트 생성
+        client = paramiko.SSHClient()
+        # 호스트 키 자동으로 수락
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # SSH 연결 (키 기반 인증)
+        client.connect(hostname=hostname, username=username, key_filename=key_filename)
+
+        # 셸 세션 열기
+        shell = client.invoke_shell()
+
+        def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
+            # prompt 문자열이 나타날 때까지 출력을 읽습니다.
+            # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
+            buffer = ''
+            shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
+            try:
+                while not buffer.endswith(prompt):
+                    response = shell.recv(1024).decode('utf-8',errors='replace')
+                    buffer += response
+            except socket.timeout:
+                print("No data received before timeout")
+            return buffer
+
+        commands = [
+            'ls\n',
+            'cd project-main\n',
+            'rm -rf voices\n',
+            'mkdir voices\n',
+            'cd assets\n',
+            'rm -rf weights\n',
+            'mkdir weights\n',
+            'cd ..\n',
+        ]
+
+        for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+
+        # SFTP 클라이언트 시작
+        sftp_client = client.open_sftp()
+
+        # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
+        remote_path = '/home/kimyea0454/project-main/voices/' + voice_name + '.mp3'
+        sftp_client.putfo(voice_file, remote_path)
+        # SFTP 세션 종료
+        sftp_client.close()
+
+        commands = [
+            'python3 preprocess.py '+voice_name+'\n',
+            'python3 extract_features.py '+voice_name+'\n',
+            'python3 train_index.py '+voice_name+'\n',
+            'python3 train_model.py '+voice_name+'\n',
+        ]
+
+        for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+
+        # 연결 종료
+        client.close()
+
+        return Response(template_name=self.template_name)
+    
+# TTS
+@api_view(["POST"])
+def TTS(request):
+    config = dotenv_values(".env")
+    hostname = config.get("RVC_IP")
+    username = config.get("RVC_USER")
+    key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
+
+    tone = request.POST['tone']
+    text = request.POST['text']
+
+    # SSH 클라이언트 생성
+    client = paramiko.SSHClient()
+    # 호스트 키 자동으로 수락
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # SSH 연결 (키 기반 인증)
+    client.connect(hostname=hostname, username=username, key_filename=key_filename)
+
+    # 셸 세션 열기
+    shell = client.invoke_shell()
+
+    def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
+        # prompt 문자열이 나타날 때까지 출력을 읽습니다.
+        # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
+        buffer = ''
+        shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
+        try:
+            while not buffer.endswith(prompt):
+                response = shell.recv(1024).decode('utf-8',errors='replace')
+                buffer += response
+        except socket.timeout:
+            print("No data received before timeout")
+        return buffer
+
+    commands = [
+        f'python3 tts.py {text}\n',
+        'cd project-main\n',
+        f'python3 inference.py IU {tone} audios/tts.mp3\n',
+        'rm -rf audios/tts.mp3\n',
+    ]
+
+    try:
+        for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+        
+        sftp_client = client.open_sftp()
+
+        # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
+        remote_path = '/home/kimyea0454/project-main/audios/' + 'IU' + '.wav'
+        project_path = os.getcwd()
+        sftp_client.get(remote_path, os.path.join(project_path, 'static/tts/IU.mp3'))
+        # SFTP 세션 종료
+        sftp_client.close()
+
+        wav_file_path = os.path.join(project_path, 'static/tts/IU.mp3')
+        play_wav(wav_file_path)
+        
+        return Response("Well funciotned", status=status.HTTP_200_OK)
+    except:
+        return Response("WRONG", status=status.HTTP_400_BAD_REQUEST)
 
 def genre(request):
     pass

@@ -3,6 +3,16 @@
 
 
 {% block content %}
+    <style>
+        .loading-indicator {
+            display: none;
+            position: fixed;  /* 화면에 고정 */
+            top: 50%;  /* 화면의 상단으로부터 50% 위치에 배치 */
+            left: 50%;  /* 화면의 왼쪽으로부터 50% 위치에 배치 */
+            transform: translate(-50%, -50%);  /* 자신의 너비와 높이의 절반만큼 이동해서 정중앙에 배치 */
+            z-index: 9999;  /* 다른 요소 위에 표시 */
+        }
+    </style>
     <!-- 첫 번째 행 -->
     <div class="row mb-4">
         <div class="col">
@@ -19,9 +29,14 @@
 
     <!-- 두 번째 행 -->
     <div class="row justify-content-around">
-        <div class="col-2">
+        <div class="col-3">
             <p class="fw-bold">목소리 들어보기</p>
         </div>
+        <div class="col-2">
+            <p id="tone" class="fw-bold">톤</p>
+            <input type="text" class="tone" id="tone" name="tone">
+        </div>
+
         <div class="col-1">
             <div class="form-check">
                 <input class="form-check-input" type="radio" name="flexRadio" id="public" value="true" checked>
@@ -41,14 +56,14 @@
     <!-- 세 번째 행 -->
     <div class="row justify-content-center mb-4">
         <div class="col-8">
-            <textarea class="form-control" rows="5" placeholder="여기에 글을 작성하세요"></textarea>
+            <textarea id = "tts_text" class="form-control" rows="5" placeholder="여기에 글을 작성하세요"></textarea>
         </div>
     </div>
 
     <!-- 네 번째 행 -->
     <div class="row justify-content-end">
         <div class="col-3">
-            <button class="btn btn-primary">Play</button>
+            <button id = "play-button" class="btn btn-primary">Play</button>
         </div>
     </div>
 
@@ -74,6 +89,13 @@
         <div class="col-3">
             <button id="save-btn" class="btn btn-success btn-lg">저장하기</button>
         </div>
+        <div class="col-3">
+            <button id="save-btn" class="btn btn-success btn-lg">돌아가기</button>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <img src="{% static 'images/loading.gif' %}" alt="Loading..." />
     </div>
 
     <script>
@@ -118,8 +140,6 @@
 
             // user
             // 로그인 정보에서 유저 아이디 가져오기
-
-
             {% comment %} function submit() {
                 // 폼 데이터 수집
                 const data = {
@@ -168,6 +188,31 @@
                 }
                 return cookieValue;
             }
+
+            // play button
+            document.getElementById("play-button").addEventListener("click", function() {
+                var tone = document.getElementById('tone').value;  // 톤 데이터
+                var text = document.getElementById('tts_text').value;  // 텍스트 데이터
+                document.getElementById('loadingIndicator').style.display = 'block';
+            
+                var formData = new FormData();
+                formData.append('tone', tone);
+                formData.append('text', text);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
+            
+                var request = new XMLHttpRequest();
+                request.open("POST", "/tts/");  // views.py에 정의된 url
+                request.send(formData);
+            
+                request.onload = function() {
+                    if (request.status == 200) {
+                        console.log(request.response);  // 성공 시 응답 출력
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                    } else {
+                        console.log(Error(request.statusText));  // 실패 시 에러 출력
+                    }
+                }
+            });
        });
 
     </script>
