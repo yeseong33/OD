@@ -14,19 +14,11 @@ urlpatterns = [
     path('google/callback/', views.google_callback, name='google_callback'),
 
     # 계정관리
-    path('profile/', views.UserSubscriptionView.as_view(), name='profile'),
-    path('profile/information/', views.UserInformationView.as_view(),
-         name='information'),
-
-
-    # 도서 및 성우 내역
-    path('profile/likebooks/', views.UserLikeBooksView.as_view(),
-         name='like_books'),
-    path('profile/likevoices/', views.UserLikeVoicesView.as_view(),
-         name='like_voices'),
-    path('profile/book_history/',
-         views.UserBookHistoryView.as_view(), name='book_history'),
-
-    # 문의내역
-    path('profile/faq/', views.UserFAQView.as_view(), name='faq')
+    path('profile/', views.SubscribeView.as_view(), name = 'profile'),
+    path('profile/inform/', views.UserInformView.as_view(), name = 'inform'),
+    path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='like_books'),
+    path('profile/likevoices/', views.UserLikeVoicesView.as_view(), name='like_voices'),
+    path('profile/history/', views.BookHistoryView.as_view(), name='book_history'),
+    path('profile/inquiry/', views.InquiryListView.as_view(), name='inquiry'),
+    path('profile/inquiry/<int:inquiry_id>/', views.InquiryDetailView.as_view(), name='inquiry_detail'),
 ]
