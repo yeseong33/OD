@@ -4,96 +4,43 @@
 {% block title %}공유 및 커뮤니티{% endblock %}
 {% block style %}
 <style>
-    .content-item {
-        width: 120px; /* 가로 크기 */
-        height: 120px; /* 세로 크기 */
-        padding: 0px;
-        border: 1px solid #ccc;
-    }
-
-    .content-item img {
-        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
-        height: 100%; /* 가로 비율 유지 */
-        display: block; /* 인라인 요소의 기본 여백 제거 */
+    .card-img-top {
         transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
     }
 
-    .content-item img:hover {
+    .card-img-top:hover {
         z-index: 1;
         transform: scale(1.5); /* 확대 비율 */
-        }
-
-    .custom-mt {
-        margin-top: 120px;
-    }
-
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #fff;
-        color: #A4A4A4;
-        padding: 1px;
-        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-    }
-    
-    .custom-focus {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #F2E7C4;
-        color: #000;
-        padding: 1px;
-    }
-
-    .category-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 20px;
-    }
-
-    .center-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .center-icon svg {
-        width: 60px; /* 아이콘의 너비 */
-        height: 60px; /* 아이콘의 높이 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .center-icon:hover svg {
-        transform: scale(1.2); /* 호버 시 크기 조절 */
     }
 </style>
 {% endblock %}
 
 {% block content %}
     {% include 'community/sub_navbar.html' %}
-    <div class="container text-center">
-        <div class="row mt-3 justify-content-end">
+    <!-- 상단 검색창 -->
+    <div class="container text-center mt-3">
+        <div class="row justify-content-end">
             <div class="col-6">
-                <div class="input-group gap-4">
-                    <div class="col">
-                        <input type="text" class="form-control rounded-start rounded-end" placeholder="도서명을 입력해주세요" aria-label="공유 및 토론" aria-describedby="basic-addon2">
-                    </div>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button">검색</button>
-                    </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="도서명을 입력해주세요" aria-label="도서명 검색">
+                    <button class="btn btn-outline-secondary" type="button">검색</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 상단 간격 추가 -->
-    <div class="mt-5"></div>
-
-    <div id='custom-content'>
-        <div class="row gap-3 justify-content-start">
+    <!-- 컨텐츠 영역 -->
+    <div class="container mt-5">
+        <div class="row g-5 justify-content-center">
             {% for book in books %}
-                <div class="col-md-1 content-item">
-                    <img src="{{ book.image.url }}" id='{{book.book_id}}' class="img" alt="{{ book.title }}">
+                <div class="col-md-2" id="{{ book.book_id }}">
+                    <div class="card">
+                        <img src="{{ book.book_image_path }}" class="card-img-top" alt="{{ book.title }}" style="cursor:pointer;">
+                    </div>
                 </div>
+                {% if forloop.counter|divisibleby:5 and not forloop.last %}
+                    </div><div class="row g-5 justify-content-center mt-3">
+                {% endif %}
             {% endfor %}
         </div>
     </div>
@@ -101,31 +48,50 @@
     <!-- 하단 간격 추가 -->
     <div class="mb-5"></div>
 
+    <!-- 페이지네이션 -->
     <ul class="pagination justify-content-center">
-        <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
-        </li>
-        <li class="page-item"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">4</a></li>
-        <li class="page-item"><a class="page-link" href="#">5</a></li>
-        <li class="page-item">
-            <a class="page-link" href="#">다음</a>
-        </li>
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
+            </li>
+        {% endif %}
+    
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link" href="#">{{ num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+    
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">다음</a>
+            </li>
+        {% endif %}
     </ul>
 
 {% endblock %}
 
 {% block script %}
 <script>
-    // book 이미지를 클릭했을 때의 동작을 정의
     document.addEventListener('DOMContentLoaded', function() {
-        var bookImages = document.querySelectorAll('.img'); // 이미지 클래스 선택
+        var bookImages = document.querySelectorAll('.card-img-top');
+
         bookImages.forEach(function(image) {
             image.addEventListener('click', function() {
-                // 클릭 시 test.html로 리다이렉트
-                var bookId = image.getAttribute('id');
+                // 클릭 시 지정된 URL로 리다이렉트
+                var bookId = image.parentElement.parentElement.id;  // 카드의 ID를 bookId로 사용
                 window.location.href = "{% url 'community:book_share_content' book_id=0 %}".replace('0', bookId);
             });
         });

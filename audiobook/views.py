@@ -27,7 +27,8 @@ def index(request):
 
     else:  # 로그인 되어 있지 않으면 index 페이지를 렌더링
         return render(request, 'audiobook/index.html')
-    
+
+
 def test(request):
     return render(request, 'audiobook/ddd.html')
 
@@ -68,13 +69,15 @@ class MainView(APIView):
         # voice.voice_sample_path = convert_sample_voice(voice.voice_path) # 객체 속성(필드) 동적 추가
         # voice.voice_sample_path = static('voices/voice_sample.mp3')
 
-        return Response({
+        context = {
             'top_books': top_books,
             'user_history_book': user_history_book,
             'top_voices': top_voices,
             'user': request.user,
-            'AWS_S3_CUSTOM_DOMAIN': self.get_file_path(),
-        })
+            'file_path': self.get_file_path(),
+        }
+
+        return Response(context)
 
 
 class MainSearchView(APIView):
@@ -96,13 +99,27 @@ class MainSearchView(APIView):
         for book in book_list:
             book.book_image_path = f"{file_path}{book.book_image_path}"
 
-        return Response({'book_list': book_list, 'file_path': file_path})
-    
+        context = {
+            'book_list': book_list,
+            'file_path': file_path
+        }
+
+        return Response(context)
+
+
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_genre.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request):
+        file_path = self.get_file_path()
+
         categories = {
             '소설': Book.objects.filter(book_genre='novel').order_by('-book_likes')[:10],
             '인문': Book.objects.filter(book_genre='humanities').order_by('-book_likes')[:10],
@@ -111,11 +128,13 @@ class MainGenreView(APIView):
             '아동': Book.objects.filter(book_genre='children').order_by('-book_likes')[:10],
             '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
         }
-            
-        return Response({
-            'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN,
+
+        context = {
+            'file_path': file_path,
             'categories': categories,
-        })
+        }
+
+        return Response(context)
 
 
 def genre(request):
@@ -131,7 +150,15 @@ class Content(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/content.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request, book_id):
+        file_path = self.get_file_path()
+
         try:
             book = Book.objects.get(pk=book_id)
         except Book.DoesNotExist:
@@ -140,10 +167,11 @@ class Content(APIView):
         context = {
             'result': True,
             'book': book,
+            'file_path': file_path
         }
         return Response(context, template_name=self.template_name)
-    
-    
+
+
 class ContentPlay(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/content_play.html'
@@ -161,6 +189,8 @@ class ContentPlay(APIView):
         return Response(context, template_name=self.template_name)
 
 # 성우
+
+
 def voice_custom(request):
     return render(request, 'audiobook/voice_custom.html')
 

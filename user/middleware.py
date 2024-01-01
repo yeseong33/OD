@@ -23,7 +23,6 @@ class JWTMiddleware:
                 user = authenticate(request, token=token)
                 if user:
                     request.user = user
-                    print(f"JWTMiddleware: User authenticated. User: {user}")
                 else:
                     print("JWTMiddleware: User authentication failed.")
             except ExpiredSignatureError:

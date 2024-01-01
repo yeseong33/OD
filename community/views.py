@@ -1,29 +1,33 @@
 import os
-import requests
+import threading
 from pathlib import Path
+
+import requests
 from dotenv import load_dotenv
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.core.mail import send_mail, EmailMessage
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.template.response import TemplateResponse
-from django.templatetags.static import static
+from jose import jwt
+
 from django.conf import settings
+from django.core.mail import EmailMessage, send_mail
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.template.response import TemplateResponse
+from django.templatetags.static import static
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.utils.html import strip_tags
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from jose import jwt
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from audiobook.models import Book
 from user.models import User
-from .models import Post, BookRequest, UserRequestBook
+from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
-import threading
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -36,13 +40,21 @@ class BookShareContentList(APIView):
 
     def get(self, request):
         books = Book.objects.all()
+
+        # 페이지네이터 설정
+        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         # Serializer를 사용하여 Book 데이터를 JSON으로 변환
-        serializer = BookSerializer(books, many=True)
+        serializer = BookSerializer(page_obj, many=True)
 
         context = {
             'books': serializer.data,
+            'page_obj': page_obj,
             'active_tab': 'book_share'
         }
+
         return Response(context, template_name=self.template_name)
 
 

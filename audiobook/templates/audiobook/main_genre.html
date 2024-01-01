@@ -12,7 +12,7 @@
                 {% for book in books %}
                 <div class="book-card">
                 <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
-                    <img class="book-img" src="{{ AWS_S3_CUSTOM_DOMAIN }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+                    <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
                 </a>
                 <div class="book-info">
                     <h5>{{ book.book_title }}</h5>
