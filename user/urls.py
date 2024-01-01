@@ -19,6 +19,10 @@ urlpatterns = [
     path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='books'),
     path('profile/likevoices/', views.UserLikeVoicesView.as_view(), name='voices'),
     path('profile/history/', views.BookHistoryView.as_view(), name='history'),
+    path('profile/inquiry/', views.InquiryListView.as_view(), name='inquiry'),
+    path('profile/inquiry/<int:inquiry_id>/', views.InquiryDetailView.as_view(), name='inquiry_detail'),
+
+    
     
     
     

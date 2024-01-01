@@ -19,6 +19,7 @@ from audiobook.models import *
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from  community.serializers import BookSerializer
+from community.models import Inquiry
 load_dotenv()
 
 
@@ -312,3 +313,35 @@ class BookHistoryView(APIView):
             return JsonResponse(context)
             
         return render(request, self.template_name, context)
+
+class InquiryListView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name =  'user/inquiry_list.html'
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        inquiry_list = Inquiry.objects.filter(user_id__in=[user_inform['user_id']])
+        if not inquiry_list:
+            context = {'inquiries': None}
+        else:
+            inquiry_list = inquiry_list.order_by('-inquiry_created_date') #최신순으로 정렬.
+            inquiry_data = [{'inquiry_id': inquiry.inquiry_id, 'inquiry_title': inquiry.inquiry_title,
+                            'inquiry_category': inquiry.inquiry_category, 'inquiry_created_date': inquiry.inquiry_created_date,
+                            'inquiry_is_answered': inquiry.inquiry_is_answered} for inquiry in inquiry_list]
+            context = {'inquiries': inquiry_data}
+
+
+        return render(request, self.template_name, context)
+
+class InquiryDetailView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name =  'user/inquiry_detail.html'
+    
+    def get(self, request, inquiry_id):
+        inquiry = Inquiry.objects.get(inquiry_id = inquiry_id)
+        
+        inquiry_data = {'inquiry_id' : inquiry.inquiry_id, 'inquiry_title' : inquiry.inquiry_title,
+                'inquiry_category':inquiry.inquiry_category, 'inquiry_content':inquiry.inquiry_content,
+                'inquiry_response' : inquiry.inquiry_response}
+        context = {'inquiry' : inquiry_data}
+        return render(request, self.template_name, context)
+
