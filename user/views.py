@@ -248,9 +248,9 @@ class UserLikeBooksView(APIView):
                             'book_image_path': str(book.book_image_path)} for book in books] #추후에 AWS 버킷 경로로 변경, Serializer 사용.
             context = {'books': books_data}
             
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': # 만약 요청이 Ajax라면 JSON 형식으로 응답       
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': # 만약 요청이 Ajax라면 JSON 형식으로 응답
+            print(context)
             return JsonResponse(context)
-
         # 일반적인 GET 요청이라면 HTML 렌더링
         return render(request, self.template_name, context)
 
@@ -272,7 +272,7 @@ class UserLikeVoicesView(APIView):
             voices = Voice.objects.filter(pk__in = voice_id_list)
             
             if order_by == 'name':
-                voices = voices.order_by('voice_name')
+                voices = voices.order_by('-voice_name')
             else:
                 voices = voices.order_by('voice_id')
             voice_data = [{'voice_id' : voice.voice_id, 'voice_image_path' : str(voice.voice_image_path), #추후에 AWS 버킷 경로로 변경, Serializer 사용.

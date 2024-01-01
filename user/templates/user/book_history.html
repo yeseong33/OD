@@ -65,6 +65,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block script %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
@@ -85,7 +86,7 @@
         }
 
         $('input[name="inlineRadioOptions"]').change(function(){
-            console.log("Radio Change")
+            console.log("Radio Change");
             var orderBy = $('input[name="inlineRadioOptions"]:checked').val();  // 여기서 오류 수정
             loadBooks(orderBy);
         });
@@ -102,13 +103,13 @@
                     var book = data.books[i];
                     // 새로운 도서 카드 생성
                     var cardHtml = `
-                        <div class = "row">
+                        <div class="row">
                             <div class="col-3 book-container">
-                                <a href = "{% url 'user:profile' %}"> <!--추후에 청취하기 url로 변경-->
+                                <a href="{% url 'audiobook:content' 0 %}" data-audiobook-url="${book.book_id}" class="audiobook-link">
                                     <img src="${book.book_image_path}" class="rounded blur-on-hover" style="height: 300px; width: 100%;" alt="book Image">
                                 </a>
                                 <div class="justify-content-center">
-                                <button type="button" class="btn btn-outline-orange-400 btn-md listen-button">청취하기</button>
+                                    <button type="button" class="btn btn-outline-orange-400 btn-md listen-button" data-book-id="${book.book_id}">청취하기</button>
                                 </div>
                             </div>
                             <div class="col-9">
@@ -132,8 +133,17 @@
                 `;
                 booksContainer.append(cardHtml);
             }
+
+            // JavaScript로 Django URL 전달 및 청취하기 버튼 클릭 이벤트 처리
+            var listenButtons = document.querySelectorAll('.listen-button');
+            listenButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var bookId = button.getAttribute('data-book-id');
+                    // Redirect to user profile page
+                    window.location.href = "{% url 'audiobook:content' 0 %}".replace('0', bookId);
+                });
+            });
         }
-        
 
         // 초기 로딩 시 최신순으로 도서 목록 가져오기
         loadBooks('latest');
