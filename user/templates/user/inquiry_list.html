@@ -1,0 +1,53 @@
+{% extends 'user/template.html' %}
+{% load static %}
+
+{% block title %}구독 정보{% endblock %}
+{% block style %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row" style="min-height:80vh;">
+        {% include 'user/sub_navbar.html' %}
+
+        <div class="col-9">
+            <div class="row my-5">
+                <h1 class="menu-font">1:1 문의 내역</h1>
+            </div>
+
+            {% if inquiries %}
+            <div class = "table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">분류</th>
+                            <th scope="col">제목</th>
+                            <th scope="col">등록일</th>
+                            <th scope="col">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for  inquiry in  inquiries %}
+                        <tr>
+                            <th scope="row">{{inquiry.inquiry_category}}</th>
+                            <td>{{inquiry.inquiry_title}}</td>
+                            <td>{{inquiry.inquiry_created_date|date:"Y-m-d"}}</td>
+                            {% if inquiry.inquiry_is_answered %}
+                                <td>
+                                    <a href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">완료</a>
+                                </td>
+                            {% else %}
+                                <td>진행중</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class = "row"> 1:1 문의 내역이 없습니다</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

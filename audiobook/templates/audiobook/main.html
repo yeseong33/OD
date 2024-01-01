@@ -1,48 +1,71 @@
 {% extends 'audiobook/template.html' %}
 {% load static %}
 
-{% block title %}O: D - 메인{% endblock %}
 {% block content %}
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <title>Audio Books</title>
-    </head>
-    <body>
-        <h2>이달의 TOP 10 오디오북</h2>
-        <div class="book-section">
-            {% for book in top_books %}
-            <div class="book">
-                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
-                <h2>{{ book.book_title }}</h2>
-                <p>{{ book.book_author }}</p>
-            </div>
-            {% endfor %}
+  <link rel="stylesheet" href="/static/css/scrollContainer.css">
+  
+  <div class="scrolling-wrapper">
+    <h2>이달의 TOP 10 오디오북</h2>
+    <button class="scroll-left-button">‹</button>
+    <div class="scrolling-container">
+        {% for book in top_books %}
+        <div class="book-card">
+          <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
+            <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+          </a>
+          <div class="book-info">
+            <h5>{{ book.book_title }}</h5>
+            <p>저자: {{ book.book_author }}</p>
+          </div>
         </div>
+        {% endfor %}
+    </div>
+    <button class="scroll-right-button">›</button>
+  </div>
 
-        <h2>{{user.nickname}} 님이 청취 중인 오디오북</h2>
-
-        <div class="book-section">
-            {% for book in user_books %}
-            <div class="book">
-                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
-                <h2>{{ book.book_title }}</h2>
-                <p>{{ book.book_author }}</p>
+  <div class="scrolling-wrapper">
+      <h2>{{user.nickname}}님이 청취 중인 오디오북</h2>
+      <button class="scroll-left-button">‹</button>
+      <div class="scrolling-container">
+          {% for book in user_history_book %}
+          <div class="book-card">
+            <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
+              <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+            </a>
+            <div class="book-info">
+              <h5>{{ book.book_title }}</h5>
+              <p>저자: {{ book.book_author }}</p>
             </div>
-            {% endfor %}
-        </div>
+          </div>
+          {% endfor %}
+      </div>
+      <button class="scroll-right-button">›</button>
+  </div>
 
-        <h2>이번주 HOT 음성 구경하기</h2>
-        <div class="book-section">
-            {% for book in hot_books %}
-            <div class="book">
-                <img src="{{ book.book_image_path }}" alt="{{ book.book_title }}">
-                <h2>{{ book.book_title }}</h2>
-                <p>{{ book.book_author }}</p>
-            </div>
-            {% endfor %}
+  <div class="scrolling-wrapper">
+    <h2>이번주 HOT 음성</h2>
+    <button class="scroll-left-button">‹</button>
+    <div class="scrolling-container">
+      {% for voice in top_voices %}
+      <div class="voice-card">
+        <div class="voice-img" onmouseenter="playAudio(this)" onmouseleave="stopAudio(this)">   <!-- 이미지에 마우스 올렸을 때 내렸을 때 -->
+          <img src="{{ file_path }}{{ voice.voice_image_path }}" alt="{{ voice.voice_name }}">
+<!--          <audio class="voice-sample" src="{{ voice.voice_sample_path }}"></audio>                      샘플 음성 url로 받는 방식 (1)-->
+<!--          <audio class="voice-sample" src="{% static 'voices/' %}{{ voice.voice_name}}.wav"></audio>  static 폴더에 음성파일 다운 받는 방식 (2)-->
+          <audio class="voice-sample" src="{% static 'voices/' %}sample.mp4"></audio>
         </div>
-    </body>
-    </html>
+        <div class="voice-info">
+          <h5>{{ voice.voice_name }}</h5>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="scroll-right-button">›</button>
+</div>
+  
+{% endblock %}
+
+{% block script %}
+  <script src="/static/js/audioControl.js"></script>
+  <script src="/static/js/scrollContainer.js"></script>
 {% endblock %}
