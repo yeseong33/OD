@@ -114,7 +114,7 @@
     <div class="row justify-content-end mt-5"> </div>
 
 
-    <form method="post" action="{% url 'community:book_share_content_post' %}">
+    <form id="postForm">
         {% csrf_token %}
         <div class="row">
             <!-- 첫 번째 칸: 제목과 내용 -->
@@ -145,7 +145,7 @@
         <!-- 글쓰기 버튼 -->
         <div class="row">
             <div class="col-md-11 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary btn-block mb-3">글쓰기</button>
+                <button id="postButton" type="submit" class="btn btn-primary btn-block mb-3">글쓰기</button>
             </div>
         </div>
         <input id="book_id_input" type="hidden" name="book_id" value="">
@@ -154,17 +154,41 @@
 
 {% block script %}
 <script>
-    // 서버에서 리디렉션 URL이 전달되었다면, 해당 URL로 리디렉션
-    var bookId = localStorage.getItem('current_book_id');
-    var bookIdInput = document.getElementById('book_id_input');
-    console.log(bookId)
-    if (bookId && bookIdInput) {
-        bookIdInput.value = bookId;
-        console.log(bookId)
-    }
-    {% if result %}
-        window.location.href = "{% url 'community:book_share_content' book_id=123 %}".replace('123', bookId);
-    {% endif %}
+    document.addEventListener('DOMContentLoaded', function () {
+        var bookId = localStorage.getItem('current_book_id');
+        var bookIdInput = document.getElementById('book_id_input');
+        if (bookId && bookIdInput) {
+            bookIdInput.value = bookId;
+            console.log(bookId)
+        }
+        // 글쓰기 버튼 클릭 시 이벤트 핸들러
+        document.getElementById('postButton').addEventListener('click', function () {
+            // FormData 객체 생성 및 폼 데이터 추가
+            var formData = new FormData(document.getElementById('postForm'));
+            console.log('pas')
+            // POST 요청 보내기
+            fetch("{% url 'community:post_list' %}", {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                // 응답이 성공적인지 확인
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // 혹은 response.text() 등으로 응답 데이터 처리
+            })
+            .then(data => {
+                // 성공적으로 데이터를 받아온 경우 실행되는 로직
+                console.log(data);
+                window.location.href = "{% url 'community:book_share_content' pk=0 %}".replace('0', bookId);
+            })
+            .catch(error => {
+                // 오류가 발생한 경우 처리
+                console.error('오류 발생:', error);
+            });
+        });
+    });
 
 </script>
 {% endblock %}
