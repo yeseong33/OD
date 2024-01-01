@@ -71,7 +71,7 @@
     $(document).ready(function(){
         function loadBooks(orderBy){
             $.ajax({
-                url: "{% url 'user:history' %}",
+                url: "{% url 'user:book_history' %}",
                 type: "GET",
                 data: {'orderBy': orderBy},
                 dataType: "json",
