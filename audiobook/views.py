@@ -97,6 +97,25 @@ class MainSearchView(APIView):
             book.book_image_path = f"{file_path}{book.book_image_path}"
 
         return Response({'book_list': book_list, 'file_path': file_path})
+    
+class MainGenreView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/main_genre.html'
+
+    def get(self, request):
+        categories = {
+            '소설': Book.objects.filter(book_genre='novel').order_by('-book_likes')[:10],
+            '인문': Book.objects.filter(book_genre='humanities').order_by('-book_likes')[:10],
+            '자연과학': Book.objects.filter(book_genre='nature').order_by('-book_likes')[:10],
+            '자기계발': Book.objects.filter(book_genre='self_improvement').order_by('-book_likes')[:10],
+            '아동': Book.objects.filter(book_genre='children').order_by('-book_likes')[:10],
+            '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
+        }
+            
+        return Response({
+            'AWS_S3_CUSTOM_DOMAIN': AWS_S3_CUSTOM_DOMAIN,
+            'categories': categories,
+        })
 
 
 def genre(request):
