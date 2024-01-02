@@ -204,6 +204,7 @@ class SubscribeView(APIView):
                 return Response(context, template_name=template_name)
             template_name = 'user/pay_inform.html'
             left_days = (subscribe.sub_end_date - timezone.now()).days
+
             context = {
                 'user': user,
                 'left_days': left_days,
@@ -395,3 +396,8 @@ class InquiryDetailView(APIView):
             'active_tab': 'user_faq'
         }
         return render(request, self.template_name, context)
+
+      
+ # 개인정보처리
+def privacy_policy(request):
+    return render(request, 'user/privacy_policy.html')
