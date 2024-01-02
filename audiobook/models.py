@@ -9,6 +9,8 @@ class Voice(models.Model):
     voice_path = models.FileField(upload_to='voice_rvcs/', null=True)  # RVC 모델
     voice_image_path = models.ImageField(
         upload_to='voice_images/', blank=True)  # pillow
+    voice_sample_path = models.FileField(
+        upload_to='voice_sample/', null=True)  # 음성 샘플
     voice_created_date = models.DateTimeField(auto_now_add=True)
     voice_is_public = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
