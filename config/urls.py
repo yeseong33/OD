@@ -14,10 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+# config/urls.py
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from config.views import privacy_policy 
 
 urlpatterns = [
     path('', include('audiobook.urls')),
@@ -25,6 +28,7 @@ urlpatterns = [
     path('community/', include('community.urls')),
     path('user/', include('user.urls')),
     path('manager/', include('manager.urls')),
+    path('privacy_policy/', privacy_policy, name='privacy_policy'),  # URL 패턴을 추가합니다.
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

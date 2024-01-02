@@ -244,6 +244,10 @@ class BookRegisterCompleteView(APIView):
             'status': 'success',
             'message': 'Book registered successfully.'
         }, status=200)
+        
+# 개인정보처리
+def privacy_policy(request):
+    return render(request, 'manager/privacy_policy.html')
 
 
 # 문의 답변
