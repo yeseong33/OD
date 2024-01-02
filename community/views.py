@@ -133,12 +133,23 @@ class BookShareContentPostHtml(APIView):
     def get(self, request):
         return Response(template_name=self.template_name)
 
+    def post(self, request):
+        return Response(template_name=self.template_name)
+
 
 class BookShareContentPostDetailHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content_post_detail.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request, pk):
+        file_path = self.get_file_path()
+
         try:
             post = Post.objects.get(pk=pk)
             comments = Comment.objects.filter(post__post_id=pk)
@@ -148,6 +159,7 @@ class BookShareContentPostDetailHtml(APIView):
         post_serializer = PostSerializer(post)
         comment_serializer = CommentSerializer(comments, many=True)
         context = {
+            'file_path': file_path,
             'post': post_serializer.data,
             'comments': comment_serializer.data,
         }
@@ -417,26 +429,29 @@ class BookCompleteView(APIView):
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_inquiry.html'
-    
+
     def get(self, request):
         print(request.user)
         context = {
-            "user":request.user,
+            "user": request.user,
+            'active_tab': 'book_inquiry'
         }
         return Response(context, template_name=self.template_name)
-    
+
 
 class InquiryPostCompleteHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_inquiry_complete.html'
-    
+
     def get(self, request):
         print(request.user)
         context = {
-            "user":request.user,
+            "user": request.user,
             "result": True,
+            'active_tab': 'book_inquiry'
         }
         return Response(context, template_name=self.template_name)
+
 
 class InquiryList(APIView):
     renderer_classes = [JSONRenderer]
@@ -480,10 +495,6 @@ class InquiryDetail(APIView):
         comment = self.get_object(pk)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
 
 
 # FAQ

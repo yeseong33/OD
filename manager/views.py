@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shutil
 
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.core.files.base import ContentFile
@@ -210,7 +209,6 @@ def get_book_details_from_naver(isbn):
     # 캐시에서 데이터를 먼저 찾음(redis)
     cache_key = f'book_{isbn}'
     cached_data = cache.get(cache_key)
-    print(cached_data)
     if cached_data:
         return json.loads(cached_data)
 

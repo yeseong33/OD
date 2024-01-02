@@ -69,7 +69,7 @@
     {% for comment in comments %}
         <div class="row">
             <div class="col-1 d-flex justify-content-center">
-                <img src="{{ request.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
+                <img src="{{ file_path }}{{ request.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
             </div>
             <div class="col-11">
                 <!-- 내용 -->
