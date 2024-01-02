@@ -1,16 +1,17 @@
 {% extends 'community/template.html' %}
 {% load static %}
 
-{% block title %}공유 및 커뮤니티{% endblock %}
+{% block title %}O: D - 공유 및 커뮤니티{% endblock %}
 {% block style %}
 <style>
-    .card-img-top {
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    .hoverable {
+        transition: transform 0.2s ease-in-out; /* 확대 트랜지션 속성 추가 */
+        transform-origin: center center; /* 확대의 중심을 가운데로 조절 */
     }
 
-    .card-img-top:hover {
+    .hoverable:hover {
         z-index: 1;
-        transform: scale(1.5); /* 확대 비율 */
+        transform: scale(1.2); /* 확대 비율 */
     }
 </style>
 {% endblock %}
@@ -29,72 +30,58 @@
         </div>
     </div>
 
-    <!-- 컨텐츠 영역 -->
+
+    <div class="row justify-content-end mt-5"> </div>
+    
+    <!-- 도서 -->
     <div class="container mt-5">
-        <div class="row g-5 justify-content-center">
-            {% for book in books %}
-                <div class="col-md-2" id="{{ book.book_id }}">
-                    <div class="card">
-                        <img src="{{ book.book_image_path }}" class="card-img-top" alt="{{ book.title }}" style="cursor:pointer;">
-                    </div>
+        <div class="row">
+            {% for book in page_obj %}
+            <div class="col-2 mb-4">
+                <div class="card hoverable">
+                    <a href="{% url 'community:book_share_content' book.book_id %}" style="text-decoration: none; color: inherit;">
+                        <img src="{{ file_path }}{{ book.book_image_path }}" class="card-img-top" alt="Book Image" style="cursor:pointer">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                        </div>
+                    </a>
                 </div>
-                {% if forloop.counter|divisibleby:5 and not forloop.last %}
-                    </div><div class="row g-5 justify-content-center mt-3">
-                {% endif %}
+            </div>
             {% endfor %}
         </div>
     </div>
-
-    <!-- 하단 간격 추가 -->
-    <div class="mb-5"></div>
-
+    
     <!-- 페이지네이션 -->
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
             <li class="page-item">
                 <a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a>
             </li>
-        {% else %}
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
-            </li>
-        {% endif %}
-    
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="#">{{ num }}</a>
-                </li>
             {% else %}
-                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            <li class="page-item disabled">
+                <span class="page-link">이전</span>
+            </li>
             {% endif %}
-        {% endfor %}
-    
-        {% if page_obj.has_next %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
             <li class="page-item">
                 <a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a>
             </li>
-        {% else %}
+            {% else %}
             <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">다음</a>
+                <span class="page-link">다음</span>
             </li>
-        {% endif %}
-    </ul>
-
+            {% endif %}
+        </ul>
+    </nav>
 {% endblock %}
 
 {% block script %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var bookImages = document.querySelectorAll('.card-img-top');
-
-        bookImages.forEach(function(image) {
-            image.addEventListener('click', function() {
-                // 클릭 시 지정된 URL로 리다이렉트
-                var bookId = image.parentElement.parentElement.id;  // 카드의 ID를 bookId로 사용
-                window.location.href = "{% url 'community:book_share_content' book_id=0 %}".replace('0', bookId);
-            });
-        });
-    });
-</script>
 {% endblock %}
