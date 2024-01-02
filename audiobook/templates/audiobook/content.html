@@ -10,13 +10,11 @@
     <!-- 공백 -->
     <div class="row mt-5"> </div>
     <div class="row mt-5"> </div>
-    <div class="row mt-5"> </div>
 
     <div class="row">
         <!-- 첫번째 컬럼 -->
         <div class="col-md-4 column d-flex flex-column align-items-center justify-content-center">
-            <img src="/static/images/ocean.jpg" alt="사진" class="img-fluid">
-            {% comment %} <img src="{{book.book_image_path}}" alt="사진" class="img-fluid"> {% endcomment %}
+            <img src="{{file_path}}{{book.book_image_path}}" alt="사진" class="img-fluid rounded"> 
         </div>
 
         <!-- 두번째 컬럼 -->
@@ -25,7 +23,7 @@
                 <h3>{{book.book_title}}</h3>
             </div>
             <div class="row">
-                <div class="col col-auto">
+                <div class="col-auto">
                     <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <rect width="26" height="25" fill="url(#pattern0)"/>
                         <defs>
@@ -36,7 +34,7 @@
                         </defs>
                     </svg>
                 </div>
-                <div class="col">
+                <div class="col-auto" style="cursor:pointer;">
                     <p id="listen">청취하기</p>
                 </div>
             </div>
@@ -48,14 +46,16 @@
                 <h3>현재 선택 성우</h3>
             </div>
             <div class="row mb-5">
-                <img id="voice_img" src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid">
+                <img id="voice_img" src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid rounded" style="cursor:pointer;">
             </div>
             <div class="row">
-                <div class="col col-auto">
-                    <button id="sampleBtn" class="btn btn-primary listen-btn">샘플 듣기</button>
+                <div class="col-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="25" fill="currentColor" class="bi bi-headphones" viewBox="0 0 16 16">
+                        <path d="M8 3a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V8a6 6 0 1 1 12 0v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1V8a5 5 0 0 0-5-5"/>
+                      </svg>
                 </div>
         
-                <div class="col">
+                <div class="col-auto">
                     <p>샘플 듣기</p>
                 </div>
             </div>

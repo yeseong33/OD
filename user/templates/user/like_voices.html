@@ -4,92 +4,111 @@
 {% block title %}좋아요 내역{% endblock %}
 {% block style %}
 <style>
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;  
-        margin-top: 20px;
-    }
 
-    .card {
-        width: 48%;  
-        margin-bottom: 20px;
-    }
-    .card:hover{
-        background-color:#f0f0f0;
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-3 custom-nav">
-            <ul class="nav flex-column nav-pills my-5">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user:profile' %}">구독 정보</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'user:inform' %}">회원 정보</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active "  aria-current="page"  href="{% url 'user:books' %}">좋아요 내역</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href = "#">독서 이력</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href = "#">1:1 문의</a>
-                </li>
-            </ul>
-        </div>
+    <div class="row" style="min-height:80vh;">
+        {% include 'user/sub_navbar.html' %}
+
         <div class="col-9">
-            <div class="row-10">
+            <div class="row">
                 <h1>좋아요 내역</h1>
             </div>
-            <div class="row-10">
+            <div class="row">
                 <ul class="nav nav-pills nav-justified">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'user:books' %}">책</a>
+                        <a class="nav-link" href="{% url 'user:like_books' %}">책</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page"  href="{% url 'user:voices' %}">성우</a>
+                        <a class="nav-link active" aria-current="page"  href="{% url 'user:like_voices' %}">성우</a>
                     </li>
                 </ul>
             </div>
-            <div class="row-10 d-flex justify-content-end">
+            <div class="row d-flex justify-content-end">
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="latest" checked>
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="latest" value="latest" checked>
                     <label class="form-check-label" for="inlineRadio1">최신순</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="title">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="name" value="name">
                     <label class="form-check-label" for="inlineRadio2">이름순</label>
                 </div>
             </div>
 
-            <div class="row" id="books-container">
-                {% if voices %}
-                    {% for voice in voices %}
-                        <div class="col-6">
-                            <a href="#">
-                                <div class="card gap-1" style="width: 18rem;">
-                                    <img src="{{ voice.voice_image_path }}" style="height: 400px;" class="card-img-top" alt="book image">
-                                    <div class="card-body">
-                                        <p class="card-text">{{voice.voice_name}}</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <h2>마음에 드는 성우를 좋아요 눌러 등록해보세요!</h2>
-                {% endif %}
+            <div class="row" id="voice-container">
+                <!--ajax 통신후 결과 div가 여기에 출력.-->
             </div>
             
-
         </div>
     </div>
 </div>
 
+{% endblock %}
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function(){
+        function loadVoices(orderBy){
+            $.ajax({
+                url: "{% url 'user:like_voices' %}",
+                type: "GET",
+                data: {'orderBy': orderBy},
+                dataType: "json",
+                success: function(data){
+                    updateVoices(data);
+                },
+                error: function(error){
+                    console.log("Error data : ", error);
+                }
+            });
+        }
+
+        $('input[name="inlineRadioOptions"]').change(function(){
+            console.log("Radio Change")
+            var orderBy = $('input[name="inlineRadioOptions"]:checked').val();  // 여기서 오류 수정
+            loadVoices(orderBy);
+        });
+
+        function updateVoices(data) {
+            var voicesContainer = $('#voice-container');
+            // console.log(data)
+            // 이전 도서 목록 제거
+            voicesContainer.empty();
+        
+            if (data.voices) {
+                // 받아온 데이터를 사용하여 도서 목록 업데이트
+                for (var i = 0; i < data.voices.length; i++) {
+                    var voice = data.voices[i];
+                    // 새로운 도서 카드 생성
+                    var cardHtml = `
+                        <div class="col-6">
+                            <div class="card gap-1" style="width: 18rem;">
+                                <a href="#">
+                                    <img src="${voice.voice_image_path}" style="height: 400px;" class="card-img-top" alt="book image">
+                                </a>
+                                <div class="card-body">
+                                    <p class="card-text">${voice.voice_name}</p>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+        
+                    // 도서 목록에 새로운 도서 카드 추가
+                    voicesContainer.append(cardHtml);
+                }
+            } else {
+                // 좋아요한 도서가 없는 경우 메시지 표시
+                var messageHtml = `<h2>좋아요를 등록하여 책을 쉽게 찾아보세요!</h2>`;
+                voicesContainer.append(messageHtml);
+            }
+        }
+        
+
+        // 초기 로딩 시 최신순으로 도서 목록 가져오기
+        loadVoices('latest');
+    });
+</script>
 {% endblock %}

@@ -1,10 +1,10 @@
 {% extends 'user/template.html' %}
 {% load static %}
 
-{% block title %}좋아요 내역{% endblock %}
+{% block title %}독서 이력{% endblock %}
 {% block style %}
 <style>
-    .card-container {
+    .book-container {
         position: relative;
     }
 
@@ -18,16 +18,15 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        opacity: 0; 
+        opacity: 0;
         transition: opacity 0.5s ease-in-out;
-        cursor: pointer;
     }
 
-    .card-container:hover .blur-on-hover {
-        filter: blur(5px);
+    .book-container:hover .blur-on-hover {
+        filter: blur(2px); 
     }
 
-    .card-container:hover .listen-button {
+    .book-container:hover .listen-button {
         opacity: 1; 
     }
 </style>
@@ -35,26 +34,17 @@
 
 {% block content %}
 <div class="container">
-    <div class="row" style="min-height:80vh;">
+    <div class="row" style="min-height: 80vh">
+        
         {% include 'user/sub_navbar.html' %}
 
         <div class="col-9">
             <div class="row my-5">
-                <h1 class="menu-font">좋아요 내역</h1>
+                <h1 class="menu-font">독서 이력</h1>
             </div>
 
-            <div class="row d-flex flex-column align-items-center justify-content-center">
-                <div class="row">
-                    <ul class="nav nav-pills nav-justified">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'user:like_books' %}">책</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'user:like_voices' %}">성우</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="row d-flex justify-content-end">
+            <div class="row">
+                <div class="row-10 d-flex justify-content-end">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="inlineRadioOptions" id="latest" value="latest" checked>
                         <label class="form-check-label" for="inlineRadio1">최신순</label>
@@ -64,14 +54,14 @@
                         <label class="form-check-label" for="inlineRadio2">제목순</label>
                     </div>
                 </div>
-
-                <div class="row" id="books-container">
-                    
-                </div>
             </div>
-            
+
+            <div class="row-10" id = "books-container">
+                <!--ajax 통신후 결과 div가 여기에 출력.-->
+            </div>
 
         </div>
+
     </div>
 </div>
 {% endblock %}
@@ -82,7 +72,7 @@
     $(document).ready(function(){
         function loadBooks(orderBy){
             $.ajax({
-                url: "{% url 'user:like_books' %}",
+                url: "{% url 'user:book_history' %}",
                 type: "GET",
                 data: {'orderBy': orderBy},
                 dataType: "json",
@@ -113,38 +103,43 @@
                     var book = data.books[i];
                     // 새로운 도서 카드 생성
                     var cardHtml = `
-                        <div class="col-6 card-container">
-                            <div class="card gap-1" style="width: 18rem;">
-                                    <img src="${book.book_image_path}" style="height: 400px;" class="card-img-top blur-on-hover" alt="book image">
+                        <div class="row">
+                            <div class="col-3 book-container">
                                 <a href="{% url 'audiobook:content' 0 %}" data-audiobook-url="${book.book_id}" class="audiobook-link">
-                                    <button type="button" class="btn btn-outline-orange-200 btn-lg listen-button">청취하기</button>
+                                    <img src="${book.book_image_path}" class="rounded blur-on-hover" style="height: 300px; width: 100%;" alt="book Image">
                                 </a>
-                                <div class="card-body">
-                                    <p class="card-text">${book.book_title}</p>
+                                <div class="justify-content-center">
+                                    <button type="button" class="btn btn-outline-orange-400 btn-md listen-button" data-book-id="${book.book_id}">청취하기</button>
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <div class="row">
+                                    <h3>제목 : ${book.book_title}</h3>
+                                </div>
+                                <div class="row">
+                                    <h3>작가 : ${book.book_author}</h3>
                                 </div>
                             </div>
                         </div>
                     `;
-
+        
                     // 도서 목록에 새로운 도서 카드 추가
                     booksContainer.append(cardHtml);
                 }
             } else {
                 // 좋아요한 도서가 없는 경우 메시지 표시
-                var messageHtml = `<h2>좋아요를 등록하여 책을 쉽게 찾아보세요!</h2>`;
-                booksContainer.append(messageHtml);
+                var cardHtml = `
+                    <div class="row">아직 청취한 책이 없습니다!</div>
+                `;
+                booksContainer.append(cardHtml);
             }
 
             // JavaScript로 Django URL 전달 및 청취하기 버튼 클릭 이벤트 처리
-            var audiobookLinks = document.querySelectorAll('.audiobook-link');
-            audiobookLinks.forEach(function(link) {
-                var bookId = link.getAttribute('data-audiobook-url');
-                link.setAttribute('href', "{% url 'audiobook:content' 0 %}".replace('0', bookId));
-
-                // 청취하기 버튼 클릭 이벤트 처리
-                var listenButton = link.querySelector('.listen-button');
-                listenButton.addEventListener('click', function() {
-                    // Redirect to audiobook content page
+            var listenButtons = document.querySelectorAll('.listen-button');
+            listenButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var bookId = button.getAttribute('data-book-id');
+                    // Redirect to user profile page
                     window.location.href = "{% url 'audiobook:content' 0 %}".replace('0', bookId);
                 });
             });
@@ -155,6 +150,3 @@
     });
 </script>
 {% endblock %}
-
-
-

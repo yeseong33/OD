@@ -1,57 +1,40 @@
-import requests
 import os
+import threading
 from pathlib import Path
+
+import requests
 from dotenv import load_dotenv
-from django.shortcuts import render, get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
-from rest_framework import status
-from audiobook.models import Book
-from .models import Post
-from user.models import User
-from .models import BookRequest, UserRequestBook
-from .serializers import *
+from jose import jwt
+
+from django.conf import settings
+from django.core.mail import EmailMessage, send_mail
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F
-from django.shortcuts import redirect
-
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse
-from jose import jwt
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
 from django.templatetags.static import static
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
-from django.core.mail import send_mail, EmailMessage
-from django.conf import settings
-from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 import threading
 from django.http import Http404
 import json
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from audiobook.models import Book
+from user.models import User
+from .models import BookRequest, Post, UserRequestBook
+from .serializers import *
 
 load_dotenv()  # 환경 변수를 로드함
 
 # 토론방
-
-
-def book_share(request):
-    return render(request, 'community/book_share.html')
-
-
-def book_share_content(request):
-    return render(request, 'community/book_share_content.html')
-
-
-def book_share_content_post(request):
-    return render(request, 'community/book_share_content_post.html')
-
-
-def book_share_content_comment(request):
-    return render(request, 'community/book_share_content_comment.html')
 
 
 class BookShareContentList(APIView):
@@ -60,13 +43,21 @@ class BookShareContentList(APIView):
 
     def get(self, request):
         books = Book.objects.all()
+
+        # 페이지네이터 설정
+        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         # Serializer를 사용하여 Book 데이터를 JSON으로 변환
-        serializer = BookSerializer(books, many=True)
+        serializer = BookSerializer(page_obj, many=True)
 
         context = {
             'books': serializer.data,
+            'page_obj': page_obj,
             'active_tab': 'book_share'
         }
+
         return Response(context, template_name=self.template_name)
 
 
@@ -115,7 +106,6 @@ class BookShareContentPostDetailHtml(APIView):
             'comments': comment_serializer.data,
         }
         return Response(context, template_name=self.template_name)
-
 
 
 class BookList(APIView):
@@ -177,9 +167,9 @@ class PostList(APIView):
         print('pas')
         user_id = request.user.user_id
         book_id = request.data['book_id']
-        context={
-            'book_id': book_id, 
-            'user_id':user_id
+        context = {
+            'book_id': book_id,
+            'user_id': user_id
         }
         serializer = PostSerializer(data=request.data, context=context)
         if serializer.is_valid():
@@ -210,7 +200,7 @@ class PostDetail(APIView):
         except Exception as e:
             response_data = {'result': False, 'message': str(e)}
         return Response(response_data)
-    
+
     def update_post(self, post_id, new_title, new_content):
         post = get_object_or_404(Post, pk=post_id)
         post.post_title = new_title
@@ -238,7 +228,7 @@ class CommentList(APIView):
         comment_serializer = CommentSerializer(data=request.data, context={
                                             'post_id': request.data['post']})
         if comment_serializer.is_valid():
-            comment = comment_serializer.save()  
+            comment = comment_serializer.save()
             post_id = comment.post.post_id
             redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
             return Response({'result': True, 'comment': comment_serializer.data, 'message': 'comment created.', "redirect_url": redirect_url})
@@ -273,7 +263,7 @@ class CommentDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-## 신규 도서 신청 기능
+# 신규 도서 신청 기능
 
 # 신규 도서 신청 페이지
 class BookSearchView(APIView):
@@ -308,7 +298,9 @@ class BookSearchView(APIView):
         return Response(context)
 
 # 신규 도서 신청 완료 페이지
-class EmailThread(threading.Thread): # threading 모듈을 사용하여 이메일 전송을 별도의 스레드에서 실행
+
+
+class EmailThread(threading.Thread):  # threading 모듈을 사용하여 이메일 전송을 별도의 스레드에서 실행
     def __init__(self, email):
         self.email = email
         threading.Thread.__init__(self)
@@ -316,21 +308,26 @@ class EmailThread(threading.Thread): # threading 모듈을 사용하여 이메�
     def run(self):
         self.email.send()
 
-def send_async_mail(subject, message, from_email, recipient_list): # 이메일 전송을 별도의 스레드에서 처리
-    email = EmailMessage(subject, message,  from_email=from_email, to=recipient_list)
+
+def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 전송을 별도의 스레드에서 처리
+    email = EmailMessage(
+        subject, message,  from_email=from_email, to=recipient_list)
     EmailThread(email).start()
+
 
 class BookCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_complete.html'
 
     def get(self, request, isbn):
-        context = {}
+        context = {
+            'active_tab': 'book_search'
+        }
         if Book.objects.filter(book_isbn=isbn).exists():
-            context['message'] = '<br>이미 등록되어 사용 가능한 책입니다.'
+            context['message'] = '이미 등록되어 사용 가능한 책입니다.'
             context['image'] = static('images/exist.png')
             return Response(context)
-        
+
         else:
             book_request, created = BookRequest.objects.get_or_create(
                 request_isbn=isbn, defaults={'request_count': 0})
@@ -341,19 +338,22 @@ class BookCompleteView(APIView):
                     request_count=F('request_count') + 1)
                 book_request.refresh_from_db()
 
-            UserRequestBook.objects.create(user=request.user, request=book_request)
-            
-            context['message'] = '<br>신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
-            context['image'] = static('images/complete_book.png') 
-            
+            UserRequestBook.objects.create(
+                user=request.user, request=book_request)
+
+            context['message'] = '신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
+            context['image'] = static('images/complete_book.png')
+
             # 이메일 보내기
             if request.user.email:
                 try:
                     subject = '[오디 알림] 책 신청 완료'
-                    html_content = render_to_string('community/email_template.html', {'nickname': request.user.nickname})
+                    html_content = render_to_string(
+                        'community/email_template.html', {'nickname': request.user.nickname})
                     plain_message = strip_tags(html_content)
-                    from_email = '오디 <wooyoung9654@gmail.com>' 
-                    send_async_mail(subject, plain_message, from_email, [request.user.email])
+                    from_email = '오디 <wooyoung9654@gmail.com>'
+                    send_async_mail(subject, plain_message,
+                                    from_email, [request.user.email])
                     print('Email sent successfully')
                 except Exception as e:
                     # 로그 기록, 오류 처리 등
