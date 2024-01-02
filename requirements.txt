@@ -1,8 +1,8 @@
 asgiref==3.7.2
 async-timeout==4.0.3
 bcrypt==4.1.2
-boto3==1.34.9
-botocore==1.34.9
+boto3==1.34.11
+botocore==1.34.11
 certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
@@ -10,6 +10,7 @@ contourpy==1.2.0
 cryptography==41.0.7
 cycler==0.12.1
 defusedxml==0.7.1
+dj-rest-auth==5.0.2
 Django==5.0
 django-allauth==0.59.0
 django-redis==5.4.0
@@ -25,6 +26,7 @@ matplotlib==3.8.2
 numpy==1.26.2
 oauthlib==3.2.2
 packaging==23.2
+pandas==2.1.4
 paramiko==3.4.0
 Pillow==10.1.0
 psycopg2-binary==2.9.9
