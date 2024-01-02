@@ -18,7 +18,8 @@ from django.utils import timezone
 from audiobook.models import *
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from  community.serializers import BookSerializer
+from community.serializers import BookSerializer,InquirySerializer
+from audiobook.serializers import VoiceSerializer
 from community.models import Inquiry
 load_dotenv()
 
@@ -269,15 +270,15 @@ class UserLikeVoicesView(APIView):
             context = {'voices' : None}
         else:
             order_by = request.GET.get('orderBy','latest')
-            voices = Voice.objects.filter(pk__in = voice_id_list)
+            voice_list = Voice.objects.filter(pk__in = voice_id_list)
             
             if order_by == 'name':
-                voices = voices.order_by('-voice_name')
+                voice_list = voice_list.order_by('-voice_name')
             else:
-                voices = voices.order_by('voice_id')
-            voice_data = [{'voice_id' : voice.voice_id, 'voice_image_path' : str(voice.voice_image_path), #추후에 AWS 버킷 경로로 변경, Serializer 사용.
-                            'voice_name' : voice.voice_name} for voice in voices]
-            context = {'voices' : voice_data}
+                voice_list = voice_list.order_by('voice_id')
+
+            serializer = VoiceSerializer(voice_list, many = True)
+            context = {'voices' : serializer.data}
             
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest': #Ajax 요청일경우.
             return JsonResponse(context)
@@ -323,13 +324,9 @@ class InquiryListView(APIView):
         if not inquiry_list:
             context = {'inquiries': None}
         else:
-            inquiry_list = inquiry_list.order_by('-inquiry_created_date') #최신순으로 정렬.
-            inquiry_data = [{'inquiry_id': inquiry.inquiry_id, 'inquiry_title': inquiry.inquiry_title,
-                            'inquiry_category': inquiry.inquiry_category, 'inquiry_created_date': inquiry.inquiry_created_date,
-                            'inquiry_is_answered': inquiry.inquiry_is_answered} for inquiry in inquiry_list]
-            context = {'inquiries': inquiry_data}
-
-
+            serializer = InquirySerializer(inquiry_list, many=True)
+            context = {'inquiries' : serializer.data}
+        
         return render(request, self.template_name, context)
 
 class InquiryDetailView(APIView):
@@ -338,10 +335,7 @@ class InquiryDetailView(APIView):
     
     def get(self, request, inquiry_id):
         inquiry = Inquiry.objects.get(inquiry_id = inquiry_id)
-        
-        inquiry_data = {'inquiry_id' : inquiry.inquiry_id, 'inquiry_title' : inquiry.inquiry_title,
-                'inquiry_category':inquiry.inquiry_category, 'inquiry_content':inquiry.inquiry_content,
-                'inquiry_response' : inquiry.inquiry_response}
-        context = {'inquiry' : inquiry_data}
+        serializer = InquirySerializer(inquiry)
+        context = {'inquiry' : serializer.data}
         return render(request, self.template_name, context)
 

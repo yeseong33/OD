@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from audiobook.models import Book
-from .models import Post, User, Comment
+from .models import Post, User, Comment,Inquiry
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +41,9 @@ class CommentSerializer(serializers.ModelSerializer):
         self.validated_data['post'] = post
 
         return super().save(**kwargs)
+    
+    
+class InquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inquiry
+        fields = '__all__'
