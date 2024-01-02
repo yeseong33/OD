@@ -11,9 +11,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    user_nickname = serializers.CharField(
+        source='user.nickname', read_only=True)
+    post_created_date = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S.%fZ", read_only=True)
+    post_updated_date = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%S.%fZ", read_only=True, allow_null=True)
+
     class Meta:
         model = Post
-        fields = ['post_id', 'post_title', 'post_content']
+        fields = ['post_id', 'post_title', 'post_content', 'user_id',
+                  'user_nickname', 'post_created_date', 'post_updated_date']
 
     def save(self, **kwargs):
         book_id = self.context.get('book_id')
@@ -51,13 +59,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        ret['post_set'] = list(instance.post_set.values())
-        for post in ret['post_set']:
-            post['post_created_date'] = post['post_created_date'].strftime(
-                '%Y-%m-%dT%H:%M:%S.%fZ')
-            post['post_updated_date'] = post['post_updated_date'].strftime(
-                '%Y-%m-%dT%H:%M:%S.%fZ') if post['post_updated_date'] else None
-
+        ret['post_set'] = PostSerializer(
+            instance.post_set.all(), many=True).data
         return ret
 
 

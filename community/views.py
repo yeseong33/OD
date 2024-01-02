@@ -36,6 +36,7 @@ from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
+from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -60,7 +61,6 @@ class BookShareContentList(APIView):
         context = {
             'books': serializer.data,
             'page_obj': page_obj,
-            'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
@@ -71,13 +71,25 @@ class BookShareHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request):
+        file_path = self.get_file_path()
         books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        books = json.dumps(serializer.data)
+
+        # 페이지네이터 설정
+        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
         context = {
-            'books': books
+            'file_path': file_path,
+            'page_obj': page_obj,
+            'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
@@ -87,17 +99,30 @@ class BookShareContentHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request, pk):
         book = get_object_or_404(Book, pk=pk)
         book_serializer = BookSerializer(book)
         serialized_json = json.dumps(
             book_serializer.data, ensure_ascii=False, indent=3)
 
+        posts = book.post_set.all()
+        paginator = Paginator(posts, 10)  # 한 페이지당 10개의 게시물
+        page_number = request.GET.get('page', 1)  # URL에서 페이지 번호를 가져옴
+        page_obj = paginator.get_page(page_number)
+
         context = {
             'book': book_serializer.data,
-            'book_json': serialized_json
+            'book_json': serialized_json,
+            'page_obj': page_obj,
         }
 
+        print(serialized_json)
         return Response(context, template_name=self.template_name)
 
 
