@@ -163,9 +163,10 @@
         // 글쓰기 버튼 클릭 시 이벤트 핸들러
         document.getElementById('postButton').addEventListener('click', function () {
             event.preventDefault();  // 폼 전송 기본 동작 막기
+            
             // FormData 객체 생성 및 폼 데이터 추가
             var formData = new FormData(document.getElementById('postForm'));
-            console.log('pas')
+
             // POST 요청 보내기
             fetch("{% url 'community:post_list' %}", {
                 method: 'POST',
