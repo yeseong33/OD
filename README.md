@@ -102,6 +102,32 @@ git push -u origin [branch_name]
 git push origin [branch_name]
 ```
 
+### 로컬 develop branch를 날리고 원격 develop branch(origin/develop)으로 동기화하기
+
+1. 로컬 develop 브랜치로 이동
+
+```bash
+git checkout develop
+```
+
+2. 로컬 develop 브랜치를 최신 상태로 업데이트:
+
+```bash
+git fetch origin
+```
+
+3. 로컬 develop 브랜치를 원격의 develop 브랜치 상태로 리셋:
+
+```bash
+git reset --hard origin/develop
+```
+
+4. 로컬에서 이전에 커밋되지 않은 변경사항이 있었다면, 정리하기
+
+```bash
+git clean -fd
+```
+
 ### PostgreSQL 설치하기
 
 1. PostgreSQL 설치 [[참고1]](https://www.postgresql.org/download/), [[참고2]](https://medium.com/@heeee/django-django%EC%99%80-postgresql%EC%9D%80-%EC%99%9C-%EA%B6%81%ED%95%A9%EC%9D%B4-%EC%A2%8B%EC%9D%84%EA%B9%8C-1%ED%83%84-54af53bec906)
@@ -195,12 +221,12 @@ python manage.py runserver
 #### BootStrap
 
 - static 폴더를 보시면 아시겠지만, scss 파일을 가지고 컴파일해서 `custom.css`를 만들었습니다. 추가된 규칙은 다음과 같습니다.
-  > ![indigo](/description_images/indigo.png)
+  > ![orange](/description_images/orange.png)
   >
-  > - 클래스 조정을 통해 `btn-indigo-*`, `btn-outline-indigo-*`, `bg-indigo-*`와 같은 식으로 indigo 색깔을 통해 버튼이나 배경을 넣을 수 있게 했습니다.
-  > - `btn-indigo-100`, `bg-indigo-200`과 같은 식으로 사용하시면 됩니다.
+  > - 클래스 조정을 통해 `btn-orange-*`, `btn-outline-orange-*`, `bg-orange-*`와 같은 식으로 orange 색깔을 통해 버튼이나 배경을 넣을 수 있게 했습니다.
+  > - `btn-orange-100`, `bg-orange-200`과 같은 식으로 사용하시면 됩니다.
   > - 작동이 안되거나 추가적인 커스터마이징 사항이 필요하다면 말해주세요.
-  > - 커스터마이징 된 것이 사용이 어렵다면 기본 BootStrap 클래스를 활용해주세요.
+  > - 커스터마이징 된 것이 사용이 어렵다면 기본 BootStrap 클래스를 활용해주세요. 추후에 제가 적용할게요.
 
 ### 변수 및 함수 명명 규칙
 
@@ -283,6 +309,14 @@ python manage.py migrate --settings=Config.Setting_local
 
 2. 개발자 콘솔(F12)로 들어가서 전부 JWT를 직접 삭제해주도록 합니다.
    ![jwt](/description_images/jwt.png)
+
+### ImportError: cannot import name 'ExpiredSignatureError' from 'jwt.exceptions'
+
+- PyJWT 버전 문제입니다. PyJWT==1.7.1로 버전을 맞춰주세요.
+
+### manager app 접근 시 세션이 유지가 안 되는 문제
+
+- 127.0.0.7이나 localhost나 같은 로컬주소인데 jwt는 쿠기 기반입니다. 따라서 도메인별로 쿠키를 저장하고 관리합니다. 개발중에 127.0.0.1을 쓰면 계속 127.0.0.1만 쓰고 localhost를 쓰면 계속 localhost를 써야합니다.
 
 ## 6. 참고 자료
 

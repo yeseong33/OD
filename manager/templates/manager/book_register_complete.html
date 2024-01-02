@@ -1,1 +1,12 @@
-등록했습니다.
+{% extends 'manager/template.html' %}
+{% load static %}
+
+
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center" style="min-height:80vh">
+        <div class="text-center">
+            <img src="{% static 'images/complete_book.png' %}" alt="신규 도서 등록" class="img-fluid rounded" style="max-width: 50%;">
+            <p class="fs-1 fw-bold mt-5">신규 도서가 등록되었습니다.</p>
+        </div>
+    </div>
+{% endblock %}

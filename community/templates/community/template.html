@@ -35,8 +35,8 @@
                     <div class="col-6 ps-5 fs-4">
                         <ul class="navbar-nav align-items-center">
                             <!-- 메뉴 -->
-                            <li class="nav-item"><a class="nav-link me-2" href="#">장르별</a></li>
-                            <li class="nav-item"><a class="nav-link me-2" href="{% url 'community:book_share' %}">커뮤니티</a></li>
+                            <li class="nav-item"><a class="nav-link me-5" href="{% url 'audiobook:main_genre' %}">장르별</a></li>
+                            <li class="nav-item"><a class="nav-link me-5" href="{% url 'community:book_share' %}">커뮤니티</a></li>
                         </ul>
                     </div>
     
@@ -44,7 +44,7 @@
                         <!-- 검색창 -->
                         <form class="row g-2 align-items-center me-5">
                             <div class="col-auto">
-                                <input class="form-control" type="search" placeholder="원하시는 책을 찾아보세요." aria-label="Search" style="width:300px;">
+                                <input class="form-control" type="search" placeholder="원하시는 책을 찾아보세요." aria-label="Search" style="width:230px;">
                             </div>
                             <div class="col-auto">
                                 <button class="btn btn-outline-orange-400 btn-sm" type="submit">검색</button>
@@ -53,23 +53,40 @@
     
                         <!-- 로그인 -->
                         {% if request.user.is_authenticated %}
-                            <div class="row align-items-center">
-                                <div class="col-auto d-flex align-items-center">
-                                    <span class="me-3">{{ request.user.username }}</span>
-                                    <a href="{% url 'user:logout' %}" class="btn btn-secondary btn-sm">
-                                        로그아웃
-                                    </a>
-                                </div>
-                            </div>
+                        <li class="nav-item dropdown list-unstyled d-flex align-items-center">
+                            <a class="nav-link d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if request.user.user_profile_path %}
+                                    <img src="{{ request.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                    </svg>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if request.user.is_admin %}
+                                    <li><a class="dropdown-item" href="{% url 'manager:book_request' %}">관리자 모드</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'user:profile' %}">내 정보</a></li>
+                                <li><a class="dropdown-item">{{ request.user.nickname }}</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'user:logout' %}">로그아웃</a></li>
+                            </ul>
+                        </li>
                         {% else %}
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <a href="{% url 'user:login' %}" class="btn btn-secondary btn-sm">
-                                        로그인
-                                    </a>
-                                </div>
-                            </div>
-                        {% endif %}         
+                        <li class="nav-item dropdown list-unstyled d-flex align-items-center">
+                            <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                              <li><a class="dropdown-item" href="{% url 'user:login' %}">로그인</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}        
                     </div>
                 </div>
             </div>
