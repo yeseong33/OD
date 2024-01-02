@@ -10,6 +10,7 @@ urlpatterns = [
     path('book/register/<int:book_isbn>/', views.BookRegisterView.as_view(), name='book_register'),
     path('book/register/complete/', views.BookRegisterCompleteView.as_view(), name='book_register_complete'),
     path('inquiry/', views.inquiry, name='inquiry'),
-    path('revenue/', views.revenue, name='revenue'),
+    path('subscription/', views.show_subscription, name='subscription'),
+    path('api/subscription-count/', views.SubscriptionCountAPIView.as_view(), name='api_subscription_count'),  # API 엔드포인트 URL
     path('faq/', views.faq, name='faq'),
 ]
