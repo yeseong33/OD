@@ -251,3 +251,8 @@ def book_inquiry(request):
 def book_faq(request):
     context = {'active_tab': 'book_faq'}
     return render(request, 'community/book_faq.html', context)
+
+
+# 개인정보처리
+def privacy_policy(request):
+    return render(request, 'community/privacy_policy.html')

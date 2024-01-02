@@ -12,10 +12,15 @@ urlpatterns = [
     path('kakao/callback/', views.kakao_callback, name='kakao_callback'),
     path('google', views.google_login, name='google_login'),
     path('google/callback/', views.google_callback, name='google_callback'),
+    path('account/subscribe/', views.SubscribeView.as_view(), name = 'subscribe'),
 
     # 계정관리
 
     # 도서 및 성우 내역
 
     # 문의내역
+    
+    # 개인정보처리
+    path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
+
 ]

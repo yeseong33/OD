@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import *
+from rest_framework.views import APIView
+from rest_framework.renderers import TemplateHTMLRenderer
+from django.utils import timezone
 
 load_dotenv()
 
@@ -173,3 +176,26 @@ def decode_jwt(token):
     user_inform = jwt.decode(token, key=os.getenv(
         "JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
     return user_inform
+
+class SubscribeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    def get(self, request):
+        if request.COOKIES.get("jwt") == None: # User가 로그인 안했을시.
+            print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
+            return redirect('user:login')
+        else:
+            user_inform = decode_jwt(request.COOKIES.get("jwt"))
+            user = User.objects.get(user_id = user_inform['user_id'])
+            
+            try:
+                subscribe = Subscription.objects.get(user_id = user.user_id)
+            except Subscription.DoesNotExist:
+                template_name = "user/non_pay_inform.html"
+                return Response(template_name=template_name)
+            template_name = 'user/pay_inform.html'
+            left_days = (subscribe.sub_end_date - timezone.now()).days
+            return Response({'user':user, 'left_days':left_days}, template_name = template_name)  
+
+# 개인정보처리
+def privacy_policy(request):
+    return render(request, 'user/privacy_policy.html')
