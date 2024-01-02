@@ -103,3 +103,7 @@ def voice_search(request):
             # print(serializer.data, status.HTTP_201_CREATED)
             # return redirect('audiobook:voice_custom_complete')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# 개인정보처리
+def privacy_policy(request):
+    return render(request, 'audiobook/privacy_policy.html')

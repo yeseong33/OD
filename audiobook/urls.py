@@ -26,4 +26,6 @@ path('voice/custom/upload/', views.voice_custom_upload,
 path('voice/custom/complete/', views.voice_custom_complete,
      name='voice_custom_complete'),
 
+# 개인정보처리
+path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
 ]

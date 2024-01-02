@@ -19,4 +19,8 @@ urlpatterns = [
     # 도서 및 성우 내역
 
     # 문의내역
+    
+    # 개인정보처리
+    path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
+
 ]
