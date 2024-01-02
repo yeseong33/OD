@@ -24,7 +24,7 @@ from community.serializers import BookSerializer,InquirySerializer
 from audiobook.serializers import VoiceSerializer
 from community.models import Inquiry
 from community.serializers import BookSerializer
-
+from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 load_dotenv()
 
 
@@ -270,11 +270,9 @@ class UserLikeBooksView(APIView):
                 books = books.order_by('book_title')
             else:
                 books = books.order_by('book_id')
-
-            books_data = [{'book_id': book.book_id, 'book_title': book.book_title,
-                           'book_image_path': str(book.book_image_path)} for book in books]  # 추후에 AWS 버킷 경로로 변경, Serializer 사용.
+            serializer = BookSerializer(books, many = True)
             context = {
-                'books': books_data,
+                'books': serializer.data,
                 'active_tab': 'user_like'
             }
 
@@ -300,7 +298,7 @@ class UserLikeVoicesView(APIView):
             context = {'voices': None}
         else:
             order_by = request.GET.get('orderBy','latest')
-            voices = Voice.objects.filter(pk__in = voice_id_list)
+            voice_list = Voice.objects.filter(pk__in = voice_id_list)
             
             if order_by == 'name':
                 voice_list = voice_list.order_by('-voice_name')
@@ -308,7 +306,8 @@ class UserLikeVoicesView(APIView):
                 voice_list = voice_list.order_by('voice_id')
 
             serializer = VoiceSerializer(voice_list, many = True)
-            context = {'voices' : serializer.data}
+            context = {'voices' : serializer.data,
+                        'active_tab': 'user_like'}
             
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest': #Ajax 요청일경우.
             return JsonResponse(context)
@@ -340,16 +339,14 @@ class BookHistoryView(APIView):
             else:
                 books = books.order_by('book_id')
 
-            books_data = [{'book_id': book.book_id, 'book_title': book.book_title,
-                           'book_image_path': str(book.book_image_path), 'book_author': book.book_author} for book in books]  # 추후에 AWS 버킷 경로로 변경, Serializer 사용.
+            serializer = BookSerializer(books, many = True)
+        
             context = {
-                'books': books_data,
+                'books': serializer.data,
                 'active_tab': 'user_book_history'
             }
-
-        # 만약 요청이 Ajax라면 JSON 형식으로 응답
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse(context)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse(context)
 
         return render(request, self.template_name, context)
 
@@ -384,7 +381,13 @@ class InquiryDetailView(APIView):
         context = {'inquiry' : serializer.data}
         return render(request, self.template_name, context)
 
-      
- # 개인정보처리
+# 개인정보처리
 def privacy_policy(request):
     return render(request, 'user/privacy_policy.html')
+
+
+def get_file_path(self):
+    if FILE_SAVE_POINT == 'local':
+        return MEDIA_URL
+    else:
+        return AWS_S3_CUSTOM_DOMAIN
