@@ -32,7 +32,8 @@ class Migration(migrations.Migration):
             name='Inquiry',
             fields=[
                 ('inquiry_id', models.AutoField(primary_key=True, serialize=False)),
-                ('inquiry_category', models.CharField(default='Others', max_length=255)),
+                ('inquiry_category', models.CharField(
+                    default='Others', max_length=255)),
                 ('inquiry_title', models.CharField(max_length=255)),
                 ('inquiry_content', models.TextField(blank=True, null=True)),
                 ('inquiry_response', models.TextField(blank=True, null=True)),
@@ -54,7 +55,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserRequestBook',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
             ],
         ),
     ]
