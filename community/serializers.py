@@ -56,13 +56,13 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
-        
+
     def update(self, instance, validated_data):
         likes = validated_data.get('book_likes')
         instance.book_likes += likes
-        instance.save() 
+        instance.save()
         return instance
-        
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['post_set'] = PostSerializer(
@@ -87,8 +87,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return super().save(**kwargs)
 
-      
+
 class InquirySerializer(serializers.ModelSerializer):
-    class Meta: 
+    class Meta:
         model = Inquiry
         fields = '__all__'
