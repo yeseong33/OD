@@ -221,16 +221,16 @@ class Rvc_Train(APIView):
         sftp_client = client.open_sftp()
 
         # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
-        remote_path = '/home/kimyea0454/project-main/voices/' + voice_name + '.mp3'
+        remote_path = f'/home/kimyea0454/project-main/voices/{voice_name}.mp3'
         sftp_client.putfo(voice_file, remote_path)
         # SFTP 세션 종료
         sftp_client.close()
 
         commands = [
-            'python3 preprocess.py '+voice_name+'\n',
-            'python3 extract_features.py '+voice_name+'\n',
-            'python3 train_index.py '+voice_name+'\n',
-            'python3 train_model.py '+voice_name+'\n',
+            f'python3 preprocess.py {voice_name}\n',
+            f'python3 extract_features.py {voice_name}\n',
+            f'python3 train_index.py {voice_name}\n',
+            f'python3 train_model.py {voice_name}\n',
         ]
 
         for cmd in commands:
@@ -407,8 +407,8 @@ def Rvc_Save(request):
             'errors': serializer.errors
         }, status=501)
         
-    os.remove(f'static/tts/{voice_name}.mp3')
-    os.remove(f'static/tts/{voice_name}.pth')
+    os.remove(os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
+    os.remove(os.path.join(project_path, f'static/tts/{voice_name}.pth'))
     
     commands = [
         f'rm -rf assets/weights/{voice_name}.pth\n',
@@ -465,6 +465,7 @@ def Rvc_Cancel(request):
         return buffer
 
     commands = [
+        'cd project-main\n',
         f'rm -rf assets/weights/{voice_name}.pth\n',
         f'rm -rf audios/{voice_name}.wav\n',
         f'rm -rf logs/{voice_name}\n',
