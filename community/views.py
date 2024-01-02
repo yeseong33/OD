@@ -438,8 +438,6 @@ class InquiryDetail(APIView):
 
 
 # FAQ
-
-
 def book_faq(request):
     context = {'active_tab': 'book_faq'}
     return render(request, 'community/book_faq.html', context)
