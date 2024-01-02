@@ -36,6 +36,7 @@ load_dotenv()  # 환경 변수를 로드함
 
 # 책 수요 변화
 
+# 그래프, 책 표지 생성
 def book_view(request):
     return Response({'message': 'Good'})
 
@@ -44,10 +45,169 @@ def book_view_count(request):
     return Response({'message': 'Good'})
 
 
-# 도서 신청 확인 페이지
+@csrf_exempt
+@require_http_methods(["POST", "GET"])
+def cover_create(request):
+
+    OPENAI_API_KEY = os.getenv('OPENAI_API')
+
+    # 일단 바로 정의했는데, DB에 있는 데이터를 가져오도록 수정해야할듯.
+    # book_title = '노인과 바다'
+    # book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.'
+
+    MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        request_type = data.get('request_type')
+
+        if request_type == 'create_graph':
+            search_text = data.get('search_text')
+            try:
+                # 책 객체 조회
+                book = Book.objects.get(book_title=search_text)
+                # DB에서 책 제목과 설명 가져오기
+                global book_title, book_description
+
+                book_title = book.book_title
+                book_description = book.book_description
+
+                # 임시 수요 데이터 입력
+                data = {
+                    '1': 60,
+                    '2': 60,
+                    '3': 60,
+                    '4': 60,
+                    '5': 60,
+                    '6': 10,
+                    '7': 10,
+                    '8': 10,
+                    '9': 60,
+                    '10': 10,
+                    '11': 50,
+                    '12': 10
+                }
+                json_data = json.dumps(data)
+                book.book_view_count = json_data
+                # 변경 사항 저장
+                book.save()
+            except Book.DoesNotExist:
+                # 책이 존재하지 않는 경우 에러 처리
+                return None
+
+            # JSON 문자열을 파이썬 딕셔너리로 변환
+            monthly_views = json.loads(book.book_view_count)
+            months = list(range(1, 13))
+            views = [monthly_views.get(str(month), 0) for month in months]
+
+            # 그래프 생성
+            plt.figure(figsize=(10, 6))
+            plt.bar(months, views, color='skyblue')
+            plt.xlabel('month')
+            plt.ylabel('count')
+
+            plt.title('book title of month count')
+            plt.xticks(months)
+
+            # 파일 경로 설정
+            file_path = os.path.join('static', 'images', 'graph.png')
+
+            # 그래프 파일로 저장
+            plt.savefig(file_path)
+            plt.close()  # 리소스 해제
+            return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
+        elif request_type == 'create_cover':
+
+            try:
+                data = json.loads(request.body)
+                selected_style = data.get('style', 'Disney style')
+            except json.JSONDecodeError:
+                return HttpResponseBadRequest("Invalid JSON")
+
+            def request_and_download_image(image_index, retry_count=0):
+                api_url = 'https://api.openai.com/v1/images/generations'
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {OPENAI_API_KEY}'
+                }
+                data = {
+                    "model": "dall-e-3",
+                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
+                    "n": 1,
+                    "size": "1024x1024"
+                }
+
+                try:
+                    response = requests.post(
+                        api_url, headers=headers, data=json.dumps(data))
+                    response.raise_for_status()
+
+                    result = response.json()
+                    image_url = result['data'][0]['url']
+
+                    image_response = requests.get(image_url)
+                    image_response.raise_for_status()
+
+                    filename = os.path.join(
+                        'static', 'images', f'Redraw_image_{image_index}.png')
+                    with open(filename, 'wb') as file:
+                        file.write(image_response.content)
+                    print(f"Image {image_index} saved successfully.")
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+                    if retry_count < MAX_RETRIES:
+                        print(
+                            f"Retrying... Attempt {retry_count + 1}/{MAX_RETRIES}")
+                        time.sleep(1.5)
+                        request_and_download_image(
+                            image_index, retry_count + 1)
+                    else:
+                        print(
+                            f"Maximum retry attempts for image {image_index} reached. Aborting.")
+
+            def make_parallel_requests():
+                with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                    futures = [executor.submit(
+                        request_and_download_image, i) for i in range(3)]
+                    for future in concurrent.futures.as_completed(futures):
+                        future.result()
+
+            make_parallel_requests()
+            return JsonResponse({"message": "표지가 성공적으로 생성되었습니다."}, status=200)
+
+        elif request_type == 'update_cover':
+            data = json.loads(request.body)
+            image_number = data.get('image_number')
+
+            # 이미지 번호를 기반으로 새 이미지 경로 설정
+            new_image_path = os.path.join(
+                'static', 'images', f'Redraw_image_{image_number}.png')
+
+            # 기존 이미지 경로 설정
+            existing_image_path = os.path.join(
+                'static', 'images', 'origin_image.png')
+
+            # 기존 이미지를 새 이미지로 교체
+            if os.path.exists(new_image_path):
+                shutil.copy(new_image_path, existing_image_path)
+                return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+
+    elif request.method == 'GET':
+        return render(request, 'manager/book_cover.html')
+    return HttpResponse("적절한 응답 메시지")
+
+
+def cover_complete(request):
+    return render(request, 'manager/book_complete.html')
+
+# 도서 신청 확인
+
+
 def get_book_details_from_naver(isbn):
 
-    # 캐시에서 데이터를 먼저 찾음
+    # 캐시에서 데이터를 먼저 찾음(redis)
     cache_key = f'book_{isbn}'
     cached_data = cache.get(cache_key)
     print(cached_data)
@@ -259,12 +419,6 @@ class BookRegisterCompleteView(APIView):
             'message': 'Book registered successfully.'
         }, status=200)
 
-# 개인정보처리
-
-
-def privacy_policy(request):
-    return render(request, 'manager/privacy_policy.html')
-
 
 # 문의 답변
 
@@ -309,162 +463,9 @@ class SubscriptionCountAPIView(APIView):
 def faq(request):
     return Response({'message': 'Good'})
 
-# 그래프, 책 표지 생성
+
+# 개인정보처리
 
 
-@csrf_exempt
-@require_http_methods(["POST", "GET"])
-def cover_create(request):
-
-    OPENAI_API_KEY = os.getenv('OPENAI_API')
-
-    # 일단 바로 정의했는데, DB에 있는 데이터를 가져오도록 수정해야할듯.
-    # book_title = '노인과 바다'
-    # book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.'
-
-    MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
-
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        request_type = data.get('request_type')
-
-        if request_type == 'create_graph':
-            search_text = data.get('search_text')
-            try:
-                # 책 객체 조회
-                book = Book.objects.get(book_title=search_text)
-                # DB에서 책 제목과 설명 가져오기
-                global book_title, book_description
-
-                book_title = book.book_title
-                book_description = book.book_description
-
-                # 임시 수요 데이터 입력
-                data = {
-                    '1': 60,
-                    '2': 60,
-                    '3': 60,
-                    '4': 60,
-                    '5': 60,
-                    '6': 10,
-                    '7': 10,
-                    '8': 10,
-                    '9': 60,
-                    '10': 10,
-                    '11': 50,
-                    '12': 10
-                }
-                json_data = json.dumps(data)
-                book.book_view_count = json_data
-                # 변경 사항 저장
-                book.save()
-            except Book.DoesNotExist:
-                # 책이 존재하지 않는 경우 에러 처리
-                return None
-
-            # JSON 문자열을 파이썬 딕셔너리로 변환
-            monthly_views = json.loads(book.book_view_count)
-            months = list(range(1, 13))
-            views = [monthly_views.get(str(month), 0) for month in months]
-
-            # 그래프 생성
-            plt.figure(figsize=(10, 6))
-            plt.bar(months, views, color='skyblue')
-            plt.xlabel('month')
-            plt.ylabel('count')
-
-            plt.title('book title of month count')
-            plt.xticks(months)
-
-            # 파일 경로 설정
-            file_path = os.path.join('static', 'images', 'graph.png')
-
-            # 그래프 파일로 저장
-            plt.savefig(file_path)
-            plt.close()  # 리소스 해제
-            return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
-        elif request_type == 'create_cover':
-
-            try:
-                data = json.loads(request.body)
-                selected_style = data.get('style', 'Disney style')
-            except json.JSONDecodeError:
-                return HttpResponseBadRequest("Invalid JSON")
-
-            def request_and_download_image(image_index, retry_count=0):
-                api_url = 'https://api.openai.com/v1/images/generations'
-                headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': f'Bearer {OPENAI_API_KEY}'
-                }
-                data = {
-                    "model": "dall-e-3",
-                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
-                    "n": 1,
-                    "size": "1024x1024"
-                }
-
-                try:
-                    response = requests.post(
-                        api_url, headers=headers, data=json.dumps(data))
-                    response.raise_for_status()
-
-                    result = response.json()
-                    image_url = result['data'][0]['url']
-
-                    image_response = requests.get(image_url)
-                    image_response.raise_for_status()
-
-                    filename = os.path.join(
-                        'static', 'images', f'Redraw_image_{image_index}.png')
-                    with open(filename, 'wb') as file:
-                        file.write(image_response.content)
-                    print(f"Image {image_index} saved successfully.")
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-                    if retry_count < MAX_RETRIES:
-                        print(
-                            f"Retrying... Attempt {retry_count + 1}/{MAX_RETRIES}")
-                        time.sleep(1.5)
-                        request_and_download_image(
-                            image_index, retry_count + 1)
-                    else:
-                        print(
-                            f"Maximum retry attempts for image {image_index} reached. Aborting.")
-
-            def make_parallel_requests():
-                with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-                    futures = [executor.submit(
-                        request_and_download_image, i) for i in range(3)]
-                    for future in concurrent.futures.as_completed(futures):
-                        future.result()
-
-            make_parallel_requests()
-            return JsonResponse({"message": "표지가 성공적으로 생성되었습니다."}, status=200)
-
-        elif request_type == 'update_cover':
-            data = json.loads(request.body)
-            image_number = data.get('image_number')
-
-            # 이미지 번호를 기반으로 새 이미지 경로 설정
-            new_image_path = os.path.join(
-                'static', 'images', f'Redraw_image_{image_number}.png')
-
-            # 기존 이미지 경로 설정
-            existing_image_path = os.path.join(
-                'static', 'images', 'origin_image.png')
-
-            # 기존 이미지를 새 이미지로 교체
-            if os.path.exists(new_image_path):
-                shutil.copy(new_image_path, existing_image_path)
-                return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'New image not found.'})
-
-    elif request.method == 'GET':
-        return render(request, 'manager/book_cover.html')
-    return HttpResponse("적절한 응답 메시지")
-
-
-def cover_complete(request):
-    return render(request, 'manager/book_complete.html')
+def privacy_policy(request):
+    return render(request, 'manager/privacy_policy.html')

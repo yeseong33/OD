@@ -9,12 +9,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
     ]
-    dependencies = [
-    ]
 
     operations = [
         migrations.CreateModel(
-            name='Book',
             name='Book',
             fields=[
                 ('book_id', models.AutoField(primary_key=True, serialize=False)),
