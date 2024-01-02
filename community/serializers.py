@@ -63,19 +63,25 @@ class BookSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['comment_content']
+        fields = ['comment_id', 'comment_content']
         
     def save(self, **kwargs):
         post_id = self.context['post_id']
-        # 수정 필요: 로그인
+        user_id = self.context['user_id']
         # 현재 로그인 유저
-        user = User.objects.get(pk=1)
+        user = User.objects.get(pk=user_id)
         # 현재 선택된 게시물
         post = Post.objects.get(pk=post_id)
         self.validated_data['user'] = user
         self.validated_data['post'] = post
 
         return super().save(**kwargs)
+    
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        response['user'] = UserSerializer(instance.user).data
+        response['post'] = PostSerializer(instance.post).data
+        return response
     
     
 class InquirySerializer(serializers.ModelSerializer):

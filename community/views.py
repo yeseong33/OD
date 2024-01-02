@@ -104,6 +104,7 @@ class BookShareContentPostDetailHtml(APIView):
         context = {
             'post': post_serializer.data,
             'comments': comment_serializer.data,
+            'user_id': request.user.user_id,
         }
         return Response(context, template_name=self.template_name)
 
@@ -227,7 +228,8 @@ class CommentList(APIView):
 
     def post(self, request):
         comment_serializer = CommentSerializer(data=request.data, context={
-                                            'post_id': request.data['post']})
+                                            'post_id': request.data['post'],
+                                            'user_id': request.user.user_id,})
         if comment_serializer.is_valid():
             comment = comment_serializer.save()
             post_id = comment.post.post_id
@@ -259,9 +261,11 @@ class CommentDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        comment = self.get_object(pk)
+        comment = get_object_or_404(Comment, pk=pk)
+        post_id = comment.post.post_id
         comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
+        return Response({'result': True, 'redirect_url': redirect_url})
 
 
 # 신규 도서 신청 기능
