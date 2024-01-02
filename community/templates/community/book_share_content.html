@@ -219,7 +219,7 @@
         localStorage.setItem('current_book_id', bookId);
         var userId = 1
         // 글쓰기 페이지로 이동
-        window.location.href = "{% url 'community:book_share_content_post' %}?book_id=" + bookId + "&user_id=" + userId;
+        window.location.href = "{% url 'community:book_share_content_post' %}";
 
     });
 });

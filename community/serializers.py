@@ -1,7 +1,7 @@
 from contextlib import nullcontext
 from rest_framework import serializers
 from audiobook.models import Book
-from .models import Post, User, Comment
+from .models import Post, User, Comment, Inquiry
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,6 +46,12 @@ class BookSerializer(serializers.ModelSerializer):
         model = Book
         fields = '__all__'
         
+    def update(self, instance, validated_data):
+        likes = validated_data.get('book_likes')
+        instance.book_likes += likes
+        instance.save() 
+        return instance
+        
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['post_set'] = list(instance.post_set.values())
@@ -70,3 +76,9 @@ class CommentSerializer(serializers.ModelSerializer):
         self.validated_data['post'] = post
 
         return super().save(**kwargs)
+    
+    
+class InquirySerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Inquiry
+        fields = '__all__'

@@ -142,7 +142,8 @@ class BookDetail(APIView):
 
     def put(self, request, pk, format=None):
         book = self.get_object(pk)
-        serializer = BookSerializer(book, data=request.data)
+        print(request.data)
+        serializer = BookSerializer(book, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -364,9 +365,77 @@ class BookCompleteView(APIView):
 # 1:1 문의
 
 
-def book_inquiry(request):
-    context = {'active_tab': 'book_inquiry'}
-    return render(request, 'community/book_inquiry.html', context)
+class InquiryPostHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'community/book_inquiry.html'
+    
+    def get(self, request):
+        print(request.user)
+        context = {
+            "user":request.user,
+        }
+        return Response(context, template_name=self.template_name)
+    
+
+class InquiryPostCompleteHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'community/book_inquiry_complete.html'
+    
+    def get(self, request):
+        print(request.user)
+        context = {
+            "user":request.user,
+            "result": True,
+        }
+        return Response(context, template_name=self.template_name)
+
+class InquiryList(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        inquirys = Inquiry.objects.all()
+        serializer = BookSerializer(inquirys, many=True)
+        return Response({"books": serializer.data})
+
+    def post(self, request):
+        serializer = InquirySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'result': True, 'inquirys': serializer.data, 'message': 'inquirys created.'})
+        return Response({'result': False, 'errors': serializer.errors}, status=400)
+
+
+class InquiryDetail(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get_object(self, pk):
+        try:
+            return Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        comment = self.get_object(pk)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        comment = self.get_object(pk)
+        serializer = CommentSerializer(comment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        comment = self.get_object(pk)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
 
 # FAQ
 
