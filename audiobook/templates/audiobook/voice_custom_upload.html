@@ -25,6 +25,15 @@
         .icon-img {
             height: 100px;
         }
+
+        .loading-indicator {
+            display: none;
+            position: fixed;  /* 화면에 고정 */
+            top: 50%;  /* 화면의 상단으로부터 50% 위치에 배치 */
+            left: 50%;  /* 화면의 왼쪽으로부터 50% 위치에 배치 */
+            transform: translate(-50%, -50%);  /* 자신의 너비와 높이의 절반만큼 이동해서 정중앙에 배치 */
+            z-index: 9999;  /* 다른 요소 위에 표시 */
+        }
     </style>
 
     <!-- 첫 번째 행 -->
@@ -64,6 +73,9 @@
     <!-- 공백  -->
     <div class="row justify-content-end"> </div>
     
+
+    <!-- rvc 필요한 부분  -->
+    
     <!-- 네 번째 행 -->
     <div class="row mt-5 mb-3">
         <div class="col">
@@ -75,7 +87,7 @@
     <div class="row gap-3 justify-content-center">
         <div class="col-6">
             <div class="input-group gap-4">
-                <input type="file" class="form-control" id="voice_file" name="voice_file" accept="audio/*" aria-label="음성 파일 선택 " aria-describedby="upload-btn">
+                <input type="file" class="form-control" id="voice_file" name="voice_file" accept="audio/*" aria-label="음성 파일 선택" aria-describedby="upload-btn">
                 <div class="input-group-append">
                     <button id="upload-btn" class="btn btn-primary" type="button">음성 파일 업로드</button>
                 </div>
@@ -88,7 +100,7 @@
     <!-- 네 번째 행 -->
     <div class="row mt-5 mb-3">
         <div class="col">
-            <h2 class="bold-text text-center">내 을성의 이름을 정해주세요</h2>
+            <h2 class="bold-text text-center">내 음성의 이름을 정해주세요</h2>
         </div>
     </div>
     
@@ -117,6 +129,10 @@
         </div>
     </div>
 
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        <img src="{% static 'images/loading.gif' %}" alt="Loading..." />
+    </div>
+
     <!-- 부트스트랩 모달 -->
     <div class="modal fade" id="voiceCreateModal" tabindex="-1" role="dialog" aria-labelledby="voiceCreateModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -143,7 +159,6 @@
             
             // 클릭 활성화
             document.getElementById('duplicate-check-btn').addEventListener('click', checkDuplicate);
-            document.getElementById('voice-create-btn').addEventListener('click', createVoice);
             
             // 중복 확인 버튼
             function checkDuplicate() {
@@ -153,29 +168,67 @@
                 localStorage.setItem('voice_name', voiceName);
             }
 
-            // 목소리 생성 버튼
-            function createVoice() {
-                // 모달 표시
-                $('#voiceCreateModal').modal('show');
-
-                // 이후의 작업을 수행하고 모달을 닫은 후에 페이지 이동
-                setTimeout(function () {
-                    // 여기에 목소리 생성 작업을 수행하는 코드 추가
-
-                    // 페이지 이동
-                    window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
-                }, 200000); // 200초 후에 페이지 이동 수행
-                    // 모달이 닫힐 때 발생하는 이벤트에 페이지 이동 코드 추가
-                $('#voiceCreateModal').on('hidden.bs.modal', function () {
-                    window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
-                });
-            }
-
             // modal-btn 클릭 시 다음 페이지로 이동
             document.getElementById('modal-btn').addEventListener('click', function() {
                 window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
             });
 
+            // 목소리 업로드 버튼
+            var uploadBtn = document.getElementById("upload-btn");
+            var voiceFileInput = document.getElementById("voice_file");
+
+            uploadBtn.addEventListener("click", function() {
+                // 파일 선택 창 열기
+                voiceFileInput.click();
+            });
+
+            voiceFileInput.addEventListener("change", function() {
+                // 선택한 파일 정보 가져오기
+                var file = voiceFileInput.files[0];
+
+                // 선택한 파일이 MP3인지 확인
+                if (file && file.type.match('audio/mpeg')) {
+                    // FileReader 객체 생성
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        // 선택한 파일을 input 요소에 설정
+                        voiceFileInput.setAttribute('value', e.target.result);
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    // MP3 파일이 아닌 경우, 사용자에게 알림
+                    alert('올바른 MP3 파일을 선택해주세요.');
+                }
+            });
+            //
+
+            //목소리 생성하기 버튼
+            document.getElementById("voice-create-btn").addEventListener("click", function() {
+                var voice_file = document.getElementById('voice_file').files[0];  // 파일 데이터
+                var voice_name = document.getElementById('voice_name').value;  // 텍스트 데이터
+                document.getElementById('loadingIndicator').style.display = 'block';
+            
+                var formData = new FormData();
+                formData.append('voice_file', voice_file);
+                formData.append('voice_name', voice_name);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
+            
+                var request = new XMLHttpRequest();
+                request.open("POST", "/rvc_train/");  // views.py에 정의된 url
+                request.send(formData);
+            
+                request.onload = function() {
+                    if (request.status == 200) {
+                        console.log(request.response);  // 성공 시 응답 출력
+                        window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                    } else {
+                        console.log(Error(request.statusText));  // 실패 시 에러 출력
+                    }
+                }
+            });
         });
 
     </script>

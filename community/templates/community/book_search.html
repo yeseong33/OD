@@ -12,7 +12,7 @@
     <!-- 신규 도서 신청 -->
     <div class="container my-4">
       <form method="get" action="{% url 'community:book_search' %}" class="d-flex justify-content-center mb-4">
-          <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." class="form-control w-50" />
+          <input type="text" name="query" placeholder="등록하고 싶은 도서를 검색해보세요." value="{{ request.GET.query }}" class="form-control w-50" />
           <button type="submit" class="btn btn-outline-orange-400 ms-2">검색</button>
       </form>
       {% if books %}

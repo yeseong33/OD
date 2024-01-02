@@ -35,7 +35,7 @@
                     <div class="col-6 ps-5 fs-4">
                         <ul class="navbar-nav align-items-center">
                             <!-- 메뉴 -->
-                            <li class="nav-item"><a class="nav-link me-5" href="#">장르별</a></li>
+                            <li class="nav-item"><a class="nav-link me-5" href="{% url 'audiobook:main_genre' %}">장르별</a></li>
                             <li class="nav-item"><a class="nav-link me-5" href="{% url 'community:book_share' %}">커뮤니티</a></li>
                         </ul>
                     </div>
@@ -102,6 +102,7 @@
     <footer class="footer mt-auto py-3 bg-dark-subtle">
         <div class="container text-center">
             <!-- 푸터 내용 -->
+            <a href="{% url 'community:privacy_policy' %}" target="_blank">개인정보처리방침</a>
         </div>
     </footer>
 </body>

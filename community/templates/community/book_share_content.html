@@ -127,27 +127,7 @@
         <div class="col-md-9">
             <!-- 각 게시물의 제목, 글쓴이, 작성일을 각각의 col로 나누어 표현 -->
             <div class="card">
-                <div class="card-body">
-                    {% for post in posts %}
-                        <div class="row mb-3" id="post_{{ post.post_id }}">
-                            <div class="col-md-4">
-                                <h5 class="card-title">{{ post.user_name }}</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <p class="card-text">{{ post.post_title }}</p>
-                            </div>  
-                            <div class="col-md-4">
-                                <p class="card-text">{{ post.post_created_date }}</p>
-                            </div>
-                        </div>
-                    {% endfor %}
-                   
-                    {% comment %} <div class="row justify-content-end mt-5"> </div>
-                    <div class="row justify-content-end mt-5"> </div>
-                    <div class="row justify-content-end mt-5"> </div>
-                    <div class="row justify-content-end mt-5"> </div>
-                    <div class="row justify-content-end mt-5"> </div>
-                    <div class="row justify-content-end mt-5"> </div> {% endcomment %}
+                <div class="card-body" id='postsContainer'>
                 </div>
             </div>
         </div>
@@ -181,13 +161,54 @@
 
 {% block script %}
 <script>
-    localStorage.setItem('book_id',  {{ book.book_id }});
-    var storedBookId = localStorage.getItem('book_id');
-    console.log('로컬 스토리지에서 가져온 book_id:', storedBookId);
+   document.addEventListener('DOMContentLoaded', function() {
+    var book = {{ book|safe }}
+    console.log(book)
+    var posts= book.post_set
+    console.log(posts)
+    
+
+
+    // 게시물을 동적으로 생성하고 이벤트 리스너를 등록
+    posts.forEach(function (post) {
+        var postContainer = document.createElement('div');
+        postContainer.className = 'row mb-3';
+        postContainer.id = 'post_' + post.post_id;
+
+        var col1 = document.createElement('div');
+        col1.className = 'col-md-4';
+        var user_id = post.user_id
+        console.log(user_id)
+        // User get 메소드로 접근해서 객체 얻어 오기
+        col1.innerHTML = '<h5 class="card-title">' + user_id + '</h5>';
+
+        var col2 = document.createElement('div');
+        col2.className = 'col-md-4';
+        col2.innerHTML = '<p class="card-text">' + post.post_title + '</p>';
+
+        var col3 = document.createElement('div');
+        col3.className = 'col-md-4';
+        col3.innerHTML = '<p class="card-text">' + post.post_created_date + '</p>';
+
+        postContainer.appendChild(col1);
+        postContainer.appendChild(col2);
+        postContainer.appendChild(col3);
+
+        postContainer.addEventListener('click', function () {
+            window.location.href = "{% url 'community:book_share_content_post_detail' pk=0 %}".replace('0', post.post_id);
+        });
+
+        postsContainer.appendChild(postContainer);
+    });
+
+
+
     // 각 게시물에 대한 클릭 이벤트 리스너를 등록
     {% for post in posts %}
+        console.log('d;d')
+        console.log(post)
         document.getElementById('post_{{ post.post_id }}').addEventListener('click', function() {
-            window.location.href = "{% url 'community:book_share_content_post_detail' post_id=0 %}".replace('0', {{ post.post_id }});
+        window.location.href = "{% url 'community:book_share_content_post_detail' post_id=0 %}".replace('0', {{ post.post_id }});
         });
     {% endfor %}
 
@@ -201,5 +222,8 @@
         window.location.href = "{% url 'community:book_share_content_post' %}?book_id=" + bookId + "&user_id=" + userId;
 
     });
+});
+
+  
 </script>
 {% endblock %}
