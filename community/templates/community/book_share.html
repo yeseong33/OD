@@ -11,6 +11,43 @@
     .card-img-top:hover {
         z-index: 1;
         transform: scale(1.5); /* 확대 비율 */
+        }
+
+    .custom-mt {
+        margin-top: 120px;
+    }
+
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #fff;
+        color: #A4A4A4;
+        padding: 1px;
+        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    }
+    
+    .custom-focus {
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #F2E7C4;
+        color: #000;
+        padding: 1px;
+    }
+
+    .category-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .hoverable {
+        transition: transform 0.2s ease-in-out; /* 확대 트랜지션 속성 추가 */
+        transform-origin: center center; /* 확대의 중심을 가운데로 조절 */
+    }
+
+    .hoverable:hover {
+        z-index: 1;
+        transform: scale(1.2); /* 확대 비율 */
     }
 </style>
 {% endblock %}
@@ -29,19 +66,13 @@
         </div>
     </div>
 
-    <!-- 컨텐츠 영역 -->
-    <div class="container mt-5">
-        <div class="row g-5 justify-content-center">
-            {% for book in books %}
-                <div class="col-md-2" id="{{ book.book_id }}">
-                    <div class="card">
-                        <img src="{{ book.book_image_path }}" class="card-img-top" alt="{{ book.title }}" style="cursor:pointer;">
-                    </div>
-                </div>
-                {% if forloop.counter|divisibleby:5 and not forloop.last %}
-                    </div><div class="row g-5 justify-content-center mt-3">
-                {% endif %}
-            {% endfor %}
+
+    <div class="row justify-content-end mt-5"> </div>
+    
+    <div class="row justify-content-end mt-5"> </div>
+
+    <div id='custom-content'>
+        <div class="row gap-3 justify-content-start" id="bookContainer">
         </div>
     </div>
 
@@ -86,15 +117,24 @@
 {% block script %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var bookImages = document.querySelectorAll('.card-img-top');
+        var books = {{books|safe}}
+        console.log(books)
+        books.forEach(addBookImage)
 
-        bookImages.forEach(function(image) {
-            image.addEventListener('click', function() {
-                // 클릭 시 지정된 URL로 리다이렉트
-                var bookId = image.parentElement.parentElement.id;  // 카드의 ID를 bookId로 사용
-                window.location.href = "{% url 'community:book_share_content' book_id=0 %}".replace('0', bookId);
+        // 이미지 추가 함수
+        function addBookImage(book) {
+            var imageElement = document.createElement('img');
+            imageElement.src = book.book_image_path;
+            imageElement.id = book.book_id;
+            imageElement.classList.add('img', 'col-md-1', 'content-item', 'hoverable');
+
+            imageElement.addEventListener('click', function() {
+                var bookId = imageElement.getAttribute('id');
+                console.log(bookId)
+                window.location.href = "{% url 'community:book_share_content' pk=0 %}".replace('0', bookId);
             });
-        });
+            bookContainer.appendChild(imageElement);
+        }
     });
 </script>
 {% endblock %}

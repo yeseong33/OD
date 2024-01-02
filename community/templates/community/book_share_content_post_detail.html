@@ -234,11 +234,10 @@
 
             // 폼 데이터 생성
             var formData = $("#commentForm").serialize();
-
             // AJAX 요청
             $.ajax({
                 type: "POST",
-                url: "{% url 'community:book_share_content_post_detail_comment' %}",
+                url: "{% url 'community:comment_list' %}",
                 data: formData,
                 success: function(response) {
                     // 서버 응답 처리
@@ -254,12 +253,11 @@
         // 삭제 버튼 클릭 시 AJAX 요청
         $("#commentDeleteButton").click(function(event) {
             event.preventDefault();  // 기본 동작 막기
-        
+            console.log('de')
             // AJAX 요청
             $.ajax({
                 type: "DELETE",
-                url: "{% url 'community:book_share_content_post_detail' post_id=post.post_id %}",
-         
+                url: "{% url 'community:post_detail' pk=post.post_id %}",
                 success: function(response) {
                     // 서버 응답 처리
                     console.log(response)
@@ -303,8 +301,8 @@
             var updatedContent = $("#post_input_content").val();
 
             $.ajax({
-                type: "PUT",
-                url: "{% url 'community:book_share_content_post_update' post_id=post.post_id %}",  // 이 부분 수정
+                method: "PUT",
+                url: "{% url 'community:post_detail' pk=post.post_id %}",  // 이 부분 수정
                 data: {
                     new_title: updatedTitle,
                     new_content: updatedContent,
