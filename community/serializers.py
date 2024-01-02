@@ -3,16 +3,18 @@ from rest_framework import serializers
 from audiobook.models import Book
 from .models import Post, User, Comment, Inquiry
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
 
+
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['post_id', 'post_title', 'post_content']
-        
+
     def save(self, **kwargs):
         book_id = self.context.get('book_id')
         user_id = self.context.get('user_id')
@@ -38,11 +40,12 @@ class PostSerializer(serializers.ModelSerializer):
         response['user'] = UserSerializer(instance.user).data
         # response['book'] = BookSerializer(instance.book).data
         return response
-    
-    
+
+
 class BookSerializer(serializers.ModelSerializer):
     post_set = PostSerializer(many=True, read_only=True)
-    class Meta: 
+
+    class Meta:
         model = Book
         fields = '__all__'
         
@@ -52,19 +55,24 @@ class BookSerializer(serializers.ModelSerializer):
         instance.save() 
         return instance
         
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['post_set'] = list(instance.post_set.values())
         for post in ret['post_set']:
-            post['post_created_date'] = post['post_created_date'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            post['post_updated_date'] = post['post_updated_date'].strftime('%Y-%m-%dT%H:%M:%S.%fZ') if post['post_updated_date'] else "None"
+            post['post_created_date'] = post['post_created_date'].strftime(
+                '%Y-%m-%dT%H:%M:%S.%fZ')
+            post['post_updated_date'] = post['post_updated_date'].strftime(
+                '%Y-%m-%dT%H:%M:%S.%fZ') if post['post_updated_date'] else None
+
         return ret
-        
+
+
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['comment_content']
-        
+
     def save(self, **kwargs):
         post_id = self.context['post_id']
         # 수정 필요: 로그인

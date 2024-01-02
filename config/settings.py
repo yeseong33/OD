@@ -151,7 +151,6 @@ if (FILE_SAVE_POINT == 'local'):
 else:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-
 MEDIA_ROOT = 'C:\\S3_bucket'  # 파일이 저장될 로컬 경로
 MEDIA_URL = '/media/'
 
