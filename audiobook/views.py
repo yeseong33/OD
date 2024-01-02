@@ -353,7 +353,9 @@ class ContentPlay(APIView):
         context = {
             'result': True,
             'book': book,
+            'user': request.user,
         }
+        print(request.user.user_favorite_books)
         return Response(context, template_name=self.template_name)
 
 # 성우
