@@ -24,6 +24,7 @@ import concurrent.futures
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
+from django.http import HttpResponse
 load_dotenv()  # 환경 변수를 로드함
 
 # 책 수요 변화
@@ -234,8 +235,8 @@ def cover_create(request):
     OPENAI_API_KEY = os.getenv('OPENAI_API')
     
     # 일단 바로 정의했는데, DB에 있는 데이터를 가져오도록 수정해야할듯.
-    book_title = '노인과 바다'
-    book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.' 
+    # book_title = '노인과 바다'
+    # book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.' 
     
     MAX_RETRIES = 3 # 오류 뜰 경우 재시도 횟수
 
@@ -244,10 +245,35 @@ def cover_create(request):
         request_type = data.get('request_type')
         
         if request_type == 'create_graph':
-    
+            search_text = data.get('search_text')
             try:
                 # 책 객체 조회
-                book = Book.objects.get(book_title=book_title)
+                book = Book.objects.get(book_title=search_text)
+                 # DB에서 책 제목과 설명 가져오기
+                global book_title, book_description
+                
+                book_title = book.book_title
+                book_description = book.book_description
+                
+                # 임시 수요 데이터 입력
+                data = {
+                        '1': 60,
+                        '2': 60,
+                        '3': 60,
+                        '4': 60,
+                        '5': 60,
+                        '6': 10,
+                        '7': 10,
+                        '8': 10,
+                        '9': 60,
+                        '10': 10,
+                        '11': 50,
+                        '12': 10
+                    }
+                json_data = json.dumps(data)
+                book.book_view_count = json_data
+                # 변경 사항 저장
+                book.save()
             except Book.DoesNotExist:
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
@@ -260,9 +286,10 @@ def cover_create(request):
             # 그래프 생성
             plt.figure(figsize=(10, 6))
             plt.bar(months, views, color='skyblue')
-            plt.xlabel('월별')
-            plt.ylabel('사용량')
-            plt.title(f'<"{book.book_title}"> 월별 사용자 추이')
+            plt.xlabel('month')
+            plt.ylabel('count')
+            
+            plt.title('book title of month count')
             plt.xticks(months)
 
             # 파일 경로 설정
@@ -271,7 +298,7 @@ def cover_create(request):
             # 그래프 파일로 저장
             plt.savefig(file_path)
             plt.close()  # 리소스 해제
-            
+            return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
         elif request_type == 'create_cover':
             
             try:
@@ -344,3 +371,8 @@ def cover_create(request):
 
     elif request.method == 'GET':
         return render(request, 'manager/book_cover.html')
+    return HttpResponse("적절한 응답 메시지")
+
+
+def cover_complete(request):
+    return render(request, 'manager/book_complete.html')
