@@ -1,0 +1,88 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        #chart-container {
+            width: 70%;
+            float: none; /* 가운데 정렬을 위해 float 제거 */
+            margin: 0 auto; /* 가운데 정렬을 위해 margin 추가 */
+        }
+        canvas {
+            display: block;
+            max-width: 100%; /* 그래프의 최대 너비 */
+            height: 500px; /* 그래프의 높이 */
+        }
+        .graph-title{
+            margin-top: 50px;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+
+    <h2 class="graph-title">월별 구독수</h2>
+    <div id="chart-container">
+        <canvas id="subscriptionChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // AJAX 요청을 서버에 보냄
+            $.ajax({
+                url: '{% url "manager:api_subscription_count" %}',  // API 엔드포인트 URL
+                method: 'GET',
+                success: function(data) {
+                    // 서버로부터 받은 데이터로 그래프 생성
+                    var ctx = document.getElementById('subscriptionChart').getContext('2d');
+                    var chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dates,
+                            datasets: [{
+                                label: 'Monthly Subscription Counts',
+                                data: data.counts,
+                                borderColor: 'rgb(253, 126, 20)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        font: {
+                                            size: 17,
+                                            weight: 'bold'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        font: {
+                                            size: 16,
+                                            weight: 'bold'
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        font: {
+                                            size: 18
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                });
+            }
+        });
+    });
+    </script>
+{% endblock %}

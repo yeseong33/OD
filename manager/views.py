@@ -14,9 +14,12 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from community.models import BookRequest, UserRequestBook
 from audiobook.models import Book
-from user.models import User
+from user.models import Subscription
 from .serializers import BookSerializer
 from community.views import send_async_mail
+from datetime import datetime
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -37,8 +40,10 @@ def get_book_details_from_naver(isbn):
     # 캐시에서 데이터를 먼저 찾음
     cache_key = f'book_{isbn}'
     cached_data = cache.get(cache_key)
+    print(cached_data)
     if cached_data:
         return json.loads(cached_data)
+    
 
     # 캐시에 데이터가 없으면 API 호출
     url = f'https://openapi.naver.com/v1/search/book.json?query={isbn}'
@@ -257,8 +262,35 @@ def inquiry(request):
 
 
 # 구독 및 수익 관리
-def revenue(request):
-    return Response({'message': 'Good'})
+
+def show_subscription(request):
+    return render(request, 'manager/subscription.html')
+    
+class SubscriptionCountAPIView(APIView):
+    def get(self, request, format=None):
+        today = timezone.now().date()  # 'aware' 현재 날짜 객체
+        dates = [today - relativedelta(months=n) for n in range(11, -1, -1)]
+        
+        data = {
+            'dates': [],
+            'counts': []
+        }
+        for date_point in dates:
+            # 날짜를 'aware' datetime 객체로 변환
+            aware_date_point = timezone.make_aware(datetime.combine(date_point, datetime.min.time()))
+            
+            count = Subscription.objects.filter(
+                sub_start_date__lte=aware_date_point,
+                sub_end_date__gte=aware_date_point
+            ).count()
+            data['dates'].append(aware_date_point.strftime('%Y-%m'))
+            data['counts'].append(count)
+        print(data)
+        
+        return Response(data)
+    
+    
+
 
 # FAQ 관리
 
