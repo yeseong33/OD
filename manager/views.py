@@ -35,18 +35,13 @@ load_dotenv()  # 환경 변수를 로드함
 
 # 책 수요 변화
 
-# 그래프, 책 표지 생성
-def book_view(request):
-    return Response({'message': 'Good'})
-
-
 def book_view_count(request):
     return Response({'message': 'Good'})
 
 
 @csrf_exempt
 @require_http_methods(["POST", "GET"])
-def cover_create(request):
+def book_view(request):
 
     OPENAI_API_KEY = os.getenv('OPENAI_API')
 
