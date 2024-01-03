@@ -33,5 +33,5 @@ class Book(models.Model):
     book_description = models.TextField()
     book_likes = models.IntegerField(default=0)
     book_isbn = models.CharField(max_length=255)
-    book_view_count = models.JSONField(null=True) 
+    book_view_count = models.JSONField(null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

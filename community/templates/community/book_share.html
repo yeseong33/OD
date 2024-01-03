@@ -23,8 +23,8 @@
         <div class="row justify-content-end">
             <div class="col-6">
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="도서명을 입력해주세요" aria-label="도서명 검색">
-                    <button class="btn btn-outline-secondary" type="button">검색</button>
+                    <input id="search-input" type="text" class="form-control" placeholder="도서명을 입력해주세요" aria-label="도서명 검색">
+                    <button id="search-button" class="btn btn-outline-secondary" type="button">검색</button>
                 </div>
             </div>
         </div>
@@ -84,4 +84,12 @@
 {% endblock %}
 
 {% block script %}
+<script>
+    // 검색 버튼에 대한 이벤트 리스너 추가
+    document.getElementById('search-button').addEventListener('click', function() {
+        var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+        // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
+        window.location.href = `{% url 'community:book_share' %}?search_term=${searchTerm}`;
+    });
+</script>
 {% endblock %}
