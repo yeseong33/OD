@@ -21,6 +21,9 @@ from datetime import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from rest_framework import status
+from .forms import InquiryResponseForm
+from django.http import JsonResponse
+
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -246,12 +249,28 @@ class BookRegisterCompleteView(APIView):
 def inquiry_list(request):  # 문의글 목록 페이지
     return render(request, 'manager/inquiry_list.html')
 
-def inquiry_detail(request, pk):  # 문의글 상세 페이지
-    inquiry = Inquiry.objects.get(pk=pk)
-    return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry})
+def inquiry_detail(request, inquiry_id):
+    inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
+    
+    if request.method == 'POST':
+        form = InquiryResponseForm(request.POST)
+        if form.is_valid():
+            inquiry.inquiry_response = form.cleaned_data['response']
+            inquiry.inquiry_is_answered = True
+            inquiry.inquiry_answered_date = timezone.now()
+            inquiry.save()
+            
+            serializer = InquirySerializer(inquiry)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+
+    else:
+        form = InquiryResponseForm()
+
+    return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
 
 class InquiryListAPI(APIView):
-
     def get(self, request, *args, **kwargs):
         show_answered = request.query_params.get('show_answered', 'all')
         if show_answered == 'answered':
@@ -263,22 +282,13 @@ class InquiryListAPI(APIView):
 
         # 여러 인스턴스 직렬화
         serializer = InquirySerializer(inquiries, many=True)
-        
         return Response(serializer.data)
 
 class InquiryDetailAPI(APIView):
-    
-    def get_object(self, pk):
-        try:
-            return Inquiry.objects.get(pk=pk)
-        except Inquiry.DoesNotExist:
-            raise status.HTTP_404_NOT_FOUND
-
-    def get(self, request, pk, format=None):
-        inquiry = self.get_object(pk)
+    def get(self, request, inquiry_id, format=None):
+        inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
         serializer = InquirySerializer(inquiry)
         return Response(serializer.data)
-
 
 
 # 구독 및 수익 관리

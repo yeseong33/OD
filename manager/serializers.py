@@ -10,10 +10,14 @@ class BookSerializer(serializers.ModelSerializer):
 
 class InquirySerializer(serializers.ModelSerializer):
     detail_url = serializers.SerializerMethodField()  # get_detail_url() 의 return 값
-
+    user = serializers.SerializerMethodField()  # get_user() 의 return 값
+    
     class Meta:
         model = Inquiry
-        fields = ['inquiry_id', 'inquiry_category', 'inquiry_title', 'inquiry_content', 'inquiry_response', 'inquiry_is_answered', 'detail_url']
+        fields = '__all__' 
 
     def get_detail_url(self, obj):
         return reverse('manager:inquiry_detail', kwargs={'inquiry_id': obj.inquiry_id})
+    
+    def get_user(self, obj):
+        return obj.user.nickname

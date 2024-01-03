@@ -18,7 +18,7 @@ urlpatterns = [
     path('inquiries/<int:inquiry_id>/', views.inquiry_detail, name='inquiry_detail'),
     # REST API endpoints
     path('api/inquiries/', views.InquiryListAPI.as_view(), name='api_inquiries'),  # REST API endpoints
-    path('api/inquiries/<int:inquiry_id>/', views.InquiryDetailAPI.as_view(), name='inquiry_detail'),  
+    path('api/inquiries/<int:inquiry_id>/', views.InquiryDetailAPI.as_view(), name='api_inquiry_detail'),  
     
     ## 수익 현황
     path('subscription/', views.show_subscription, name='subscription'),
