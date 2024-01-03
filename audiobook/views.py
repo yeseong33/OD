@@ -7,7 +7,6 @@ import paramiko
 import pygame
 from dotenv import load_dotenv, dotenv_values
 import datetime
-import pysftp
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls.base import reverse
@@ -15,6 +14,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.templatetags.static import static
+from django.core.files import File
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -45,7 +45,6 @@ def play_wav(file_path):
     pygame.quit()
 
 # 첫 화면
-
 def index(request):
     if request.user.is_authenticated:  # 로그인 되어 있으면 main 페이지로 리다이렉트
         return redirect('audiobook:main')
@@ -53,17 +52,13 @@ def index(request):
     else:  # 로그인 되어 있지 않으면 index 페이지를 렌더링
         return render(request, 'audiobook/index.html')
 
-
 def test(request):
     return render(request, 'audiobook/ddd.html')
 
-
 # 메인화면
-
 def convert_sample_voice(rvc_path):
     sample_voice_path = ''
     return sample_voice_path
-
 
 class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -230,7 +225,8 @@ class Rvc_Train(APIView):
             f'python3 preprocess.py {voice_name}\n',
             f'python3 extract_features.py {voice_name}\n',
             f'python3 train_index.py {voice_name}\n',
-            f'python3 train_model.py {voice_name}\n',
+            'pwd\n',
+            f'python3 train_model.py {voice_name}\n'
         ]
 
         for cmd in commands:
@@ -314,7 +310,6 @@ def TTS(request):
 def Rvc_Save(request):
     
     print(request.data)
-    voice_image = request.FILES['voice_image']
     voice_name = request.POST['voice_name']
     tone = request.POST['tone']
     
@@ -350,7 +345,7 @@ def Rvc_Save(request):
     commands = [
         f'python3 tts.py {sample}\n',
         'cd project-main\n',
-        f'python3 inference.py IU {tone} audios/tts.mp3\n',
+        f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
         'rm -rf audios/tts.mp3\n',
     ]
     
@@ -369,34 +364,33 @@ def Rvc_Save(request):
     sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.pth'))
     # SFTP 세션 종료
     sftp_client.close()
-    
-    print("로컬에 저장 완료")
 
     voice_data = {
         'voice_name': voice_name,  # 사용자 입력
         'voice_like': 0,
         #'voice_path': voice_name,
         #'voice_image_path': voice_name,
+        #'voice_sample_path': 'test',
         'voice_created_date': datetime.date.today(),
         'voice_is_public':  request.POST['voice_public'],
         'user': request.user.user_id,
     }
     
+    with open(os.path.join(project_path, f'static/tts/{voice_name}.mp3'), 'rb') as file:
+        voice_sample = ContentFile(file.read())
+    voice_image = ContentFile(request.FILES['voice_image'].read())
     with open(f'static/tts/{voice_name}.pth', 'rb') as file:
-        voice_model = file.read()
-    pygame.init()
-    voice_sample = pygame.mixer.Sound(f'static/tts/{voice_name}.mp3')
-        
-    # Serializer를 통해 데이터 검증 및 저장
+        voice_model = ContentFile(file.read())
+
     serializer = VoiceSerializer(data=voice_data)
     if serializer.is_valid():
         voice_instance = serializer.save()
-        # 이미지와 텍스트 파일을 모델 인스턴스에 저장
-        # 옵션 save=False 한 후 .save() 해서 한번에 저장
         voice_instance.voice_image_path.save(
-            f"{voice_name}_image.jpg", voice_image, save=False)
+            f"{voice_name}.jpg", voice_image, save=False)
+        voice_instance.voice_sample_path.save(
+            f"{voice_name}.mp3", voice_sample, save=False)
         voice_instance.voice_path.save(
-            f"{voice_name}_model.pth", ContentFile(voice_model), save=False)
+            f"{voice_name}.pth", voice_model, save=False)
         voice_instance.save()
 
     else:
@@ -410,6 +404,7 @@ def Rvc_Save(request):
     os.remove(os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
     os.remove(os.path.join(project_path, f'static/tts/{voice_name}.pth'))
     
+    '''
     commands = [
         f'rm -rf assets/weights/{voice_name}.pth\n',
         f'rm -rf audios/{voice_name}.wav\n',
@@ -422,6 +417,7 @@ def Rvc_Save(request):
             shell.send(cmd)
             output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
             print(output)  # 받은 출력을 표시합니다.
+    '''
     
     # 연결 종료
     client.close()
