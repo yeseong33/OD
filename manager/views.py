@@ -29,6 +29,7 @@ from user.models import Subscription
 from .serializers import BookSerializer, InquirySerializer
 from community.views import send_async_mail
 import datetime
+from datetime import datetime as dt
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from rest_framework import status
@@ -125,7 +126,7 @@ def book_view(request):
                 # 책 제목이 검색 쿼리를 포함하는 모든 책을 검색
                 books = Book.objects.filter(book_title__icontains=search_query)
                 results = [{'title': book.book_title} for book in books]
-                print(results)
+                # print(results)
                 return JsonResponse({'books': results}, safe=False)
 
             return JsonResponse({'books': []})
@@ -331,7 +332,7 @@ class BookRegisterCompleteView(APIView):
 
         # Naver API를 호출하여 책의 상세 정보를 가져옴
         book_details = get_book_details_from_naver(book_isbn)
-        print(book_details)
+        # print(book_details)
         if book_details is None:
             print("There is no book details.")
             return Response({
@@ -489,7 +490,7 @@ class SubscriptionCountAPI(APIView):
         for date_point in dates:
             # 날짜를 'aware' datetime 객체로 변환
             aware_date_point = timezone.make_aware(
-                datetime.combine(date_point, datetime.min.time()))
+                dt.combine(date_point, dt.min.time()))
 
             count = Subscription.objects.filter(
                 sub_start_date__lte=aware_date_point,
@@ -497,7 +498,7 @@ class SubscriptionCountAPI(APIView):
             ).count()
             data['dates'].append(aware_date_point.strftime('%Y-%m'))
             data['counts'].append(count)
-        print(data)
+        # print(data)
 
         return Response(data)
 
