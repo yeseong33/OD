@@ -269,8 +269,6 @@ class UserInformView(APIView):
                 with open(local_file_path, 'wb') as local_file:
                     for chunk in user_image.chunks():
                         local_file.write(chunk)
-                user.user_profile_path = file_name
-                
         if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
             user.nickname = nickname
         user.save()
