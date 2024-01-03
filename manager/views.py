@@ -28,7 +28,7 @@ from audiobook.models import Book
 from user.models import Subscription
 from .serializers import BookSerializer, InquirySerializer
 from community.views import send_async_mail
-from datetime import datetime
+import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from rest_framework import status
