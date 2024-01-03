@@ -29,7 +29,6 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('manager/', include('manager.urls')),
     path('privacy_policy/', privacy_policy, name='privacy_policy'),  # URL 패턴을 추가합니다.
-    path('guest/',include('guest.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
