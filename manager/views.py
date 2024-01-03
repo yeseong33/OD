@@ -90,8 +90,6 @@ def book_view(request):
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
 
-            # JSON 문자열을 파이썬 딕셔너리로 변환
-            monthly_views = json.loads(book.book_view_count)
             months = list(range(1, 13))
             views = [monthly_views.get(str(month), 0) for month in months]
 
