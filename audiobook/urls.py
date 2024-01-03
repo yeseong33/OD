@@ -26,6 +26,8 @@ urlpatterns = [
      path('voice/custom/upload/', views.voice_custom_upload,name='voice_custom_upload'),
      path('voice/custom/complete/', views.voice_custom_complete,name='voice_custom_complete'),
      path('voice/custom/complete/upload', views.voice_custom_upload_post, name='voice_custom_upload_post'),
+     path('voice/custom/search/',views.Voice_Custom_Search.as_view(),name='voice_custom_search'),
+     path('voice/custom/my/',views.Voice_Custom_My.as_view(),name='voice_custom_my'),
 
      # 개인정보처리
      path('privacy_policy/', views.privacy_policy, name='privacy_policy'),

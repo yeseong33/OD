@@ -11,6 +11,7 @@ import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls.base import reverse
 from django.http import JsonResponse
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.templatetags.static import static
@@ -358,6 +359,13 @@ def Rvc_Save(request):
     # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
     remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.wav'
     project_path = os.getcwd()
+    folder_path = os.path.join(project_path, 'static', 'tts')  # 경로 조합
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"폴더가 생성되었습니다: {folder_path}")
+    else:
+        print(f"이미 해당 폴더가 존재합니다: {folder_path}")
+        
     sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
     
     remote_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
@@ -531,32 +539,24 @@ class ContentPlay(APIView):
         return Response(context, template_name=self.template_name)
 
 # 성우
-
-
 def voice_custom(request):
     return render(request, 'audiobook/voice_custom.html')
-
 
 def voice_celebrity(request):
     pass
 
-
 def voice_custom_upload(request):
     return render(request, 'audiobook/voice_custom_upload.html')
-
 
 def voice_custom_complete(request):
     return render(request, 'audiobook/voice_custom_complete.html')
 
-
 def voice_custom_upload_post(request):
     return render(request, 'audiobook/voice_custom.html')
-
 
 @api_view(['GET'])
 def helloAPI(request):
     return Response("hello world!")
-
 
 @api_view(["GET", "POST"])
 def voice_search(request):
@@ -580,3 +580,35 @@ def voice_search(request):
 def privacy_policy(request):
     return render(request, 'audiobook/privacy_policy.html')
 
+#중복찾기
+class Voice_Custom_Search(View):
+    def get(self, request):
+        voice_name = request.GET.get('voice_name', None)
+        print("i got",voice_name)
+        
+        if voice_name is None:
+            return JsonResponse({'error': 'voice_name parameter is required.'})
+
+        # Voice 모델에서 voice_name 값이 일치하는 객체 찾기
+        try:
+            voice = Voice.objects.get(voice_name=voice_name)
+            print(voice)
+            return JsonResponse({'check': 'True'})
+        except Voice.DoesNotExist:
+            return JsonResponse({'check': 'False'})
+
+#내거랑 아닌거 나누기
+class Voice_Custom_My(View):
+    def get(self, request):
+        user_id = request.user.user_id
+        print("user_id is",user_id)
+
+        # Voice 모델에서 voice_name 값이 일치하는 객체 찾기
+        try:
+            voices_with_user_id = Voice.objects.filter(user_id=user_id)
+            voices_without_user_id = Voice.objects.exclude(user_id=user_id)
+            voice_names1 = [voice.voice_name for voice in voices_with_user_id]
+            voice_names2 = [voice.voice_name for voice in voices_without_user_id]
+            return JsonResponse({'voice_names1': voice_names1, 'voice_names2': voice_names2})
+        except :
+            return JsonResponse({'check': 'error'})
