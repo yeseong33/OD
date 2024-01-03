@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'nickname', 'oauth_provider',
-                  'user_profile_path', 'password', 'user_favorite_books', 'user_book_history']
+                  'user_profile_path', 'password', 'user_favorite_books', 'user_book_history', 'user_id']
 
         extra_kwargs = {
             'password': {'write_only': True},
@@ -125,6 +125,7 @@ class CommentSerializer(serializers.ModelSerializer):
     
     
 class InquirySerializer(serializers.ModelSerializer):
+    inquiry_created_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
     class Meta:
         model = Inquiry
         fields = '__all__'

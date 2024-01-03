@@ -74,10 +74,7 @@
     <!-- 글쓰기 버튼 -->
     <div class="row">
         <div class="col-md-12 d-flex justify-content-end">
-            <form method="post" action="{% url 'community:book_share_content_post' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
-            </form>
+            <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
         </div>
     </div>
 {% endblock %}
@@ -93,7 +90,6 @@
             var userId = 1
             // 글쓰기 페이지로 이동
             window.location.href = "{% url 'community:book_share_content_post' %}?book_id=" + bookId + "&user_id=" + userId;
-
         });
     });
 </script>
