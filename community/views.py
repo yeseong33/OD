@@ -80,12 +80,12 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all()
-        
+
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
             books = books.filter(book_title__icontains=search_term)
-            
+
         # 페이지네이터 설정
         paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
         page_number = request.GET.get('page')
@@ -117,7 +117,7 @@ class BookShareContentHtml(APIView):
             book_serializer.data, ensure_ascii=False, indent=3)
 
         posts = book.post_set.all()
-        paginator = Paginator(posts, 10)  # 한 페이지당 10개의 게시물
+        paginator = Paginator(posts, 12)  # 한 페이지당 12개의 게시물
         page_number = request.GET.get('page', 1)  # URL에서 페이지 번호를 가져옴
         page_obj = paginator.get_page(page_number)
 
@@ -294,7 +294,7 @@ class CommentList(APIView):
     def post(self, request):
         comment_serializer = CommentSerializer(data=request.data, context={
             'post_id': request.data['post'],
-            'user_id': request.user.user_id,})
+            'user_id': request.user.user_id, })
         if comment_serializer.is_valid():
             comment = comment_serializer.save()
             post_id = comment.post.post_id
@@ -330,7 +330,8 @@ class CommentDetail(APIView):
         comment = get_object_or_404(Comment, pk=pk)
         post_id = comment.post.post_id
         comment.delete()
-        redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
+        redirect_url = reverse(
+            'community:book_share_content_post_detail', kwargs={'pk': post_id})
         return Response({'result': True, 'redirect_url': redirect_url})
 
 
@@ -555,7 +556,9 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 # 개인정보처리
+
+
 def privacy_policy(request):
     return render(request, 'community/privacy_policy.html')
