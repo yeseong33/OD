@@ -1,78 +1,14 @@
 {% extends 'community/template.html' %}
 {% load static %}
 
-{% block title %}공유 및 커뮤니티{% endblock %}
+{% block title %}O: D - 공유 및 커뮤니티{% endblock %}
 {% block style %}
-<style>
-    .content-item {
-        width: 120px; /* 가로 크기 */
-        height: 120px; /* 세로 크기 */
-        padding: 0px;
-        border: 1px solid #ccc;
-    }
-
-    .content-item img {
-        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
-        height: 100%; /* 가로 비율 유지 */
-        display: block; /* 인라인 요소의 기본 여백 제거 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .content-item img:hover {
-        z-index: 1;
-        transform: scale(1.5); /* 확대 비율 */
-        }
-
-    .custom-mt {
-        margin-top: 120px;
-    }
-
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #fff;
-        color: #A4A4A4;
-        padding: 1px;
-        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-    }
-    
-    .custom-focus {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #F2E7C4;
-        color: #000;
-        padding: 1px;
-    }
-
-    .category-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 20px;
-    }
-
-    .center-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .center-icon svg {
-        width: 60px; /* 아이콘의 너비 */
-        height: 60px; /* 아이콘의 높이 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .center-icon:hover svg {
-        transform: scale(1.2); /* 호버 시 크기 조절 */
-    }
-</style>
 {% endblock %}
 
 {% block content %}
-    <div class="row justify-content-end mt-5"> </div>
-    <div class="row justify-content-end mt-5"> </div>
-    <div class="row justify-content-end mt-5"> </div>
-
+    <div class="mt-5"></div>
+    <div class="mt-5"></div>
+    <div class="mt-5"></div>
 
     <form id="postForm">
         {% csrf_token %}
