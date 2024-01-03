@@ -87,7 +87,7 @@ class BookShareHtml(APIView):
             books = books.filter(book_title__icontains=search_term)
 
         # 페이지네이터 설정
-        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        paginator = Paginator(books, 12)  # 페이지당 12개의 아이템
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -117,7 +117,7 @@ class BookShareContentHtml(APIView):
             book_serializer.data, ensure_ascii=False, indent=3)
 
         posts = book.post_set.all()
-        paginator = Paginator(posts, 12)  # 한 페이지당 12개의 게시물
+        paginator = Paginator(posts, 10)  # 한 페이지당 10개의 게시물
         page_number = request.GET.get('page', 1)  # URL에서 페이지 번호를 가져옴
         page_obj = paginator.get_page(page_number)
 
@@ -127,7 +127,6 @@ class BookShareContentHtml(APIView):
             'page_obj': page_obj,
         }
 
-        print(serialized_json)
         return Response(context, template_name=self.template_name)
 
 
