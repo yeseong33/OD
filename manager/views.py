@@ -35,24 +35,15 @@ load_dotenv()  # 환경 변수를 로드함
 
 # 책 수요 변화
 
-# 그래프, 책 표지 생성
-def book_view(request):
-    return Response({'message': 'Good'})
-
-
 def book_view_count(request):
     return Response({'message': 'Good'})
 
 
 @csrf_exempt
 @require_http_methods(["POST", "GET"])
-def cover_create(request):
+def book_view(request):
 
     OPENAI_API_KEY = os.getenv('OPENAI_API')
-
-    # 일단 바로 정의했는데, DB에 있는 데이터를 가져오도록 수정해야할듯.
-    # book_title = '노인과 바다'
-    # book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.'
 
     MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
 
@@ -66,11 +57,11 @@ def cover_create(request):
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-                global book_title, book_description
+                global book_title, book_description, book_id
 
                 book_title = book.book_title
                 book_description = book.book_description
-
+                book_id= book.book_isbn
                 # 임시 수요 데이터 입력
                 data = {
                     '1': 60,
@@ -115,6 +106,21 @@ def cover_create(request):
             plt.savefig(file_path)
             plt.close()  # 리소스 해제
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
+        
+        
+        elif request_type == 'search':
+            data = json.loads(request.body)
+            search_query = data.get('search_query', '').strip()
+
+            if search_query:
+                # 책 제목이 검색 쿼리를 포함하는 모든 책을 검색
+                books = Book.objects.filter(book_title__icontains=search_query)
+                results = [{'title': book.book_title} for book in books]
+                print(results)
+                return JsonResponse({'books': results}, safe=False)
+
+            return JsonResponse({'books': []})
+        
         elif request_type == 'create_cover':
 
             try:
@@ -184,7 +190,7 @@ def cover_create(request):
 
             # 기존 이미지 경로 설정
             existing_image_path = os.path.join(
-                'static', 'images', 'origin_image.png')
+                'C:\\', 'S3_bucket', 'book_images', f'{book_id}_image.jpg')
 
             # 기존 이미지를 새 이미지로 교체
             if os.path.exists(new_image_path):
