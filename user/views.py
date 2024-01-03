@@ -257,7 +257,7 @@ class UserInformView(APIView):
             file_name = f"user_images/{user.email}_profile.jpg"
             file_path += file_name
             if FILE_SAVE_POINT == 'local':
-                os.remove(os.path.join(MEDIA_ROOT, user.user_profile_path)) #기존에 유저 이미지 파일 삭제.
+                os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #기존에 유저 이미지 파일 삭제.
                 
                 local_file_path = os.path.join(MEDIA_ROOT, file_name)
                 with open(local_file_path, 'wb') as local_file:
