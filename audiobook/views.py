@@ -509,14 +509,23 @@ class ContentHTML(APIView):
     def get(self, request, book_id):
         file_path = self.get_file_path()
         book = get_object_or_404(Book, pk=book_id)
-        tmp = request.user.user_book_history
-        user_book_history = [] if tmp is None else tmp
+        if request.user.is_authenticated:
+            print('로그인')
+            tmp = request.user.user_book_history
+            user_book_history = [] if tmp is None else tmp
+            user = request.user
+        else:
+            user = {
+                'user_id': 1, 
+            }
+            user_book_history = []
 
         context = {
             'result': True,
             'book': book,
             'file_path': file_path,
             'user_book_history': user_book_history,
+            'user': user,
         }
         return Response(context, template_name=self.template_name)
     
