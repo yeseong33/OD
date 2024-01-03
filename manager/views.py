@@ -109,8 +109,7 @@ def book_view(request):
             plt.savefig(file_path)
             plt.close()  # 리소스 해제
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
-        
-        
+
         elif request_type == 'search':
             data = json.loads(request.body)
             search_query = data.get('search_query', '').strip()
@@ -123,7 +122,7 @@ def book_view(request):
                 return JsonResponse({'books': results}, safe=False)
 
             return JsonResponse({'books': []})
-        
+
         elif request_type == 'create_cover':
 
             try:
