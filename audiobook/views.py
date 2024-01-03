@@ -511,10 +511,12 @@ class Content(APIView):
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
+        user_book_history = [] if request.user.user_book_history is None else request.user.user_book_history
         context = {
             'result': True,
             'book': book,
-            'file_path': file_path
+            'file_path': file_path,
+            'user_book_history': user_book_history,
         }
         return Response(context, template_name=self.template_name)
 
@@ -528,10 +530,7 @@ class ContentPlay(APIView):
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
-        if request.user.user_favorite_books == None:
-            user_favorite_books = []
-        else:
-            user_favorite_books = request.user.user_favorite_books
+        user_favorite_books = [] if request.user.user_favorite_books is None else request.user.user_favorite_books
         context = {
             'result': True,
             'book': book,
