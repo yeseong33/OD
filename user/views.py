@@ -7,10 +7,9 @@ from dotenv import load_dotenv
 from jose import jwt
 
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
-from django.urls.base import reverse
+
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,7 +17,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 
 from .models import *
 from audiobook.models import *
-from django.template.loader import render_to_string
+
 from django.http import JsonResponse
 from community.serializers import BookSerializer,InquirySerializer
 from audiobook.serializers import VoiceSerializer
@@ -26,6 +25,7 @@ from community.models import Inquiry
 from community.serializers import BookSerializer,UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
 from django.core.files.base import ContentFile
+
 load_dotenv()
 
 
@@ -42,6 +42,11 @@ def logout(request):
     response.delete_cookie('jwt')
     return response
 
+def sign_in (user_data):
+    serializer = UserSerializer(data=user_data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    return user
 
 def kakao_login(request):
     print("kakao Login 클릭")
@@ -58,6 +63,7 @@ def kakao_login(request):
 
 def kakao_callback(request):
     # 환경에 따른 redirect_uri 설정
+    print("kakao_callback 호출")
     if settings.SETTINGS_MODULE == 'config.settings_local':
         redirect_uri = os.getenv('KAKAO_REDIRECT_URI')
         print('in local')
@@ -85,25 +91,23 @@ def kakao_callback(request):
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
-    user_data = {
-            'nickname': user_inform['profile']['nickname'],
-            'email': user_inform['email'],
-            'password': os.getenv('USER_PASSWORD'),  # Assuming you have a predefined password in your .env file
-            'oauth_provider' : 'Kakao',
-        }
-    
-    thumbnail_image_url = response.json().get('properties')['thumbnail_image']
-    thumbnail_image_response = requests.get(thumbnail_image_url)
-    # 이미지를 ContentFile로 변환하여 저장
-    user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{user_inform['email']}_profile.jpg")
-    
-    # 회원가입 여부 확인.    
-    try:
-        user = User.objects.get(email=user_data['email'])
+    try: # email DB 여부 조회.
+        user = User.objects.get(email=user_inform['email'])
     except User.DoesNotExist:
-        serializer = UserSerializer(data=user_data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        email = user_inform['email']
+        user_data = {
+            'nickname': user_inform['profile']['nickname'],
+            'email': email ,
+            'password': os.getenv('USER_PASSWORD'),  
+            'oauth_provider' : 'Kakao',
+            'username' : email,
+        }
+
+        thumbnail_image_url = response.json().get('properties')['thumbnail_image']
+        thumbnail_image_response = requests.get(thumbnail_image_url)
+        file_name = email.replace('@','_at_') #file 시스템에서 @를 쓰지못하게해서 변경.
+        user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
+        user = sign_in(user_data)
 
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
@@ -149,26 +153,26 @@ def google_callback(request):
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url=url, headers=headers)
 
-    # user DB조회, JWT 발급
-    user_data = {
-            'nickname': response.json()['name'],
-            'email': response.json()['email'],
-            'password': os.getenv('USER_PASSWORD'),  # Assuming you have a predefined password in your .env file
-            'oauth_provider' : 'Google',
-        }
-    
-    thumbnail_image_url = response.json()['picture']
-    thumbnail_image_response = requests.get(thumbnail_image_url)
-    # 이미지를 ContentFile로 변환하여 저장
-    user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{response.json()['email']}_profile.jpg")
-    
-    # 회원가입 여부 확인.
-    try:
-        user = User.objects.get(email=user_data['email'])
+    try: # email DB 여부 조회.
+        user = User.objects.get(email=response.json()['email'])
     except User.DoesNotExist:
-        serializer = UserSerializer(data=user_data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        email = response.json()['email']
+        user_data = {
+                'nickname': response.json()['name'],
+                'email': email,
+                'password': os.getenv('USER_PASSWORD'),  # Assuming you have a predefined password in your .env file
+                'oauth_provider' : 'Google',
+                'username' : email,
+            }
+        thumbnail_image_url = response.json()['picture']
+        thumbnail_image_response = requests.get(thumbnail_image_url)
+        
+        # 이미지를 ContentFile로 변환하여 저장
+        thumbnail_image_url = response.json()['picture']
+        thumbnail_image_response = requests.get(thumbnail_image_url)
+        file_name = email.replace('@','_at_') #file 시스템에서 @를 쓰지못하게해서 변경.
+        user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
+        user = sign_in(user_data)
 
     token = get_jwt_token(user)
     response = redirect("audiobook:main")
@@ -252,19 +256,19 @@ class UserInformView(APIView):
 
         user_image = request.FILES.get('file')
         nickname = request.POST.get('nickname')
+        
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
-        if user_image: 
-            file_name = f"user_images/{user.email}_profile.jpg"
+        if user_image:
+            temp_file_name = user.email.replace('@','_at_')
+            file_name = f"user_images/{temp_file_name}_profile.jpg"
             file_path += file_name
             if FILE_SAVE_POINT == 'local':
-                os.remove(os.path.join(MEDIA_ROOT, user.user_profile_path)) #기존에 유저 이미지 파일 삭제.
+                os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #기존에 유저 이미지 파일 삭제.
                 
                 local_file_path = os.path.join(MEDIA_ROOT, file_name)
                 with open(local_file_path, 'wb') as local_file:
                     for chunk in user_image.chunks():
                         local_file.write(chunk)
-                user.user_profile_path = file_name
-                
         if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
             user.nickname = nickname
         user.save()
@@ -388,7 +392,8 @@ class InquiryListView(APIView):
             }
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
-            context = {'inquiries' : serializer.data}
+            context = {'inquiries' : serializer.data,
+                        'active_tab': 'user_faq'}
         
         return render(request, self.template_name, context)
 
@@ -400,7 +405,8 @@ class InquiryDetailView(APIView):
     def get(self, request, inquiry_id):
         inquiry = Inquiry.objects.get(inquiry_id = inquiry_id)
         serializer = InquirySerializer(inquiry)
-        context = {'inquiry' : serializer.data}
+        context = {'inquiry' : serializer.data,
+                    'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
 # 개인정보처리
