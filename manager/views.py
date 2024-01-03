@@ -57,30 +57,35 @@ def book_view(request):
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
+                
                 global book_title, book_description, book_id
-
                 book_title = book.book_title
                 book_description = book.book_description
-                book_id= book.book_isbn
-                # 임시 수요 데이터 입력
-                data = {
-                    '1': 60,
-                    '2': 60,
-                    '3': 60,
-                    '4': 60,
-                    '5': 60,
-                    '6': 10,
-                    '7': 10,
-                    '8': 10,
-                    '9': 60,
-                    '10': 10,
-                    '11': 50,
-                    '12': 10
-                }
-                json_data = json.dumps(data)
-                book.book_view_count = json_data
-                # 변경 사항 저장
-                book.save()
+                book_id = book.book_isbn
+
+                # book_view_count 데이터 확인
+                if book.book_view_count:
+                    # JSON 문자열을 파이썬 딕셔너리로 변환
+                    monthly_views = json.loads(book.book_view_count)
+                else:
+                    # 임시 수요 데이터 입력
+                    monthly_views = {
+                        '1': 60,
+                        '2': 60,
+                        '3': 60,
+                        '4': 60,
+                        '5': 60,
+                        '6': 10,
+                        '7': 10,
+                        '8': 10,
+                        '9': 60,
+                        '10': 10,
+                        '11': 50,
+                        '12': 10
+                    }
+                    book.book_view_count = json.dumps(monthly_views)
+                    book.save()
+
             except Book.DoesNotExist:
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
