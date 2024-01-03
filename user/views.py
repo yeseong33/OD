@@ -394,7 +394,8 @@ class InquiryListView(APIView):
             }
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
-            context = {'inquiries' : serializer.data}
+            context = {'inquiries' : serializer.data,
+                        'active_tab': 'user_faq'}
         
         return render(request, self.template_name, context)
 
@@ -406,7 +407,8 @@ class InquiryDetailView(APIView):
     def get(self, request, inquiry_id):
         inquiry = Inquiry.objects.get(inquiry_id = inquiry_id)
         serializer = InquirySerializer(inquiry)
-        context = {'inquiry' : serializer.data}
+        context = {'inquiry' : serializer.data,
+                    'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
 # 개인정보처리
