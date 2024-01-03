@@ -12,14 +12,16 @@ from django.utils.html import strip_tags
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-from community.models import BookRequest, UserRequestBook
+from community.models import BookRequest, UserRequestBook, Inquiry
 from audiobook.models import Book
 from user.models import Subscription
-from .serializers import BookSerializer
+from .serializers import BookSerializer, InquirySerializer
 from community.views import send_async_mail
 from datetime import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from rest_framework import status
+
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -40,7 +42,6 @@ def get_book_details_from_naver(isbn):
     # 캐시에서 데이터를 먼저 찾음
     cache_key = f'book_{isbn}'
     cached_data = cache.get(cache_key)
-    print(cached_data)
     if cached_data:
         return json.loads(cached_data)
     
@@ -132,9 +133,6 @@ class BookRegisterCompleteView(APIView):
         if not request.user.is_admin:
             return redirect('audiobook:main')
 
-        print('request 디버깅')
-        print(request.data)
-
         # ISBN으로 이미 존재하는 책을 확인
         book_isbn = request.POST.get('book_isbn')
 
@@ -149,14 +147,6 @@ class BookRegisterCompleteView(APIView):
         except Book.DoesNotExist:
             # 책이 존재하지 않으면 처리를 계속
             pass
-
-        # 권한 확인
-        if request.user.is_admin == False:
-            print("You are not admin.")
-            return Response({
-                'status': 'error',
-                'message': 'You are not admin.'
-            }, status=403)
 
         # Naver API를 호출하여 책의 상세 정보를 가져옴
         book_details = get_book_details_from_naver(book_isbn)
@@ -253,16 +243,53 @@ class BookRegisterCompleteView(APIView):
 
 # 문의 답변
 
-def inquiry(request):
-    return Response({'message': 'Good'})
+def inquiry_list(request):  # 문의글 목록 페이지
+    return render(request, 'manager/inquiry_list.html')
+
+def inquiry_detail(request, pk):  # 문의글 상세 페이지
+    inquiry = Inquiry.objects.get(pk=pk)
+    return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry})
+
+class InquiryListAPI(APIView):
+
+    def get(self, request, *args, **kwargs):
+        show_answered = request.query_params.get('show_answered', 'all')
+        if show_answered == 'answered':
+            inquiries = Inquiry.objects.filter(inquiry_is_answered=True)
+        elif show_answered == 'not_answered':
+            inquiries = Inquiry.objects.filter(inquiry_is_answered=False)
+        else:
+            inquiries = Inquiry.objects.all()
+
+        # 여러 인스턴스 직렬화
+        serializer = InquirySerializer(inquiries, many=True)
+        
+        return Response(serializer.data)
+
+class InquiryDetailAPI(APIView):
+    
+    def get_object(self, pk):
+        try:
+            return Inquiry.objects.get(pk=pk)
+        except Inquiry.DoesNotExist:
+            raise status.HTTP_404_NOT_FOUND
+
+    def get(self, request, pk, format=None):
+        inquiry = self.get_object(pk)
+        serializer = InquirySerializer(inquiry)
+        return Response(serializer.data)
+
 
 
 # 구독 및 수익 관리
 
 def show_subscription(request):
+    if not request.user.is_admin:
+            return redirect('audiobook:main')
+        
     return render(request, 'manager/subscription.html')
     
-class SubscriptionCountAPIView(APIView):
+class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
         dates = [today - relativedelta(months=n) for n in range(11, -1, -1)]
