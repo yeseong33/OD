@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import User
+import json
 
 
 class Voice(models.Model):
@@ -9,6 +10,8 @@ class Voice(models.Model):
     voice_path = models.FileField(upload_to='voice_rvcs/', null=True)  # RVC 모델
     voice_image_path = models.ImageField(
         upload_to='voice_images/', blank=True)  # pillow
+    voice_sample_path = models.FileField(
+        upload_to='voice_sample/', null=True)  # 음성 샘플
     voice_created_date = models.DateTimeField(auto_now_add=True)
     voice_is_public = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -30,5 +33,5 @@ class Book(models.Model):
     book_description = models.TextField()
     book_likes = models.IntegerField(default=0)
     book_isbn = models.CharField(max_length=255)
+    book_view_count = models.JSONField(null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    book_view_count = models.IntegerField(null=True)

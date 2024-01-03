@@ -168,7 +168,7 @@ def google_callback(request):
         thumbnail_image_response = requests.get(thumbnail_image_url)
         
         # 이미지를 ContentFile로 변환하여 저장
-        thumbnail_image_url = response.json().get('properties')['thumbnail_image']
+        thumbnail_image_url = response.json()['picture']
         thumbnail_image_response = requests.get(thumbnail_image_url)
         file_name = email.replace('@','_at_') #file 시스템에서 @를 쓰지못하게해서 변경.
         user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{file_name}_profile.jpg")

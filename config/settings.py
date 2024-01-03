@@ -151,8 +151,7 @@ if (FILE_SAVE_POINT == 'local'):
 else:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-
-MEDIA_ROOT = '/Users/junghokyun/Desktop/S3_bucket' # 자신의 S3_bucket 폴더 경로로 설정.
+MEDIA_ROOT = 'C:\\S3_bucket'  # 파일이 저장될 로컬 경로
 MEDIA_URL = '/media/'
 
 # AWS S3 설정

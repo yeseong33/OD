@@ -6,6 +6,8 @@ import requests
 import paramiko
 import pygame
 from dotenv import load_dotenv, dotenv_values
+import datetime
+import pysftp
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls.base import reverse
@@ -19,6 +21,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework import status
+from django.core.files.base import ContentFile
 
 from .serializers import VoiceSerializer
 from .models import *
@@ -101,7 +104,6 @@ class MainView(APIView):
 
         return Response(context)
 
-
 class MainSearchView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_search.html'
@@ -127,7 +129,6 @@ class MainSearchView(APIView):
         }
 
         return Response(context)
-
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -159,7 +160,7 @@ class MainGenreView(APIView):
         return Response(context)
 
 # RvcTrain
-class RvcTrain(APIView):
+class Rvc_Train(APIView):
     renderer_classes = [JSONRenderer,TemplateHTMLRenderer]
     template_name = 'audiobook/voice_custom_complete.html'
 
@@ -220,16 +221,16 @@ class RvcTrain(APIView):
         sftp_client = client.open_sftp()
 
         # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
-        remote_path = '/home/kimyea0454/project-main/voices/' + voice_name + '.mp3'
+        remote_path = f'/home/kimyea0454/project-main/voices/{voice_name}.mp3'
         sftp_client.putfo(voice_file, remote_path)
         # SFTP 세션 종료
         sftp_client.close()
 
         commands = [
-            'python3 preprocess.py '+voice_name+'\n',
-            'python3 extract_features.py '+voice_name+'\n',
-            'python3 train_index.py '+voice_name+'\n',
-            'python3 train_model.py '+voice_name+'\n',
+            f'python3 preprocess.py {voice_name}\n',
+            f'python3 extract_features.py {voice_name}\n',
+            f'python3 train_index.py {voice_name}\n',
+            f'python3 train_model.py {voice_name}\n',
         ]
 
         for cmd in commands:
@@ -250,8 +251,10 @@ def TTS(request):
     username = config.get("RVC_USER")
     key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
 
+    voice_name = request.POST['voice_name']
     tone = request.POST['tone']
     text = request.POST['text']
+    print(tone,text)
 
     # SSH 클라이언트 생성
     client = paramiko.SSHClient()
@@ -279,7 +282,7 @@ def TTS(request):
     commands = [
         f'python3 tts.py {text}\n',
         'cd project-main\n',
-        f'python3 inference.py IU {tone} audios/tts.mp3\n',
+        f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
         'rm -rf audios/tts.mp3\n',
     ]
 
@@ -292,18 +295,194 @@ def TTS(request):
         sftp_client = client.open_sftp()
 
         # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
-        remote_path = '/home/kimyea0454/project-main/audios/' + 'IU' + '.wav'
+        remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.wav'
         project_path = os.getcwd()
-        sftp_client.get(remote_path, os.path.join(project_path, 'static/tts/IU.mp3'))
+        sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
         # SFTP 세션 종료
         sftp_client.close()
 
-        wav_file_path = os.path.join(project_path, 'static/tts/IU.mp3')
+        wav_file_path = os.path.join(project_path, f'static/tts/{voice_name}.mp3')
         play_wav(wav_file_path)
+        os.remove(os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
         
         return Response("Well funciotned", status=status.HTTP_200_OK)
     except:
         return Response("WRONG", status=status.HTTP_400_BAD_REQUEST)
+
+# 저장하기
+@api_view(["POST"])
+def Rvc_Save(request):
+    
+    print(request.data)
+    voice_image = request.FILES['voice_image']
+    voice_name = request.POST['voice_name']
+    tone = request.POST['tone']
+    
+    config = dotenv_values(".env")
+    hostname = config.get("RVC_IP")
+    username = config.get("RVC_USER")
+    key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
+
+    # SSH 클라이언트 생성
+    client = paramiko.SSHClient()
+    # 호스트 키 자동으로 수락
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # SSH 연결 (키 기반 인증)
+    client.connect(hostname=hostname, username=username, key_filename=key_filename)
+
+    # 셸 세션 열기
+    shell = client.invoke_shell()
+
+    def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
+        # prompt 문자열이 나타날 때까지 출력을 읽습니다.
+        # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
+        buffer = ''
+        shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
+        try:
+            while not buffer.endswith(prompt):
+                response = shell.recv(1024).decode('utf-8',errors='replace')
+                buffer += response
+        except socket.timeout:
+            print("No data received before timeout")
+        return buffer
+
+    sample = "안녕?난오디야"
+    commands = [
+        f'python3 tts.py {sample}\n',
+        'cd project-main\n',
+        f'python3 inference.py IU {tone} audios/tts.mp3\n',
+        'rm -rf audios/tts.mp3\n',
+    ]
+    
+    for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+
+    sftp_client = client.open_sftp()
+    # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
+    remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.wav'
+    project_path = os.getcwd()
+    sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
+    
+    remote_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
+    sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.pth'))
+    # SFTP 세션 종료
+    sftp_client.close()
+    
+    print("로컬에 저장 완료")
+
+    voice_data = {
+        'voice_name': voice_name,  # 사용자 입력
+        'voice_like': 0,
+        #'voice_path': voice_name,
+        #'voice_image_path': voice_name,
+        'voice_created_date': datetime.date.today(),
+        'voice_is_public':  request.POST['voice_public'],
+        'user': request.user.user_id,
+    }
+    
+    with open(f'static/tts/{voice_name}.pth', 'rb') as file:
+        voice_model = file.read()
+    pygame.init()
+    voice_sample = pygame.mixer.Sound(f'static/tts/{voice_name}.mp3')
+        
+    # Serializer를 통해 데이터 검증 및 저장
+    serializer = VoiceSerializer(data=voice_data)
+    if serializer.is_valid():
+        voice_instance = serializer.save()
+        # 이미지와 텍스트 파일을 모델 인스턴스에 저장
+        # 옵션 save=False 한 후 .save() 해서 한번에 저장
+        voice_instance.voice_image_path.save(
+            f"{voice_name}_image.jpg", voice_image, save=False)
+        voice_instance.voice_path.save(
+            f"{voice_name}_model.pth", ContentFile(voice_model), save=False)
+        voice_instance.save()
+
+    else:
+        #print(serializer.errors)
+        return Response({
+            'status': 'error',
+            'message': 'Registration failed.',
+            'errors': serializer.errors
+        }, status=501)
+        
+    os.remove(os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
+    os.remove(os.path.join(project_path, f'static/tts/{voice_name}.pth'))
+    
+    commands = [
+        f'rm -rf assets/weights/{voice_name}.pth\n',
+        f'rm -rf audios/{voice_name}.wav\n',
+        f'rm -rf logs/{voice_name}\n',
+        'rm -rf voices\n',
+        'mkdir voices\n',
+    ]
+    
+    for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+    
+    # 연결 종료
+    client.close()
+
+    return Response({
+            'status': 'accepted',
+            'message': '성공'
+    }, status=200)
+
+@api_view(["POST"])
+def Rvc_Cancel(request):
+    print(request.data)
+    voice_name = request.POST['voice_name']
+    
+    config = dotenv_values(".env")
+    hostname = config.get("RVC_IP")
+    username = config.get("RVC_USER")
+    key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
+
+    # SSH 클라이언트 생성
+    client = paramiko.SSHClient()
+    # 호스트 키 자동으로 수락
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # SSH 연결 (키 기반 인증)
+    client.connect(hostname=hostname, username=username, key_filename=key_filename)
+
+    # 셸 세션 열기
+    shell = client.invoke_shell()
+
+    def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
+        # prompt 문자열이 나타날 때까지 출력을 읽습니다.
+        # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
+        buffer = ''
+        shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
+        try:
+            while not buffer.endswith(prompt):
+                response = shell.recv(1024).decode('utf-8',errors='replace')
+                buffer += response
+        except socket.timeout:
+            print("No data received before timeout")
+        return buffer
+
+    commands = [
+        'cd project-main\n',
+        f'rm -rf assets/weights/{voice_name}.pth\n',
+        f'rm -rf audios/{voice_name}.wav\n',
+        f'rm -rf logs/{voice_name}\n',
+        'rm -rf voices\n',
+        'mkdir voices\n',
+    ]
+    
+    for cmd in commands:
+            shell.send(cmd)
+            output = receive_until_prompt(shell, prompt='$ ')  # 각 명령의 실행이 끝날 때까지 기다립니다.
+            print(output)  # 받은 출력을 표시합니다.
+    
+    client.close()
+    return Response({
+            'status': 'accepted',
+            'message': '성공'
+    }, status=200)
 
 def genre(request):
     pass
@@ -326,19 +505,15 @@ class Content(APIView):
 
     def get(self, request, book_id):
         file_path = self.get_file_path()
-
-        try:
-            book = Book.objects.get(pk=book_id)
-        except Book.DoesNotExist:
-            print('book not exist.')
-            return Response(status=404, template_name=self.template_name)
+        book = get_object_or_404(Book, pk=book_id)
+        user_book_history = [] if request.user.user_book_history is None else request.user.user_book_history
         context = {
             'result': True,
             'book': book,
-            'file_path': file_path
+            'file_path': file_path,
+            'user_book_history': user_book_history,
         }
         return Response(context, template_name=self.template_name)
-
 
 class ContentPlay(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -350,15 +525,16 @@ class ContentPlay(APIView):
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
+        user_favorite_books = [] if request.user.user_favorite_books is None else request.user.user_favorite_books
         context = {
             'result': True,
             'book': book,
+            'user': request.user,
+            'user_favorites': user_favorite_books
         }
         return Response(context, template_name=self.template_name)
 
 # 성우
-
-
 def voice_custom(request):
     return render(request, 'audiobook/voice_custom.html')
 
