@@ -1,117 +1,14 @@
 {% extends 'community/template.html' %}
 {% load static %}
 
-{% block title %}공유 및 커뮤니티{% endblock %}
+{% block title %}O: D - 공유 및 커뮤니티{% endblock %}
 {% block style %}
-<style>
-    /* 기본 스타일 */
-    body, html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    }
-    /* 네비게이터 스타일 */
-    .navigator {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #f5f5f5;
-    }
-    .navigator button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    }
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-    /* 내용 스타일 */
-    .content {
-    text-align: center;
-    /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-    font-size: 48px; /* 아이콘 크기 */
-    }
-    
-
-
-
-    .content-item {
-        width: 120px; /* 가로 크기 */
-        height: 120px; /* 세로 크기 */
-        padding: 0px;
-        border: 1px solid #ccc;
-    }
-
-    .content-item img {
-        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
-        height: 100%; /* 가로 비율 유지 */
-        display: block; /* 인라인 요소의 기본 여백 제거 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .content-item img:hover {
-        z-index: 1;
-        transform: scale(1.5); /* 확대 비율 */
-        }
-
-    .custom-mt {
-        margin-top: 120px;
-    }
-
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #fff;
-        color: #A4A4A4;
-        padding: 1px;
-        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-    }
-    
-    .custom-focus {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #F2E7C4;
-        color: #000;
-        padding: 1px;
-    }
-
-    .category-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-top: 20px;
-    }
-
-    .center-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .center-icon svg {
-        width: 60px; /* 아이콘의 너비 */
-        height: 60px; /* 아이콘의 높이 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .center-icon:hover svg {
-        transform: scale(1.2); /* 호버 시 크기 조절 */
-    }
-</style>
 {% endblock %}
 
 {% block content %}
     <div class="row mb-4">
-        <div class="col">
-            <p class="fs-3 fw-bold">토론방</p>
+        <div class="row my-5">
+            <h1 class="menu-font">토론방</h1>
         </div>
     </div>
 
@@ -119,111 +16,85 @@
     <div class="row">
         <!-- 왼쪽 col: 책 제목과 포스터 사진 -->
         <div class="col-md-3">
-            <h2> {{book.book_title}} </h2>
-            <img src="https://via.placeholder.com/300" alt="poster" class="img-fluid mb-4">
+            <img src="{{book.book_image_path}}" alt="poster" class="img-fluid rounded mb-4">
         </div>
 
         <!-- 오른쪽 col: 게시판 -->
         <div class="col-md-9">
             <!-- 각 게시물의 제목, 글쓴이, 작성일을 각각의 col로 나누어 표현 -->
-            <div class="card">
-                <div class="card-body" id='postsContainer'>
-                </div>
-            </div>
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr class="text-center">
+                        <th scope="col" class="col-6">제목</th>
+                        <th scope="col" class="col-2">글쓴이</th>
+                        <th scope="col" class="col-2">작성일</th>
+                    </tr>
+                </thead>
+                <tbody id="postsContainer" class="text-center" style="cursor:pointer;">
+                    {% for post in page_obj %}
+                        <tr id="post_{{ post.post_id }}" onclick="window.location.href = '{% url 'community:book_share_content_post_detail' pk=post.post_id %}'">
+                            <td>{{ post.post_title }}</td>
+                            <td>{{ post.user.nickname }}</td>
+                            <td>{{ post.post_created_date|date:"Y-m-d" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- 공백 -->
     <div class="row justify-content-end mt-5"> </div>
 
-    <!-- 페이지 -->
-    <ul class="pagination justify-content-center">
-        <li class="page-item disabled">
-            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">이전</a>
-        </li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">4</a></li>
-        <li class="page-item"><a class="page-link" href="#">5</a></li>
-        <li class="page-item">
-            <a class="page-link" href="#">다음</a>
-        </li>
-    </ul>
+    <!-- 페이지네이션 -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 
     <!-- 글쓰기 버튼 -->
     <div class="row">
         <div class="col-md-12 d-flex justify-content-end">
-            <button id="postButton" type="button" class="btn btn-primary btn-block mb-3">글쓰기</button>
+            <form method="post" action="{% url 'community:book_share_content_post' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
+            </form>
         </div>
     </div>
 {% endblock %}
 
 {% block script %}
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-    var book = {{ book|safe }}
-    console.log(book)
-    var posts= book.post_set
-    console.log(posts)
-    
+    document.addEventListener('DOMContentLoaded', function() {
+     // 글쓰기 버튼 클릭 시
+        document.getElementById('postButton').addEventListener('click', function() {
+            // 로컬 스토리지에 book_id 저장
+            var bookId = {{ book.book_id }}
+            localStorage.setItem('current_book_id', bookId);
+            var userId = 1
+            // 글쓰기 페이지로 이동
+            window.location.href = "{% url 'community:book_share_content_post' %}?book_id=" + bookId + "&user_id=" + userId;
 
-
-    // 게시물을 동적으로 생성하고 이벤트 리스너를 등록
-    posts.forEach(function (post) {
-        var postContainer = document.createElement('div');
-        postContainer.className = 'row mb-3';
-        postContainer.id = 'post_' + post.post_id;
-
-        var col1 = document.createElement('div');
-        col1.className = 'col-md-4';
-        var user_id = post.user_id
-        console.log(user_id)
-        // User get 메소드로 접근해서 객체 얻어 오기
-        col1.innerHTML = '<h5 class="card-title">' + user_id + '</h5>';
-
-        var col2 = document.createElement('div');
-        col2.className = 'col-md-4';
-        col2.innerHTML = '<p class="card-text">' + post.post_title + '</p>';
-
-        var col3 = document.createElement('div');
-        col3.className = 'col-md-4';
-        col3.innerHTML = '<p class="card-text">' + post.post_created_date + '</p>';
-
-        postContainer.appendChild(col1);
-        postContainer.appendChild(col2);
-        postContainer.appendChild(col3);
-
-        postContainer.addEventListener('click', function () {
-            window.location.href = "{% url 'community:book_share_content_post_detail' pk=0 %}".replace('0', post.post_id);
         });
-
-        postsContainer.appendChild(postContainer);
     });
-
-
-
-    // 각 게시물에 대한 클릭 이벤트 리스너를 등록
-    {% for post in posts %}
-        console.log('d;d')
-        console.log(post)
-        document.getElementById('post_{{ post.post_id }}').addEventListener('click', function() {
-        window.location.href = "{% url 'community:book_share_content_post_detail' post_id=0 %}".replace('0', {{ post.post_id }});
-        });
-    {% endfor %}
-
-    // 글쓰기 버튼 클릭 시
-    document.getElementById('postButton').addEventListener('click', function() {
-        // 로컬 스토리지에 book_id 저장
-        var bookId = {{ book.book_id }}
-        localStorage.setItem('current_book_id', bookId);
-        var userId = 1
-        // 글쓰기 페이지로 이동
-        window.location.href = "{% url 'community:book_share_content_post' %}";
-
-    });
-});
-
-  
 </script>
 {% endblock %}

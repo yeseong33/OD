@@ -9,10 +9,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row justify-content-end mt-5"> </div>
-    <div class="row justify-content-end mt-5"> </div>
-    <div class="row justify-content-end mt-5"> </div>
+    <!-- 서브 네비게이션 바 -->
+    {% include 'community/sub_navbar.html' %}
 
+    <!-- 문의 사항 -->
     <div class="row mb-3">
         <div class="col-1 d-flex align-items-center">
             <label for="inquiry_category" class="form-label fs-4 fw-bold"><strong>장르:</strong></label>
@@ -58,7 +58,7 @@
         <!-- 글쓰기 버튼 -->
         <div class="row">
             <div class="col-md-11 d-flex justify-content-end">
-                <button id="postButton" type="submit" class="btn btn-primary btn-block mb-3">제출하기</button>
+                <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">제출하기</button>
             </div>
         </div>
     </form> 

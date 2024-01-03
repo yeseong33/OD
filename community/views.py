@@ -1,16 +1,21 @@
+# 표준 라이브러리
+import json
 import os
 import threading
 from pathlib import Path
 
+# 서드 파티 라이브러리
 import requests
 from dotenv import load_dotenv
 from jose import jwt
 
+# Django 관련 라이브러리
 from django.conf import settings
 from django.core.mail import EmailMessage, send_mail
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.template.response import TemplateResponse
@@ -18,19 +23,20 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
-import threading
-from django.http import Http404
-import json
 from django.views.decorators.csrf import csrf_exempt
+
+# Django REST framework 관련 라이브러리
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+# 현재 프로젝트의 다른 앱 모듈
 from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
+from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -55,7 +61,6 @@ class BookShareContentList(APIView):
         context = {
             'books': serializer.data,
             'page_obj': page_obj,
-            'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
@@ -65,21 +70,61 @@ class BookShareContentList(APIView):
 class BookShareHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share.html'
-    
+
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request):
+        file_path = self.get_file_path()
         books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        books = json.dumps(serializer.data)
-        return Response({'books': books}, template_name=self.template_name)
-    
+
+        # 페이지네이터 설정
+        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context = {
+            'file_path': file_path,
+            'page_obj': page_obj,
+            'active_tab': 'book_share'
+        }
+
+        return Response(context, template_name=self.template_name)
+
+
 class BookShareContentHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content.html'
-    
+
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request, pk):
-        book = get_object_or_404(Book,pk=pk)
-        serializer = BookSerializer(book)
-        return Response({'book': serializer.data}, template_name=self.template_name)
+        book = get_object_or_404(Book, pk=pk)
+        book_serializer = BookSerializer(book)
+        serialized_json = json.dumps(
+            book_serializer.data, ensure_ascii=False, indent=3)
+
+        posts = book.post_set.all()
+        paginator = Paginator(posts, 10)  # 한 페이지당 10개의 게시물
+        page_number = request.GET.get('page', 1)  # URL에서 페이지 번호를 가져옴
+        page_obj = paginator.get_page(page_number)
+
+        context = {
+            'book': book_serializer.data,
+            'book_json': serialized_json,
+            'page_obj': page_obj,
+        }
+
+        print(serialized_json)
+        return Response(context, template_name=self.template_name)
+
 
 class BookShareContentPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -87,12 +132,24 @@ class BookShareContentPostHtml(APIView):
 
     def get(self, request):
         return Response(template_name=self.template_name)
-    
+
+    def post(self, request):
+        return Response(template_name=self.template_name)
+
+
 class BookShareContentPostDetailHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content_post_detail.html'
 
+    def get_file_path(self):
+        if FILE_SAVE_POINT == 'local':
+            return MEDIA_URL
+        else:
+            return AWS_S3_CUSTOM_DOMAIN
+
     def get(self, request, pk):
+        file_path = self.get_file_path()
+
         try:
             post = Post.objects.get(pk=pk)
             comments = Comment.objects.filter(post__post_id=pk)
@@ -102,6 +159,7 @@ class BookShareContentPostDetailHtml(APIView):
         post_serializer = PostSerializer(post)
         comment_serializer = CommentSerializer(comments, many=True)
         context = {
+            'file_path': file_path,
             'post': post_serializer.data,
             'comments': comment_serializer.data,
             'user_id': request.user.user_id,
@@ -116,19 +174,18 @@ class BookList(APIView):
         books = Book.objects.all()
         serializer = BookSerializer(books, many=True)
         return Response({"books": books})
-    
 
     def post(self, request):
         book_serializer = BookSerializer(request.data)
-        
+
         if book_serializer.is_valid():
             book_serializer.save()
             return Response(book_serializer.data, status=status.HTTP_201_CREATED)
         return Response(book_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class BookDetail(APIView):
     renderer_classes = [JSONRenderer]
-
 
     def get_object(self, pk):
         try:
@@ -154,8 +211,8 @@ class BookDetail(APIView):
         book = self.get_object(pk)
         book.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    
+
+
 # post
 class PostList(APIView):
     renderer_classes = [JSONRenderer]
@@ -178,7 +235,7 @@ class PostList(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 
 class PostDetail(APIView):
     renderer_classes = [JSONRenderer]
@@ -194,9 +251,11 @@ class PostDetail(APIView):
         new_title = request.data.get('new_title')
         new_content = request.data.get('new_content')
         try:
-            self.update_post(pk , new_title, new_content)
-            redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': pk})    
-            response_data = {'result': True, 'message': '게시물 내용이 업데이트되었습니다.', 'redirect_url': redirect_url}
+            self.update_post(pk, new_title, new_content)
+            redirect_url = reverse(
+                'community:book_share_content_post_detail', kwargs={'pk': pk})
+            response_data = {
+                'result': True, 'message': '게시물 내용이 업데이트되었습니다.', 'redirect_url': redirect_url}
         except Post.DoesNotExist:
             response_data = {'result': False, 'message': '게시물이 존재하지 않습니다.'}
         except Exception as e:
@@ -213,10 +272,11 @@ class PostDetail(APIView):
         post = get_object_or_404(Post, pk=pk)
         book_id = post.book.book_id
         post.delete()
-        redirect_url = reverse('community:book_share_content', kwargs={'pk': book_id})    
+        redirect_url = reverse(
+            'community:book_share_content', kwargs={'pk': book_id})
         return Response({'result': True, 'redirect_url': redirect_url})
-        
-    
+
+
 # comment
 class CommentList(APIView):
     renderer_classes = [JSONRenderer]
@@ -228,15 +288,16 @@ class CommentList(APIView):
 
     def post(self, request):
         comment_serializer = CommentSerializer(data=request.data, context={
-                                            'post_id': request.data['post'],
-                                            'user_id': request.user.user_id,})
+            'post_id': request.data['post'],
+            'user_id': request.user.user_id,})
         if comment_serializer.is_valid():
             comment = comment_serializer.save()
             post_id = comment.post.post_id
-            redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
+            redirect_url = reverse(
+                'community:book_share_content_post_detail', kwargs={'pk': post_id})
             return Response({'result': True, 'comment': comment_serializer.data, 'message': 'comment created.', "redirect_url": redirect_url})
         return Response({'result': False, 'errors': comment_serializer.errors}, status=400)
-    
+
 
 class CommentDetail(APIView):
     renderer_classes = [JSONRenderer]
@@ -372,26 +433,29 @@ class BookCompleteView(APIView):
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_inquiry.html'
-    
+
     def get(self, request):
         print(request.user)
         context = {
-            "user":request.user,
+            "user": request.user,
+            'active_tab': 'book_inquiry'
         }
         return Response(context, template_name=self.template_name)
-    
+
 
 class InquiryPostCompleteHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_inquiry_complete.html'
-    
+
     def get(self, request):
         print(request.user)
         context = {
-            "user":request.user,
+            "user": request.user,
             "result": True,
+            'active_tab': 'book_inquiry'
         }
         return Response(context, template_name=self.template_name)
+
 
 class InquiryList(APIView):
     renderer_classes = [JSONRenderer]
@@ -437,10 +501,6 @@ class InquiryDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
-
-
 # FAQ
 def book_faq(request):
     context = {'active_tab': 'book_faq'}
@@ -480,7 +540,6 @@ class UserDetail(APIView):
 
     def put(self, request, pk, format=None):
         user = self.get_object(pk)
-        print(request.data)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -491,3 +550,7 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# 개인정보처리
+def privacy_policy(request):
+    return render(request, 'community/privacy_policy.html')

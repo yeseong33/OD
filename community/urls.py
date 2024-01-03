@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'community'
@@ -35,4 +35,7 @@ urlpatterns = [
 
     # FAQ
     path('books/faq/', views.book_faq, name='book_faq'),
+    
+    # 개인정보처리
+    path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
 ]
