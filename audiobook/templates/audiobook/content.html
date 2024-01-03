@@ -107,14 +107,11 @@
             })
             .then(data => {
                 // 성공적으로 데이터를 받아온 경우 실행되는 로직
-                {% comment %} window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}" {% endcomment %}
+                window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}"
             })
             .catch(error => {
                 console.error("좋아요 업데이트 중 오류 발생", error);
             });
-
-            
-
 
         }); 
 

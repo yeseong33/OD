@@ -80,7 +80,12 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all()
-
+        
+        # 검색어 처리
+        search_term = request.GET.get('search_term')
+        if search_term:
+            books = books.filter(book_title__icontains=search_term)
+            
         # 페이지네이터 설정
         paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
         page_number = request.GET.get('page')

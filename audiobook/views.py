@@ -505,12 +505,7 @@ class Content(APIView):
 
     def get(self, request, book_id):
         file_path = self.get_file_path()
-
-        try:
-            book = Book.objects.get(pk=book_id)
-        except Book.DoesNotExist:
-            print('book not exist.')
-            return Response(status=404, template_name=self.template_name)
+        book = get_object_or_404(Book, pk=book_id)
         user_book_history = [] if request.user.user_book_history is None else request.user.user_book_history
         context = {
             'result': True,
