@@ -5,7 +5,7 @@ app_name = 'manager'
 
 urlpatterns = [
     # 책 수요 변화
-    path('book/cover_create/', views.cover_create, name='cover_create'),
+    path('book/view/', views.book_view, name='book_view'),
     path('book/cover_complete/', views.cover_complete, name='cover_complete'),
 
     # 도서 신청
