@@ -7,30 +7,17 @@ import os
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email','nickname','oauth_provider','user_profile_path', 'password']
+        fields = ['email','nickname','oauth_provider','user_profile_path', 'password', 'username']
         
         extra_kwargs = {
             'password' : {'write_only' : True},
         }
-                
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = super(UserSerializer, self).create(validated_data)
-        
         if password is not None:
             user.set_password(password)
             
-        image_data = validated_data.get('user_profile_path', None)
-        if image_data:
-            file_name = f"user_images/{user.email}_profile.jpg"
-            file_path = os.path.join(MEDIA_ROOT, file_name)
-            
-            if FILE_SAVE_POINT == 'local':
-                with open(file_path, 'wb') as local_file:
-                    for chunk in image_data.chunks():
-                        local_file.write(chunk)
-                
-                user.user_profile_path = file_name
         user.save()
         return user
         
