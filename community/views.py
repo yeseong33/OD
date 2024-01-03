@@ -80,7 +80,12 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all()
-
+        
+        # 검색어 처리
+        search_term = request.GET.get('search_term')
+        if search_term:
+            books = books.filter(book_title__icontains=search_term)
+            
         # 페이지네이터 설정
         paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
         page_number = request.GET.get('page')
@@ -162,6 +167,7 @@ class BookShareContentPostDetailHtml(APIView):
             'file_path': file_path,
             'post': post_serializer.data,
             'comments': comment_serializer.data,
+            'user_id': request.user.user_id,
         }
         return Response(context, template_name=self.template_name)
 
@@ -287,7 +293,8 @@ class CommentList(APIView):
 
     def post(self, request):
         comment_serializer = CommentSerializer(data=request.data, context={
-            'post_id': request.data['post']})
+            'post_id': request.data['post'],
+            'user_id': request.user.user_id,})
         if comment_serializer.is_valid():
             comment = comment_serializer.save()
             post_id = comment.post.post_id
@@ -320,9 +327,11 @@ class CommentDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        comment = self.get_object(pk)
+        comment = get_object_or_404(Comment, pk=pk)
+        post_id = comment.post.post_id
         comment.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
+        return Response({'result': True, 'redirect_url': redirect_url})
 
 
 # 신규 도서 신청 기능
@@ -503,6 +512,50 @@ def book_faq(request):
     return render(request, 'community/book_faq.html', context)
 
 
+class UserList(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = BookSerializer(users, many=True)
+        return Response({"users": serializer.data})
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'result': True, 'users': serializer.data, 'message': 'users created.'})
+        return Response({'result': False, 'errors': serializer.errors}, status=400)
+
+
+class UserDetail(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        user = self.get_object(pk)
+        serializer = UserSerializer(user)
+        print(serializer.data)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        user = self.get_object(pk)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        user = self.get_object(pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
 # 개인정보처리
 def privacy_policy(request):
     return render(request, 'community/privacy_policy.html')
