@@ -137,9 +137,6 @@ class BookShareContentPostHtml(APIView):
     def get(self, request):
         return Response(template_name=self.template_name)
 
-    def post(self, request):
-        return Response(template_name=self.template_name)
-
 
 class BookShareContentPostDetailHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -227,13 +224,15 @@ class PostList(APIView):
         return Response({"books": serializer.data})
 
     def post(self, request):
-        print('pas')
         user_id = request.user.user_id
         book_id = request.data['book_id']
         context = {
             'book_id': book_id,
             'user_id': user_id
         }
+        print(user_id)
+        print(book_id)
+
         serializer = PostSerializer(data=request.data, context=context)
         if serializer.is_valid():
             serializer.save()

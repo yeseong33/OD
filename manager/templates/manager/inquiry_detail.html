@@ -1,0 +1,132 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="/static/css/postContainer.css">
+
+<div id="post-detail" class="post-container">
+  <div class='user-post'>
+      <div class="post-row">
+          <div class="row-label">제목</div>
+          <div class="row-value" id="inquiry-title"></div>
+      </div>
+      <div class="post-row">
+        <div class="row-label">작성자</div>
+        <div class="row-value" id="inquiry-user"></div>
+    </div>
+      <div class="post-row">
+          <div class="row-label">작성일자</div>
+          <div class="row-value" id="inquiry-date"></div>
+      </div>
+      <div class="post-row">
+          <div class="row-label">내용</div>
+          <div class="row-value row-content" id="inquiry-content"></div>
+      </div>
+  </div>
+
+  <div class='manager-response'>
+    {% if inquiry.inquiry_response %}
+    <div class="post-row">
+        <div class="row-label">답변 완료</div>
+        <div class="row-value row-response" id="inquiry-response"></div>
+    </div>
+    <div class="post-row">
+      <div class="row-label">답변일자</div>
+      <div class="row-value" id="inquiry-response-date"></div>
+    </div>
+    {% else %}
+    <div class="post-row">
+      <div class="row-label">답변 작성</div>
+      <form class="row-form" id="response-form" method="post" data-url="{% url 'manager:inquiry_detail' inquiry.inquiry_id %}">
+        {% csrf_token %}
+        {{ form.response }}  <!-- 폼 필드 렌더링 -->
+        <div class="parent-container">
+          <button type="submit" class="btn btn-orange-400">답변 제출</button>
+      </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="button-container">
+  <a class="btn btn-orange-400" href="{% url 'manager:inquiries' %}" role="button">목록 보기</a>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    // 특정 문의글의 상세 내용을 서버로부터 불러와 보여주는 함수입니다.
+    function loadInquiryDetail() {
+      var inquiryId = {{ inquiry.inquiry_id }};
+      $.ajax({
+        url: '/manager/api/inquiries/' + inquiryId + '/',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          $('#inquiry-title').text(data.inquiry_title);
+          $('#inquiry-user').text(data.user);
+          $('#inquiry-date').text(data.inquiry_created_date); // 예시로 추가한 필드
+          $('#inquiry-content').text(data.inquiry_content);
+          $('#inquiry-response').text(data.inquiry_response);
+          $('#inquiry-response-date').text(data.inquiry_answered_date);
+          $('#post-detail').css('display', 'block');
+        },
+        error: function(xhr, status, error) {
+          console.error('문의글 상세 정보를 불러오는 데 실패했습니다:', error);
+        }
+      });
+    }
+
+    // 상세 내용을 숨기는 함수입니다.
+    function hideDetail() {
+      $('#post-detail').css('display', 'none');
+    }
+
+    // 페이지가 로드될 때 특정 문의글의 상세 정보를 불러옵니다.
+    $(document).ready(function() {
+      loadInquiryDetail();
+    });
+
+    // 여기에 AJAX로 답변을 제출하는 코드를 추가합니다.
+    $('#response-form').on('submit', function(e) {
+      e.preventDefault();
+      var formData = new FormData(this);
+    
+      $.ajax({
+        url: $(this).data('url'),  // 'inquiry_detail' 뷰의 URL
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+          // 'response'에는 서버로부터의 응답 데이터가 포함되어 있습니다.
+    
+          // 답변 완료와 답변일자 표시
+          $('#inquiry-response').text(response.inquiry_response);
+          $('#inquiry-response-date').text(response.inquiry_response_date);
+    
+          // 답변 완료와 답변일자를 포함하는 요소를 표시
+          $('.manager-response').html(`
+            <div class="post-row">
+                <div class="row-label">답변 완료</div>
+                <div class="row-value row-response" id="inquiry-response">${response.inquiry_response}</div>
+            </div>
+            <div class="post-row">
+                <div class="row-label">답변일자</div>
+                <div class="row-value" id="inquiry-response-date">${response.inquiry_answered_date}</div>
+            </div>
+          `);
+    
+          // 답변 작성 폼 숨기기
+          $('#response-form').hide();
+        },
+        error: function(xhr, status, error) {
+          console.error('답변 제출에 실패했습니다:', error);
+        }
+      });
+    });
+    
+</script>
+
+{% endblock %}

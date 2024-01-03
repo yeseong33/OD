@@ -1,0 +1,60 @@
+.post-container {
+    border-radius: 8px;
+    padding: 100px;
+    /* margin-top: 20px; */
+}
+
+.user-post {
+    margin-bottom: 40px;
+}
+
+.post-row {
+    display: flex;
+    margin-bottom: 10px;
+}
+.row-label {
+    width: 100px;
+    font-weight: bold;
+}
+.row-value {
+    flex-grow: 1;
+    padding: 10px;
+    padding-left : 20px;
+    border-radius: 4px;
+    border: 1px solid #ccc; /* 테두리 색상을 회색 계열로 설정 */
+}
+
+.manager-response {
+    display: flex;
+    flex-direction: column; /* 세로 방향으로 자식 요소들을 정렬 */
+}
+
+.row-form {
+    flex-grow: 1; /* 부모 요소 안에서 가능한 모든 공간을 차지하도록 설정 */
+}
+
+.full-width-textarea {
+    width: 100%; /* This will make the textarea take up 100% of the parent container's width */
+    height: 150px; /* Adjust the height to match your content area */
+    padding-left : 20px;
+    padding-top : 20px;
+  }
+
+.parent-container {
+    display: flex;
+    justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+.btn.btn-orange-400 {
+    margin-top: 10px; /* 버튼 상단의 마진 */
+}
+
+.row-content,
+.row-response {
+    min-height: 100px; /* 내용과 답변 필드의 최소 높이 */
+}
+.button-container {
+    display: flex;
+    justify-content: center;
+    /* 기타 스타일링 */
+}

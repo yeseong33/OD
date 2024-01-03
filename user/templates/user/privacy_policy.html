@@ -10,18 +10,11 @@
 </style>
 {% endblock %}
 {% block content %}
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="{% static 'favicon/favicon.ico' %}"/>
-    <link href="{% static 'bootstrap/css/custom.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/fonts.css' %}" rel="stylesheet" />    
-</head>
-<body>
-    <h2>개인정보처리방침</h2>
-    <!-- 여기에 개인정보 처리방침 내용을 적어주세요. -->
+    
+    <div class="row my-5">
+        <h1 class="menu-font">개인정보처리방침</h1>
+    </div>
+
     <div class="card_wrap">
         <div class="card">
             <div class="hd">
@@ -178,103 +171,8 @@
                                 <div style="padding-left: 1em; margin-top:0;">
                                     <p>가. 관련 법령(통신비밀보호법, 전기통신사업법, 국세기본법 등)에 특별한 규정이 있는 경우로서, 법령에 정해진 규정과 절차에 따라 제공하는 경우</p>
                                 </div>
-                            </li>
-                            <li>교육 서비스 제공과 관련하여 정보주체의 사전 동의를 받아 정보주체의 개인정보를 제3자에게 제공하는 내역은 다음과 같습니다.</li>
+                            </li>                            
                         </ol>
-                        <div class="table_wrap">
-                            <table border="0" cellspacing="0" cellpadding="0">
-                                <colgroup>
-                                    <col width="25%">
-                                    <col width="25%">
-                                    <col width="25%">
-                                    <col width="25%">
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>제공받는자</th>
-                                        <th>제공받는 자의 이용목적</th>
-                                        <th>제공하는 개인정보 항목</th>
-                                        <th>보유기간</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>대한상공회의소 / 고용노동부</td>
-                                        <td>교육운영(수강, 출결, 수료, 교육이력 관리), 훈련비용 지원, 취업서비스 제공</td>
-                                        <td>성명, 연락처(휴대전화), 이메일, ID, 생년월일, 성별, 경력, 자격, 학력, 주민등록번호</td>
-                                        <td>교육 종료 후 12개월 까지</td>
-                                    </tr>
-                                    <tr>
-                                        <td>㈜케이티씨에스</td>
-                                        <td>교육운영(수강, 출결, 수료, 평가, 교육이력 관리) 및 행정 지원</td>
-                                        <td>성명, 연락처(휴대전화), 이메일, ID, 생년월일, 성별, 경력, 자격, 학력</td>
-                                        <td>교육 종료 후 12개월까지</td>
-                                    </tr>
-                                    <tr>
-                                        <td>한국글로벌널리지㈜</td>
-                                        <td>코딩 실습 플랫폼 계정발급 및 서비스 제공</td>
-                                        <td>성명, 연락처(휴대전화), 이메일, ID</td>
-                                        <td>교육 종료 시까지</td>
-                                    </tr>
-                                    <tr>
-                                        <td>㈜엔에이치알커뮤니케이션즈</td>
-                                        <td>교육 지원자 진위여부 검증처리, 교육 중 및 수료 후 관련 물품 배송, 취업서비스 제공</td>
-                                        <td>성명, 연락처(휴대전화), 이메일, ID, 생년월일, 성별, 경력, 자격, 학력, 주민등록번호</td>
-                                        <td>교육 종료 후 6개월 까지</td>
-                                    </tr>
-                                    <tr>
-                                        <td>㈜티디지</td>
-                                        <td>Microsoft Teams 화상 솔루션 계정발급 및 서비스 제공</td>
-                                        <td>성명, 이메일, ID</td>
-                                        <td>교육 종료 시까지</td>
-                                    </tr>
-                                    <tr>
-                                        <td>회원이 취업 지원하는 회사(기업회사)</td>
-                                        <td>채용적합성 판단 및 채용전형시 근거자료로 활용</td>
-                                        <td>성명, 연락처(휴대전화), 이메일, ID, 생년월일, 성별, 학력, 교육 수강내역</td>
-                                        <td>교육 종료 후 12개월까지</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </li>
-                    <li>
-                        <h4 class="tit">제 7 조 개인정보 처리의 위탁</h4>
-                        <p>회사는 교육과정 운영을 위한  고객님의 편의 증진 등을 위하여 개인정보 처리업무를 외부 전문업체에게 위탁하고 있으며, 수탁자에 대해서는 “위∙수탁계약서” 등을 통하여 관련 법규 및 지침의 준수, 정보보호 및 비밀유지, 제3자 제공 금지, 사고 시 책임부담, 위탁기간 종료 즉시 개인정보의 반납/파기 의무 등 책임에 관한 사항을 규정하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.</p>
-                        <p>[개인정보 처리업무 수탁자 및 위탁 업무 내용]</p>
-                        <div class="table_wrap">
-                            <table border="0" cellspacing="0" cellpadding="0">
-                                <colgroup>
-                                    <col width="30%">
-                                    <col width="70%">
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>수탁자</th>
-                                        <th>위탁 업무 내용</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>㈜케이티디에스</td>
-                                        <td>플랫폼 개발 및 유지보수, 시스템 운영 및 관리</td>
-                                    </tr>
-                                    <tr>
-                                        <td>AJ네트웍스㈜</td>
-                                        <td>교육용 노트북 배송 및 AS</td>
-                                    </tr>
-                                    <tr>
-                                        <td>한국글로벌널리지㈜</td>
-                                        <td>교육과정 운영 및 교육생 관리</td>
-                                    </tr>
-                                    <tr>
-                                        <td>㈜엔에이치알커뮤니케이션즈</td>
-                                        <td>취업 서비스 제공, 교육 중 및 수료 후 관련 물품 배송, 교육 지원자 진위여부 검증 처리</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p>※ 수탁사 리스트는 해당 서비스 변경 및 계약기간에 따라 변경될 수 있습니다.</p>
-                        </div>
                     </li>
                     <li>
                         <h4 class="tit">제8조 이용자 및 법정대리인의 권리와 그 행사 방법</h4>
@@ -392,19 +290,12 @@
                             </li>
                         </ol>
                     </li>
-                    <!-- <li>
-                        <h4 class="tit">개인정보처리방침</h4>
-                        <p>
-                            <a href="javascript:goTermsOfService();">최신 개인정보 처리방침</a> </br>
-                            <a href="javascript:goOldTermsOfService('20221201');">2022-12-01_개인정보 처리방침</a> </br>
-                            <a href="javascript:goOldTermsOfService('20220628');">2022-06-28_개인정보 처리방침</a>
-                        </p>
-                    </li> -->
                 </ol>
             </div>
         </div>
     </div>
+
+    <!-- 여백 -->
+    <div class="my-5"></div>
 </div>
-</body>
-</html>
 {% endblock %}
