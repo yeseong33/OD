@@ -25,17 +25,17 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr class="text-center">
-                        <th scope="col" class="col-6">제목</th>
+                        <th scope="col" class="col-8">제목</th>
                         <th scope="col" class="col-2">글쓴이</th>
                         <th scope="col" class="col-2">작성일</th>
                     </tr>
                 </thead>
-                <tbody id="postsContainer" class="text-center" style="cursor:pointer;">
+                <tbody id="postsContainer" style="cursor:pointer;">
                     {% for post in page_obj %}
                         <tr id="post_{{ post.post_id }}" onclick="window.location.href = '{% url 'community:book_share_content_post_detail' pk=post.post_id %}'">
-                            <td>{{ post.post_title }}</td>
-                            <td>{{ post.user.nickname }}</td>
-                            <td>{{ post.post_created_date|date:"Y-m-d" }}</td>
+                            <td class="ps-3 text-truncate">{{ post.post_title }}</td>
+                            <td class="text-center text-truncate">{{ post.user.nickname }}</td>
+                            <td class="text-center text-truncate">{{ post.post_created_date|date:"Y-m-d" }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

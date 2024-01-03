@@ -165,6 +165,8 @@ class BookShareContentPostDetailHtml(APIView):
             'comments': comment_serializer.data,
             'user_id': request.user.user_id,
         }
+
+        print(comments)
         return Response(context, template_name=self.template_name)
 
 

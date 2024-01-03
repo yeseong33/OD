@@ -69,19 +69,22 @@
     {% for comment in comments %}
         <div class="row">
             <div class="col-1 d-flex justify-content-center">
-                <img src="{{ file_path }}{{ request.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
+                <img src="{{ comment.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
             </div>
             <div class="col-10">
                 <!-- 내용 -->
                 <p>{{comment.comment_content}}</p>
             </div>
-            <div class="col-1 d-flex align-items-center justify-content-center">
-                <span id="reply-delete-{{comment.user.user_id}}-{{comment.comment_id}}" class="d-flex align-items-center justify-content-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FF0000" class="bi bi-x" viewBox="0 0 16 16" style="cursor: pointer;">
-                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                    </svg>
-                </span>
-            </div>
+            <!-- 현재 로그인한 사용자가 작성한 댓글에만 삭제 버튼 표시 -->
+            {% if comment.user.user_id == request.user.user_id %}
+                <div class="col-1 d-flex align-items-center justify-content-center">
+                    <span id="reply-delete-{{comment.user.user_id}}-{{comment.comment_id}}" class="d-flex align-items-center justify-content-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FF0000" class="bi bi-x" viewBox="0 0 16 16" style="cursor: pointer;">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                        </svg>
+                    </span>
+                </div>
+            {% endif %}
         </div>
     {% endfor %}
 

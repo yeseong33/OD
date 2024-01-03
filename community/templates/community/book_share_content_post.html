@@ -6,46 +6,46 @@
 {% endblock %}
 
 {% block content %}
-    <div class="mt-5"></div>
-    <div class="mt-5"></div>
-    <div class="mt-5"></div>
+    <div class="my-5"></div>
 
-    <form id="postForm">
-        {% csrf_token %}
-        <div class="row">
-            <!-- 첫 번째 칸: 제목과 내용 -->
-            <div class="col-md-1">
-                <p class="fs-4 fw-bold">제목</p>
-            </div>
-            <div class="col-md-10">
-                <div class="form-group">
-                    <input type="text" class="form-control" id="title1" placeholder="제목을 입력하세요" name="post_title">
+    <div class="container d-flex align-items-center justify-content-center" style="height: 75vh;">
+        <form id="postForm" class="w-100">
+            {% csrf_token %}
+            <div class="row">
+                <!-- 첫 번째 칸: 제목과 내용 -->
+                <div class="col-md-1">
+                    <p class="fs-4 fw-bold">제목</p>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="title1" placeholder="제목을 입력하세요" name="post_title">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col-md-1">
-                <p class="fs-4 fw-bold">내용</p>
-            </div>
-            <div class="col-md-10">
-                <div class="form-group">
-                    <textarea class="form-control" id="content1" rows="8" placeholder="내용을 입력하세요" name='post_content'></textarea>
+            <div class="row">
+                <div class="col-md-1">
+                    <p class="fs-4 fw-bold">내용</p>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <textarea class="form-control" id="content1" rows="18" placeholder="내용을 입력하세요" name='post_content'></textarea>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="row justify-content-end mt-5"> </div>
+            <div class="row justify-content-end mt-5"> </div>
 
 
-        <!-- 글쓰기 버튼 -->
-        <div class="row">
-            <div class="col-md-11 d-flex justify-content-end">
-                <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
+            <!-- 글쓰기 버튼 -->
+            <div class="row">
+                <div class="col-md-11 d-flex justify-content-end">
+                    <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
+                </div>
             </div>
-        </div>
-        <input id="book_id_input" type="hidden" name="book_id" value="">
-    </form> 
+            <input id="book_id_input" type="hidden" name="book_id" value="">
+        </form> 
+    </div>
 {% endblock %}
 
 {% block script %}
