@@ -6,7 +6,7 @@ app_name = 'manager'
 urlpatterns = [
     ## 책 수요 변화
     path('book/view/', views.book_view, name='book_view'),
-    path('book/view/count', views.book_view_count, name='book_view_count'),
+    path('book/cover_complete/', views.cover_complete, name='cover_complete'),
     
     ## 신규 도서 등록
     path('book/request/', views.BookRequestListView.as_view(), name='book_request'),
@@ -26,4 +26,8 @@ urlpatterns = [
     
     ## FAQ
     path('faq/', views.faq, name='faq'),
+
+    ## 개인정보처리
+    path('privacy_policy/', views.privacy_policy,
+         name='privacy_policy'),
 ]

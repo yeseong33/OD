@@ -20,11 +20,14 @@ jmespath==1.0.1
 numpy==1.26.2
 oauthlib==3.2.2
 pandas==2.1.4
+paramiko==3.4.0
 Pillow==10.1.0
 psycopg2-binary==2.9.9
 pyasn1==0.5.1
 pycparser==2.21
+pygame==2.5.2
 PyJWT==1.7.1
+PyNaCl==1.5.0
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 python-jose==3.3.0

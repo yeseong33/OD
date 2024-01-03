@@ -1,17 +1,15 @@
 {% extends 'user/template.html' %}
 {% load static %}
 
-{% block title %}구독 정보{% endblock %}
+{% block title %}O: D - 구독 정보{% endblock %}
 {% block style %}
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-3">
-            {% include 'user/sub_navbar.html' %}
-        </div>
-        <div class="col-9">
+        {% include 'user/sub_navbar.html' %}
+        <div class="col-9" style="min-height: 80vh;">
             <div class="row-10 mb-20">
                 <h1>구독 정보</h1>
                 <h3>{{user.nickname}}님의 구독 정보 입니다.</h3>

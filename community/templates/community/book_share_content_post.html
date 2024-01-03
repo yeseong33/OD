@@ -4,46 +4,6 @@
 {% block title %}공유 및 커뮤니티{% endblock %}
 {% block style %}
 <style>
-    /* 기본 스타일 */
-    body, html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    }
-    /* 네비게이터 스타일 */
-    .navigator {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #f5f5f5;
-    }
-    .navigator button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    }
-    /* 컨텐츠를 중앙에 위치시키는 컨테이너 */
-    .center-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100% - 40px); /* 네비게이터 높이를 빼줍니다 */
-    }
-    /* 내용 스타일 */
-    .content {
-    text-align: center;
-    /* 추가적인 스타일링이 필요하다면 여기에 추가하세요 */
-    }
-    .icon {
-    font-size: 48px; /* 아이콘 크기 */
-    }
-    
-
-
-
     .content-item {
         width: 120px; /* 가로 크기 */
         height: 120px; /* 세로 크기 */
@@ -145,7 +105,7 @@
         <!-- 글쓰기 버튼 -->
         <div class="row">
             <div class="col-md-11 d-flex justify-content-end">
-                <button id="postButton" type="submit" class="btn btn-primary btn-block mb-3">글쓰기</button>
+                <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
             </div>
         </div>
         <input id="book_id_input" type="hidden" name="book_id" value="">
@@ -163,9 +123,10 @@
         // 글쓰기 버튼 클릭 시 이벤트 핸들러
         document.getElementById('postButton').addEventListener('click', function () {
             event.preventDefault();  // 폼 전송 기본 동작 막기
+            
             // FormData 객체 생성 및 폼 데이터 추가
             var formData = new FormData(document.getElementById('postForm'));
-            console.log('pas')
+
             // POST 요청 보내기
             fetch("{% url 'community:post_list' %}", {
                 method: 'POST',

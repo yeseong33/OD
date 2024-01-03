@@ -33,7 +33,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <div class="row justify-content-between w-100">
                     <div class="col-10 ps-5 fs-4">
-                        <ul class="navbar-nav align-items-center">
+                        <ul class="navbar-nav align-items-center gap-3">
                             <!-- 메뉴 -->
                             <li class="nav-item"><a class="nav-link me-5" href="{% url 'manager:book_view' %}">책 수요 변화</a></li>
                             <li class="nav-item"><a class="nav-link me-5" href="{% url 'manager:book_request' %}">도서 신청 내역</a></li>
@@ -51,7 +51,7 @@
                     <li class="nav-item dropdown list-unstyled d-flex align-items-center">
                         <a class="nav-link d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if request.user.user_profile_path %}
-                                <img src="{{ request.user.user_profile_path }}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
+                                <img src="/media/{{request.user.user_profile_path}}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
                             {% else %}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                     <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
@@ -96,6 +96,7 @@
     <footer class="footer mt-auto py-3 bg-dark-subtle">
         <div class="container text-center">
             <!-- 푸터 내용 -->
+            <a href="{% url 'manager:privacy_policy' %}" target="_blank">개인정보처리방침</a>
         </div>
     </footer>
 </body>

@@ -8,22 +8,6 @@ from dotenv import load_dotenv
 load_dotenv()  
 
 
-# Django에 있는 기존의 User model을 상속받아서 사용함
-class UserManager(BaseUserManager):
-    def create_user(self, email, nickname, oauth_provider, user_profile_path ,password=None, **extra_fields):
-        if password is None:
-            password = os.getenv("USER_PASSWORD")
-        if not email:
-            raise ValueError('The Email field must be set')
-        
-        # Assuming you have a predefined password in your .env file
-        email = self.normalize_email(email)
-        user = self.model(email=email, username=email, nickname=nickname, 
-                            oauth_provider=oauth_provider, user_profile_path = user_profile_path ,**extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     oauth_provider = models.CharField(max_length=255)
@@ -39,9 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         models.IntegerField(), null=True, blank=True)
     is_active = models.BooleanField(default = True)
     is_admin = models.BooleanField(default=False)
-    user_profile_path = models.TextField() 
-
-    objects = UserManager()
+    user_profile_path = models.ImageField(upload_to='user_images/', blank=True) 
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
