@@ -3,6 +3,7 @@ import json
 import os
 import threading
 from pathlib import Path
+from datetime import datetime
 
 # 서드 파티 라이브러리
 import requests
@@ -35,15 +36,19 @@ from rest_framework.views import APIView
 from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
+from manager.models import FAQ
 from .serializers import *
+from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
+from manager.serializers import FAQSerializer
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+
 load_dotenv()  # 환경 변수를 로드함
 
+
 # 토론방
-
-
 class BookShareContentList(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share.html'
@@ -99,6 +104,7 @@ class BookShareHtml(APIView):
         }
 
         return Response(context, template_name=self.template_name)
+
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookShareContentHtml(APIView):
@@ -205,7 +211,12 @@ class BookDetail(APIView):
     def put(self, request, pk, format=None):
         book = self.get_object(pk)
         print(request.data)
-        serializer = BookSerializer(book, data=request.data, partial=True)
+        # 현재 시간의 달 추출
+        current_month = datetime.now().month
+        context = {
+            "month": current_month
+        }
+        serializer = BookSerializer(book, context=context,data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -387,6 +398,7 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
         subject, message,  from_email=from_email, to=recipient_list)
     EmailThread(email).start()
 
+
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -435,6 +447,8 @@ class BookCompleteView(APIView):
             return Response(context)
 
 # 1:1 문의
+
+
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -508,10 +522,18 @@ class InquiryDetail(APIView):
 
 
 # FAQ
-def book_faq(request):
-    context = {'active_tab': 'book_faq'}
-    return render(request, 'community/book_faq.html', context)
+class FAQHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'community/book_faq.html'
 
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
 class UserList(APIView):
     renderer_classes = [JSONRenderer]
@@ -556,9 +578,46 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class FAQList(APIView):
+    renderer_classes = [JSONRenderer]
 
-# 개인정보처리
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializer = BookSerializer(faqs, many=True)
+        return Response({"faqs": serializer.data})
+
+    def post(self, request):
+        serializer = FAQSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'result': True, 'faqs': serializer.data, 'message': 'users created.'})
+        return Response({'result': False, 'errors': serializer.errors}, status=400)
 
 
-def privacy_policy(request):
-    return render(request, 'community/privacy_policy.html')
+class FAQDetail(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get_object(self, pk):
+        try:
+            return FAQ.objects.get(pk=pk)
+        except FAQ.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        serializer = FAQSerializer(faq)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        serializer = FAQSerializer(faq, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        faq.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

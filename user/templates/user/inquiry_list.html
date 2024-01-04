@@ -37,7 +37,9 @@
                                     <a href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">완료</a>
                                 </td>
                             {% else %}
-                                <td>진행중</td>
+                                <td>
+                                    <a href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">진행중</a>
+                                </td>
                             {% endif %}
                         </tr>
                         {% endfor %}

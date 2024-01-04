@@ -4,11 +4,22 @@ import requests
 import datetime
 import time
 import concurrent.futures
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
-
+# 표준 라이브러리
+from manager.forms import InquiryResponseForm
+from community.views import send_async_mail
+from manager.serializers import  InquirySerializer
+from user.models import Subscription
+from audiobook.models import Book
+from community.models import BookRequest, UserRequestBook, Inquiry
+from rest_framework import status
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.core.files.base import ContentFile
@@ -17,25 +28,33 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.core.files.base import ContentFile
+from django.core.cache import cache
 from dotenv import load_dotenv
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer
-from community.models import BookRequest, UserRequestBook, Inquiry
-from audiobook.models import Book
-from user.models import Subscription
-from .serializers import BookSerializer, InquirySerializer
-from community.views import send_async_mail
+import concurrent.futures
+from dateutil.relativedelta import relativedelta
+import matplotlib.pyplot as plt
+import json
+import os
+import shutil
+import time
 import datetime
 from datetime import datetime as dt
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
-from rest_framework import status
-from .forms import InquiryResponseForm
-from django.http import JsonResponse
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
+from community.serializers import BookSerializer
+from .models import FAQ
+from .serializers import FAQSerializer
+
+# 외부 라이브러리
+import numpy as np
+import requests
+import matplotlib
+matplotlib.use('Agg')
 from django.contrib import messages
 import matplotlib.font_manager as fm
 import boto3
@@ -49,6 +68,16 @@ from django.core.files import File
 load_dotenv()  # 환경 변수를 로드함
 
 
+# 데코레이터 설정
+def is_specific_user_condition(user):
+    # 여기에 특정 사용자 속성을 만족시키는 조건을 작성
+    return user.is_authenticated and user.is_admin == True
+
+specific_user_required = user_passes_test(is_specific_user_condition, login_url='manager:access_deny')
+
+
+
+
 # 책 수요 변화
 
 def book_view_count(request):
@@ -56,10 +85,11 @@ def book_view_count(request):
 
 
 @csrf_exempt
+@specific_user_required
 @require_http_methods(["POST", "GET"])
 def book_view(request):
 
-    OPENAI_API_KEY = os.getenv('OPENAI_API')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
     MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
 
@@ -262,7 +292,7 @@ def book_view(request):
         return render(request, 'manager/book_cover.html')
     return HttpResponse("적절한 응답 메시지")
 
-
+@specific_user_required
 def cover_complete(request):
     return render(request, 'manager/book_complete.html')
 
@@ -305,7 +335,7 @@ def get_book_details_from_naver(isbn):
     else:
         return None
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRequestListView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_request.html'
@@ -340,7 +370,7 @@ class BookRequestListView(APIView):
 
         return Response(context)
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register.html'
@@ -355,7 +385,7 @@ class BookRegisterView(APIView):
         else:
             return Response({"error": "book_datail이 존재하지 않습니다"})
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register_complete.html'
@@ -472,13 +502,14 @@ class BookRegisterCompleteView(APIView):
         }, status=200)
 
 # 문의 답변
-
+@specific_user_required
 def inquiry_list(request):  # 문의글 목록 페이지
     return render(request, 'manager/inquiry_list.html')
 
+@specific_user_required
 def inquiry_detail(request, inquiry_id):
     inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
-    
+
     if request.method == 'POST':
         form = InquiryResponseForm(request.POST)
         if form.is_valid():
@@ -486,7 +517,7 @@ def inquiry_detail(request, inquiry_id):
             inquiry.inquiry_is_answered = True
             inquiry.inquiry_answered_date = timezone.now()
             inquiry.save()
-            
+
             serializer = InquirySerializer(inquiry)
             return JsonResponse(serializer.data, safe=False)
         else:
@@ -497,6 +528,7 @@ def inquiry_detail(request, inquiry_id):
 
     return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryListAPI(APIView):
     def get(self, request, *args, **kwargs):
         show_answered = request.query_params.get('show_answered', 'all')
@@ -511,6 +543,7 @@ class InquiryListAPI(APIView):
         serializer = InquirySerializer(inquiries, many=True)
         return Response(serializer.data)
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryDetailAPI(APIView):
     def get(self, request, inquiry_id, format=None):
         inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
@@ -519,13 +552,14 @@ class InquiryDetailAPI(APIView):
 
 
 # 구독 및 수익 관리
-
+@specific_user_required
 def show_subscription(request):
     if not request.user.is_admin:
-            return redirect('audiobook:main')
-        
+        return redirect('audiobook:main')
+
     return render(request, 'manager/subscription.html')
-    
+
+@method_decorator(specific_user_required, name='dispatch')
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
@@ -552,18 +586,44 @@ class SubscriptionCountAPI(APIView):
 
 
 # FAQ 관리
+@method_decorator(specific_user_required, name='dispatch')
+class ManagerFAQHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq.html'
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
+
+@method_decorator(specific_user_required, name='dispatch')
+class ManagerFAQPostHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq_post.html'
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
 
-def faq(request):
-    return Response({'message': 'Good'})
 
+# 접근 제한
 
-# 개인정보처리
+class AccessDenyHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/access_deny.html'
 
-
-def privacy_policy(request):
-    return render(request, 'manager/privacy_policy.html')
-
+    def get(self, request):
+        return Response(template_name=self.template_name)
 
 # 삭제 버튼
 

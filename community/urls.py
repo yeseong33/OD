@@ -15,27 +15,31 @@ urlpatterns = [
     path('api/comment/<int:pk>', views.CommentDetail.as_view(), name='comment_detail'),  
     path('api/inquiry/', views.InquiryList.as_view(), name='inquiry_list'),  
     path('api/inquiry/<int:pk>', views.InquiryDetail.as_view(), name='inquiry_detail'), 
+    path('api/faq/', views.FAQList.as_view(), name='faq_list'),  
+    path('api/faq/<int:pk>', views.FAQDetail.as_view(), name='faq_detail'), 
     
     # html render
     # 토론
     path('books/share/', views.BookShareHtml.as_view(), name='book_share'),
-    path('books/share/content/<int:pk>', views.BookShareContentHtml.as_view(), name='book_share_content'),
-    path('books/share/content/post/', views.BookShareContentPostHtml.as_view(), name='book_share_content_post'),
-    path('books/share/content/post/detail/<int:pk>', views.BookShareContentPostDetailHtml.as_view(), name='book_share_content_post_detail'),
-    
+    path('books/share/content/<int:pk>',
+         views.BookShareContentHtml.as_view(), name='book_share_content'),
+    path('books/share/content/post/', views.BookShareContentPostHtml.as_view(),
+         name='book_share_content_post'),
+    path('books/share/content/post/detail/<int:pk>',
+         views.BookShareContentPostDetailHtml.as_view(), name='book_share_content_post_detail'),
+
 
     # 신규 도서 신청
     # http://127.0.0.1:8000/community/books/search
     path('books/search/', views.BookSearchView.as_view(), name='book_search'),
-    path('books/search/<int:isbn>/', views.BookCompleteView.as_view(), name='book_complete'),
+    path('books/search/<int:isbn>/',
+         views.BookCompleteView.as_view(), name='book_complete'),
 
     # 1:1 문의
     path('books/inquiry/', views.InquiryPostHtml.as_view(), name='book_inquiry'),
-    path('books/inquiry/complete/', views.InquiryPostCompleteHtml.as_view(), name='book_inquiry_complete'),
+    path('books/inquiry/complete/', views.InquiryPostCompleteHtml.as_view(),
+         name='book_inquiry_complete'),
 
     # FAQ
-    path('books/faq/', views.book_faq, name='book_faq'),
-    
-    # 개인정보처리
-    path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
+    path('books/faq/', views.FAQHtml.as_view(), name='book_faq'),
 ]

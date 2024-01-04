@@ -1,30 +1,11 @@
 import os
 from contextlib import nullcontext
-
 from rest_framework import serializers
-
+from django.urls import reverse
+from user.serializers import UserSerializer
 from audiobook.models import Book
 from .models import Post, User, Comment, Inquiry
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email', 'nickname', 'oauth_provider',
-                    'user_profile_path', 'password', 'user_favorite_books', 'user_book_history', 'user_id','username']
-
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        user = super(UserSerializer, self).create(validated_data)
-        if password is not None:
-            user.set_password(password)
-            
-        user.save()
-        return user
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -73,10 +54,19 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        
+    def create(self, validated_data):
+        if not validated_data.get('book_view_count'):
+            validated_data['book_view_count'] = {"1": 0, "2": 0, "3": 0,"4": 0,"5": 0,"6": 0,
+                                                 "7": 0, "8": 0, "9": 0,"10": 0,"11": 0,"12": 0}
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        likes = validated_data.get('book_likes')
-        instance.book_likes += likes
+        if validated_data.get('book_likes'):
+            instance.book_likes += validated_data.get('book_likes')
+        if validated_data.get('book_view_count'):
+            month = self.context['month']
+            instance.book_view_count[str(month)] += 1
         instance.save()
         return instance
 
@@ -112,7 +102,15 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class InquirySerializer(serializers.ModelSerializer):
-    inquiry_created_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    detail_url = serializers.SerializerMethodField()  # get_detail_url() 의 return
+    inquiry_created_date = serializers.DateTimeField(
+        format='%Y-%m-%d %H:%M', read_only=True)
+    inquiry_answered_date = serializers.DateTimeField(
+        format='%Y-%m-%d %H:%M', read_only=True)
+
     class Meta:
         model = Inquiry
         fields = '__all__'
+
+    def get_detail_url(self, obj):
+        return reverse('manager:inquiry_detail', kwargs={'inquiry_id': obj.inquiry_id})
