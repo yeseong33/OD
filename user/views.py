@@ -29,7 +29,6 @@ from audiobook.serializers import VoiceSerializer
 from community.serializers import BookSerializer, InquirySerializer
 from user.serializers import UserSerializer, SubscriptionSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-from config.context_processors import get_file_path
 
 load_dotenv()
 
@@ -99,7 +98,7 @@ def kakao_callback(request):
     # access_token으로 유저 개인 정보 발급 받기
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {access_token}",
-               "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
@@ -200,10 +199,10 @@ def google_callback(request):
 def get_jwt_token(user):
     print(f"create jwt 메소드 진입.")
     payload = {"user_id": user.user_id, "user_email": user.email,
-               "exp": datetime.utcnow() + timedelta(hours=24)}
+                "exp": datetime.utcnow() + timedelta(hours=24)}
     secret_key = os.getenv("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key,
-                       algorithm=os.getenv("JWT_ALGORITHM"))
+                        algorithm=os.getenv("JWT_ALGORITHM"))
 
     print(f"JWT token 생성 완료 : {token}")
     decode_jwt(token)
@@ -261,7 +260,7 @@ class UserInformView(APIView):
         return Response(context, template_name=template_name)
 
     def post(self, request):
-        file_path = get_file_path()
+        file_path = get_file_path(self)
         # cookie에 저장된 jwt 정보를 이용해 유저 받아오기
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
