@@ -29,4 +29,9 @@ urlpatterns = [
   
     # 개인정보처리
     path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
+    
+    # 결제
+    path('payments/', views.payments, name= 'payments'),
+    path('payment/approval/', views.approval, name='approval'),  # 결제 승인 URL 추가
+
 ]
