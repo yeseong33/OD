@@ -22,12 +22,8 @@ from django.http import JsonResponse
 from community.serializers import BookSerializer, InquirySerializer
 from audiobook.serializers import VoiceSerializer
 from community.models import Inquiry
-<<<<<<< HEAD
 from community.serializers import BookSerializer, UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-=======
-from community.serializers import BookSerializer,UserSerializer
->>>>>>> origin/feature/admin-total
 from django.core.files.base import ContentFile
 from config.settings import FILE_SAVE_POINT
 from config.context_processors import get_file_path
@@ -247,7 +243,6 @@ class SubscribeView(APIView):
 
 class UserInformView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
-    
 
     def get(self, request):
         template_name = 'user/user_inform.html'
@@ -317,7 +312,7 @@ class UserLikeBooksView(APIView):
             context = {
                 'books': serializer.data,
                 'active_tab': 'user_like'
-                
+
             }
 
         # 만약 요청이 Ajax라면 JSON 형식으로 응답
@@ -427,9 +422,9 @@ class InquiryDetailView(APIView):
                    'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
+
 def get_file_path(self):
     if FILE_SAVE_POINT == 'local':
         return MEDIA_URL
     else:
         return AWS_S3_CUSTOM_DOMAIN
-

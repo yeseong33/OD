@@ -518,14 +518,6 @@ class FAQView(APIView):
 
         return Response()
 
-<<<<<<< HEAD
+
 def faq(request):
     return Response({'message': 'Good'})
-=======
-
-
-# 개인정보처리
-
-def privacy_policy(request):
-    return render(request, 'manager/privacy_policy.html')
->>>>>>> origin/feature/admin-total
