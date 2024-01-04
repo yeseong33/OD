@@ -4,6 +4,7 @@ import requests
 import datetime
 import time
 import concurrent.futures
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
@@ -37,6 +38,12 @@ from .forms import InquiryResponseForm
 from django.http import JsonResponse
 from django.contrib import messages
 import matplotlib.font_manager as fm
+import boto3
+from botocore.exceptions import NoCredentialsError
+from config.settings import FILE_SAVE_POINT
+matplotlib.use('Agg')
+from config.context_processors import get_file_path
+
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -66,10 +73,12 @@ def book_view(request):
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
                 
-                global book_title, book_description, book_id
+                global book_title, book_description, book_id, book_image_path 
                 book_title = book.book_title
                 book_description = book.book_description
                 book_id = book.book_isbn
+                book_image_path = book.book_image_path
+                
 
                 # book_view_count 데이터 확인
                 if book.book_view_count:
@@ -202,21 +211,40 @@ def book_view(request):
         elif request_type == 'update_cover':
             data = json.loads(request.body)
             image_number = data.get('image_number')
-
-            # 이미지 번호를 기반으로 새 이미지 경로 설정
-            new_image_path = os.path.join(
-                'static', 'images', f'Redraw_image_{image_number}.png')
-
-            # 기존 이미지 경로 설정
-            existing_image_path = os.path.join(
-                'C:\\', 'S3_bucket', 'book_images', f'{book_id}_image.jpg')
-
-            # 기존 이미지를 새 이미지로 교체
-            if os.path.exists(new_image_path):
-                shutil.copy(new_image_path, existing_image_path)
-                return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+            # 새 이미지 파일 경로
+            new_image_path = f'static/images/Redraw_image_{image_number}.png'
+            
+            if FILE_SAVE_POINT == 'local':
+                existing_image_path = get_file_path() + str(book_image_path)
+                
+                if os.path.exists(new_image_path):
+                    shutil.copy(new_image_path, existing_image_path)
+                    return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'New image not found.'})    
             else:
-                return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+            
+                
+
+                # S3 클라이언트 생성
+                s3 = boto3.client('s3')
+                s3_bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME')
+                bucket_name = s3_bucket_name  # S3 버킷 이름
+                
+            
+                # S3 버킷 내 기존 이미지 파일 경로
+                existing_image_path = str(book_image_path)
+                print("덮어쓰기",existing_image_path)
+                print("new", new_image_path)
+                print(type(existing_image_path))
+                try:
+                    # 새 이미지 파일을 S3 버킷으로 업로드
+                    s3.upload_file(new_image_path, bucket_name, existing_image_path)
+                    return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                except FileNotFoundError:
+                    return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+                except NoCredentialsError:
+                    return JsonResponse({'status': 'error', 'message': 'Credentials not available.'})
 
     elif request.method == 'GET':
         return render(request, 'manager/book_cover.html')
@@ -430,7 +458,6 @@ class BookRegisterCompleteView(APIView):
             'status': 'success',
             'message': 'Book registered successfully.'
         }, status=200)
-
 
 # 문의 답변
 
