@@ -321,7 +321,8 @@ class UserLikeVoicesView(APIView):
         voice_id_list = user.user_favorite_voices  # 유저가 좋아요한 책 Pk를 조회
 
         if voice_id_list == None:
-            context = {'voices': None}
+            context = {'voices': None,
+                        'active_tab': 'user_like'}
         else:
             order_by = request.GET.get('orderBy','latest')
             voice_list = Voice.objects.filter(pk__in = voice_id_list)
@@ -351,10 +352,10 @@ class BookHistoryView(APIView):
         user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_book_history  # 유저 독서이력을 조회.
 
-        if book_id_list is None:  # 유저가 좋아요한 목록이 없을 경우.
+        if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
             context = {
                 'books': None,
-                'active_tab': 'user_book_history'
+                'active_tab': 'user_book_history',
             }
         else:
             # 정렬 방식을 라디오 버튼 값으로 받아오기
