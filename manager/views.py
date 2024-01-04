@@ -1,13 +1,11 @@
 import json
 import os
 import requests
-import datetime
 import time
 import concurrent.futures
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
-
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.core.files.base import ContentFile
@@ -26,16 +24,15 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from community.models import BookRequest, UserRequestBook, Inquiry
 from audiobook.models import Book
 from user.models import Subscription
-from .serializers import BookSerializer, InquirySerializer
+from .serializers import BookSerializer
+from community.serializers import InquirySerializer
 from community.views import send_async_mail
 import datetime
 from datetime import datetime as dt
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from rest_framework import status
 from .forms import InquiryResponseForm
 from django.http import JsonResponse
-
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -505,13 +502,19 @@ class SubscriptionCountAPI(APIView):
 
 # FAQ 관리
 
+class FAQView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq.html'
 
-def faq(request):
-    return Response({'message': 'Good'})
+    def get(self, request):
+        if not request.user.is_admin:
+            return redirect('audiobook:main')
+
+        return Response()
+
 
 
 # 개인정보처리
-
 
 def privacy_policy(request):
     return render(request, 'manager/privacy_policy.html')

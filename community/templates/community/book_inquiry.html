@@ -79,6 +79,7 @@
             var selectedGenre = document.getElementById('inquiry_category').value;
             formData.append('inquiry_category', selectedGenre);
             formData.append('user', {{user.user_id}})
+         
 
             // POST 요청 보내기
             fetch("{% url 'community:inquiry_list' %}", {
