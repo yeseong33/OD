@@ -25,8 +25,9 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from community.models import BookRequest, UserRequestBook, Inquiry
 from audiobook.models import Book
+from .models import FAQ
 from user.models import Subscription
-from .serializers import BookSerializer, InquirySerializer
+from .serializers import BookSerializer, InquirySerializer, FAQSerializer
 from community.views import send_async_mail
 import datetime
 from datetime import datetime as dt
@@ -506,9 +507,32 @@ class SubscriptionCountAPI(APIView):
 # FAQ 관리
 
 
-def faq(request):
-    return Response({'message': 'Good'})
 
+class ManagerFAQHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq.html'
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
+    
+class ManagerFAQPostHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq_post.html'
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
 # 개인정보처리
 

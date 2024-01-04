@@ -25,7 +25,8 @@ urlpatterns = [
     path('api/subscription-count/', views.SubscriptionCountAPI.as_view(), name='api_subscription_count'), 
     
     ## FAQ
-    path('faq/', views.faq, name='faq'),
+    path('faq/', views.ManagerFAQHtml.as_view(), name='faq'),
+    path('faq/post/', views.ManagerFAQPostHtml.as_view(), name='faq_post'),
 
     ## 개인정보처리
     path('privacy_policy/', views.privacy_policy,

@@ -35,8 +35,10 @@ from rest_framework.views import APIView
 from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
+from manager.models import FAQ
 from .serializers import *
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
+from manager.serializers import FAQSerializer
 
 from django.contrib.auth.decorators import login_required
 load_dotenv()  # 환경 변수를 로드함
@@ -508,10 +510,18 @@ class InquiryDetail(APIView):
 
 
 # FAQ
-def book_faq(request):
-    context = {'active_tab': 'book_faq'}
-    return render(request, 'community/book_faq.html', context)
+class FAQHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'community/book_faq.html'
 
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
 class UserList(APIView):
     renderer_classes = [JSONRenderer]
@@ -555,6 +565,49 @@ class UserDetail(APIView):
     def delete(self, request, pk, format=None):
         user = self.get_object(pk)
         user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class FAQList(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializer = BookSerializer(faqs, many=True)
+        return Response({"faqs": serializer.data})
+
+    def post(self, request):
+        serializer = FAQSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'result': True, 'faqs': serializer.data, 'message': 'users created.'})
+        return Response({'result': False, 'errors': serializer.errors}, status=400)
+
+
+class FAQDetail(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def get_object(self, pk):
+        try:
+            return FAQ.objects.get(pk=pk)
+        except FAQ.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        serializer = FAQSerializer(faq)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        serializer = FAQSerializer(faq, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        faq = self.get_object(pk)
+        faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # 개인정보처리

@@ -1,9 +1,9 @@
-{% extends 'community/template.html' %}
+{% extends 'manager/template.html' %}
 {% load static %}
 
-{% block title %}FAQ{% endblock %}
+{% block title %}manager-FAQ{% endblock %}
 {% block style %}
-<style>
+    <style>
     .custom-accordion {
       max-width: 300px; /* Set the maximum width as per your requirement */
       margin: 0 auto; /* Center the accordion on the page */
@@ -16,9 +16,6 @@
 {% endblock %}
 
 {% block content %}
-    <!-- 서브 네비게이션 바 -->
-    {% include 'community/sub_navbar.html' %}
-
     <!-- 여백 -->
     <div class="row my-5"></div>
 
@@ -43,6 +40,25 @@
             </div>
         </div>
     </div>
+    <div class="row my-5"></div>
+    <div class="row my-5"></div>
+
+
+    <!-- 글쓰기 버튼 -->
+    <div class="row">
+        <div class="col-md-11 d-flex justify-content-end">
+            <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
+        </div>
+    </div>
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+    <script>
+        // 글쓰기 버튼 클릭 시 이벤트 핸들러
+        document.getElementById('postButton').addEventListener('click', function () {
+            event.preventDefault();  // 폼 전송 기본 동작 막기
+            
+            window.location.href = "{% url 'manager:faq_post' %}";
+        });
+    </script>
+{% endblock %}

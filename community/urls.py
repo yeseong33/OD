@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/comment/<int:pk>', views.CommentDetail.as_view(), name='comment_detail'),  
     path('api/inquiry/', views.InquiryList.as_view(), name='inquiry_list'),  
     path('api/inquiry/<int:pk>', views.InquiryDetail.as_view(), name='inquiry_detail'), 
+    path('api/faq/', views.FAQList.as_view(), name='faq_list'),  
+    path('api/faq/<int:pk>', views.FAQDetail.as_view(), name='faq_detail'), 
     
     # html render
     # 토론
@@ -34,7 +36,7 @@ urlpatterns = [
     path('books/inquiry/complete/', views.InquiryPostCompleteHtml.as_view(), name='book_inquiry_complete'),
 
     # FAQ
-    path('books/faq/', views.book_faq, name='book_faq'),
+    path('books/faq/', views.FAQHtml.as_view(), name='book_faq'),
     
     # 개인정보처리
     path('privacy_policy/', views.privacy_policy, name='privacy_policy'),
