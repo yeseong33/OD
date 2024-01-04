@@ -28,6 +28,9 @@ from .models import *
 from user.views import decode_jwt
 from community.models import BookRequest
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 load_dotenv()
 
@@ -493,7 +496,7 @@ def search(request):
 
 
 # 청취
-class Content(APIView):
+class ContentHTML(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/content.html'
 
@@ -506,16 +509,28 @@ class Content(APIView):
     def get(self, request, book_id):
         file_path = self.get_file_path()
         book = get_object_or_404(Book, pk=book_id)
-        user_book_history = [] if request.user.user_book_history is None else request.user.user_book_history
+        if request.user.is_authenticated:
+            print('로그인')
+            tmp = request.user.user_book_history
+            user_book_history = [] if tmp is None else tmp
+            user = request.user
+        else:
+            user = {
+                'user_id': 1, 
+            }
+            user_book_history = []
+
         context = {
             'result': True,
             'book': book,
             'file_path': file_path,
             'user_book_history': user_book_history,
+            'user': user,
         }
         return Response(context, template_name=self.template_name)
-
-class ContentPlay(APIView):
+    
+@method_decorator(login_required(login_url='user:login'), name='dispatch')
+class ContentPlayHTML(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/content_play.html'
 
@@ -535,10 +550,18 @@ class ContentPlay(APIView):
         return Response(context, template_name=self.template_name)
 
 # 성우
-def voice_custom(request):
-    return render(request, 'audiobook/voice_custom.html')
+@method_decorator(login_required(login_url='user:login'), name='dispatch')
+class VoiceCustomHTML(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_custom.html'
 
-
+    def get(self, request):
+        context = {
+            'result': True,
+            'user': request.user,
+        }
+        return Response(template_name=self.template_name)
+    
 def voice_celebrity(request):
     pass
 

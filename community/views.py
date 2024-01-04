@@ -38,6 +38,7 @@ from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
+from django.contrib.auth.decorators import login_required
 load_dotenv()  # 환경 변수를 로드함
 
 # 토론방
@@ -99,7 +100,7 @@ class BookShareHtml(APIView):
 
         return Response(context, template_name=self.template_name)
 
-
+@method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookShareContentHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share_content.html'
@@ -386,7 +387,7 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
         subject, message,  from_email=from_email, to=recipient_list)
     EmailThread(email).start()
 
-
+@method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_complete.html'
@@ -434,8 +435,7 @@ class BookCompleteView(APIView):
             return Response(context)
 
 # 1:1 문의
-
-
+@method_decorator(login_required(login_url='user:login'), name='dispatch')
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_inquiry.html'
@@ -484,26 +484,26 @@ class InquiryDetail(APIView):
 
     def get_object(self, pk):
         try:
-            return Comment.objects.get(pk=pk)
-        except Comment.DoesNotExist:
+            return Inquiry.objects.get(pk=pk)
+        except Inquiry.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
-        comment = self.get_object(pk)
-        serializer = CommentSerializer(comment)
+        inquiry = self.get_object(pk)
+        serializer = InquirySerializer(inquiry)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
-        comment = self.get_object(pk)
-        serializer = CommentSerializer(comment, data=request.data)
+        inquiry = self.get_object(pk)
+        serializer = InquirySerializer(inquiry, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
-        comment = self.get_object(pk)
-        comment.delete()
+        inquiry = self.get_object(pk)
+        inquiry.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
