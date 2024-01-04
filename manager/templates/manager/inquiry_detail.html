@@ -65,7 +65,7 @@
         dataType: 'json',
         success: function(data) {
           $('#inquiry-title').text(data.inquiry_title);
-          $('#inquiry-user').text(data.user);
+          $('#inquiry-user').text('{{inquiry.user.nickname}}'); // 예시로 추가한 필드
           $('#inquiry-date').text(data.inquiry_created_date); // 예시로 추가한 필드
           $('#inquiry-content').text(data.inquiry_content);
           $('#inquiry-response').text(data.inquiry_response);

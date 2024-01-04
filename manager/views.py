@@ -1,41 +1,40 @@
-import json
-import os
-import requests
-import datetime
-import time
-import concurrent.futures
-import matplotlib.pyplot as plt
-import numpy as np
-import shutil
-
-from dateutil.relativedelta import relativedelta
-from django.core.cache import cache
-from django.core.files.base import ContentFile
-from django.core.paginator import Paginator
-from django.shortcuts import redirect, render, get_object_or_404
-from django.template.loader import render_to_string
+# 표준 라이브러리
+from manager.forms import InquiryResponseForm
+from community.views import send_async_mail
+from manager.serializers import BookSerializer, InquirySerializer
+from user.models import Subscription
+from audiobook.models import Book
+from community.models import BookRequest, UserRequestBook, Inquiry
+from rest_framework import status
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.utils.html import strip_tags
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.core.files.base import ContentFile
+from django.core.cache import cache
 from dotenv import load_dotenv
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer
-from community.models import BookRequest, UserRequestBook, Inquiry
-from audiobook.models import Book
-from user.models import Subscription
-from .serializers import BookSerializer, InquirySerializer
-from community.views import send_async_mail
+import concurrent.futures
+from dateutil.relativedelta import relativedelta
+import matplotlib.pyplot as plt
+import json
+import os
+import shutil
+import time
 import datetime
 from datetime import datetime as dt
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
-from rest_framework import status
-from .forms import InquiryResponseForm
-from django.http import JsonResponse
 
+# 외부 라이브러리
+import numpy as np
+import requests
+import matplotlib
+matplotlib.use('Agg')
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -51,7 +50,7 @@ def book_view_count(request):
 @require_http_methods(["POST", "GET"])
 def book_view(request):
 
-    OPENAI_API_KEY = os.getenv('OPENAI_API')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
     MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
 
@@ -428,9 +427,10 @@ class BookRegisterCompleteView(APIView):
 def inquiry_list(request):  # 문의글 목록 페이지
     return render(request, 'manager/inquiry_list.html')
 
+
 def inquiry_detail(request, inquiry_id):
     inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
-    
+
     if request.method == 'POST':
         form = InquiryResponseForm(request.POST)
         if form.is_valid():
@@ -438,7 +438,7 @@ def inquiry_detail(request, inquiry_id):
             inquiry.inquiry_is_answered = True
             inquiry.inquiry_answered_date = timezone.now()
             inquiry.save()
-            
+
             serializer = InquirySerializer(inquiry)
             return JsonResponse(serializer.data, safe=False)
         else:
@@ -448,6 +448,7 @@ def inquiry_detail(request, inquiry_id):
         form = InquiryResponseForm()
 
     return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
+
 
 class InquiryListAPI(APIView):
     def get(self, request, *args, **kwargs):
@@ -463,6 +464,7 @@ class InquiryListAPI(APIView):
         serializer = InquirySerializer(inquiries, many=True)
         return Response(serializer.data)
 
+
 class InquiryDetailAPI(APIView):
     def get(self, request, inquiry_id, format=None):
         inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
@@ -474,10 +476,11 @@ class InquiryDetailAPI(APIView):
 
 def show_subscription(request):
     if not request.user.is_admin:
-            return redirect('audiobook:main')
-        
+        return redirect('audiobook:main')
+
     return render(request, 'manager/subscription.html')
-    
+
+
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
@@ -505,13 +508,16 @@ class SubscriptionCountAPI(APIView):
 
 # FAQ 관리
 
+class FAQView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq.html'
+
+    def get(self, request):
+        if not request.user.is_admin:
+            return redirect('audiobook:main')
+
+        return Response()
+
 
 def faq(request):
     return Response({'message': 'Good'})
-
-
-# 개인정보처리
-
-
-def privacy_policy(request):
-    return render(request, 'manager/privacy_policy.html')

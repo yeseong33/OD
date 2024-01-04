@@ -1,30 +1,35 @@
+# 표준 라이브러리
 import os
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
+# 제3자 라이브러리
 import bcrypt
 import requests
 from dotenv import load_dotenv
 from jose import jwt
 
+# Django 관련 임포트
 from django.conf import settings
+from django.contrib import messages
+from django.core.files.base import ContentFile
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-
 from django.utils import timezone
+
+# Django REST framework 관련 임포트
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 
-from .models import *
-from audiobook.models import *
-
-from django.http import JsonResponse
-from community.serializers import BookSerializer,InquirySerializer
-from audiobook.serializers import VoiceSerializer
+# 로컬 애플리케이션/모델 관련 임포트
+from .models import *  # 이 부분은 구체적인 모델 이름을 명시하는 것이 좋습니다.
+from audiobook.models import *  # 이 부분도 마찬가지입니다.
 from community.models import Inquiry
-from community.serializers import BookSerializer,UserSerializer
+from audiobook.serializers import VoiceSerializer
+from community.serializers import BookSerializer, InquirySerializer
+from user.serializers import UserSerializer, SubscriptionSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-from django.core.files.base import ContentFile
+from config.context_processors import get_file_path
 
 load_dotenv()
 
@@ -42,11 +47,18 @@ def logout(request):
     response.delete_cookie('jwt')
     return response
 
-def sign_in (user_data):
-    serializer = UserSerializer(data=user_data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    return user
+
+def sign_in(user_data):
+    user_serializer = UserSerializer(data=user_data)
+
+    if user_serializer.is_valid():
+        user = user_serializer.save()
+        sub_serializer = SubscriptionSerializer(
+            data={'user': user.user_id, 'is_subscribed': False})
+        if sub_serializer.is_valid():
+            sub_serializer.save()
+        return user
+
 
 def kakao_login(request):
     print("kakao Login 클릭")
@@ -87,26 +99,28 @@ def kakao_callback(request):
     # access_token으로 유저 개인 정보 발급 받기
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {access_token}",
-                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+               "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
-    try: # email DB 여부 조회.
+    try:  # email DB 여부 조회.
         user = User.objects.get(email=user_inform['email'])
     except User.DoesNotExist:
         email = user_inform['email']
         user_data = {
             'nickname': user_inform['profile']['nickname'],
-            'email': email ,
-            'password': os.getenv('USER_PASSWORD'),  
-            'oauth_provider' : 'Kakao',
-            'username' : email,
+            'email': email,
+            'password': os.getenv('USER_PASSWORD'),
+            'oauth_provider': 'Kakao',
+            'username': email,
         }
 
-        thumbnail_image_url = response.json().get('properties')['thumbnail_image']
+        thumbnail_image_url = response.json().get('properties')[
+            'thumbnail_image']
         thumbnail_image_response = requests.get(thumbnail_image_url)
-        file_name = email.replace('@','_at_') #file 시스템에서 @를 쓰지못하게해서 변경.
-        user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
+        file_name = email.replace('@', '_at_')  # file 시스템에서 @를 쓰지못하게해서 변경.
+        user_data['user_profile_path'] = ContentFile(
+            thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
         user = sign_in(user_data)
 
     token = get_jwt_token(user)
@@ -153,25 +167,27 @@ def google_callback(request):
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url=url, headers=headers)
 
-    try: # email DB 여부 조회.
+    try:  # email DB 여부 조회.
         user = User.objects.get(email=response.json()['email'])
     except User.DoesNotExist:
         email = response.json()['email']
         user_data = {
-                'nickname': response.json()['name'],
-                'email': email,
-                'password': os.getenv('USER_PASSWORD'),  # Assuming you have a predefined password in your .env file
-                'oauth_provider' : 'Google',
-                'username' : email,
-            }
+            'nickname': response.json()['name'],
+            'email': email,
+            # Assuming you have a predefined password in your .env file
+            'password': os.getenv('USER_PASSWORD'),
+            'oauth_provider': 'Google',
+            'username': email,
+        }
         thumbnail_image_url = response.json()['picture']
         thumbnail_image_response = requests.get(thumbnail_image_url)
-        
+
         # 이미지를 ContentFile로 변환하여 저장
         thumbnail_image_url = response.json()['picture']
         thumbnail_image_response = requests.get(thumbnail_image_url)
-        file_name = email.replace('@','_at_') #file 시스템에서 @를 쓰지못하게해서 변경.
-        user_data['user_profile_path'] = ContentFile(thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
+        file_name = email.replace('@', '_at_')  # file 시스템에서 @를 쓰지못하게해서 변경.
+        user_data['user_profile_path'] = ContentFile(
+            thumbnail_image_response.content, name=f"{file_name}_profile.jpg")
         user = sign_in(user_data)
 
     token = get_jwt_token(user)
@@ -184,10 +200,10 @@ def google_callback(request):
 def get_jwt_token(user):
     print(f"create jwt 메소드 진입.")
     payload = {"user_id": user.user_id, "user_email": user.email,
-                "exp": datetime.utcnow() + timedelta(hours=24)}
+               "exp": datetime.utcnow() + timedelta(hours=24)}
     secret_key = os.getenv("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key,
-                        algorithm=os.getenv("JWT_ALGORITHM"))
+                       algorithm=os.getenv("JWT_ALGORITHM"))
 
     print(f"JWT token 생성 완료 : {token}")
     decode_jwt(token)
@@ -306,6 +322,8 @@ class SubscribeView(APIView):
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
             user = User.objects.get(user_id=user_inform['user_id'])
+            subscribe = Subscription.objects.get(user_id=user.user_id)
+
 
             try:
                 subscribe = Subscription.objects.get(user=user)
@@ -328,8 +346,11 @@ class SubscribeView(APIView):
                 # 구독 정보가 없는 경우
                 template_name = "user/non_pay_inform.html"
                 context = {
-                    'active_tab': 'user_subscription'
+                    'user': user,
+                    'left_days': left_days,
+                    'active_tab': 'user_subscription',
                 }
+
             return Response(context, template_name=template_name)
         
     def post(self, request):
@@ -357,6 +378,7 @@ class SubscribeView(APIView):
             # 이미 구독중인 경우 에러 메시지와 함께 처리
             return JsonResponse({'error': '이미 구독중입니다.'}, status=400)
 
+
 class UserInformView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
@@ -368,35 +390,40 @@ class UserInformView(APIView):
 
         context = {
             'user': serializer.data,
-            'active_tab': 'user_information'
+            'active_tab': 'user_information',
         }
 
         return Response(context, template_name=template_name)
 
     def post(self, request):
-        file_path = get_file_path(self)
+        file_path = get_file_path()
         # cookie에 저장된 jwt 정보를 이용해 유저 받아오기
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
 
         user_image = request.FILES.get('file')
         nickname = request.POST.get('nickname')
-        
+
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
-        if user_image:
-            temp_file_name = user.email.replace('@','_at_')
-            file_name = f"user_images/{temp_file_name}_profile.jpg"
-            file_path += file_name
-            if FILE_SAVE_POINT == 'local':
-                os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #기존에 유저 이미지 파일 삭제.
-                
-                local_file_path = os.path.join(MEDIA_ROOT, file_name)
-                with open(local_file_path, 'wb') as local_file:
-                    for chunk in user_image.chunks():
-                        local_file.write(chunk)
-        if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
-            user.nickname = nickname
-        user.save()
+        if user_image or nickname:
+            if user_image:
+                temp_file_name = user.email.replace('@', '_at_')
+                file_name = f"user_images/{temp_file_name}_profile.jpg"
+                file_path += file_name
+                if FILE_SAVE_POINT == 'local':
+                    # 기존에 유저 이미지 파일 삭제.
+                    os.remove(os.path.join(
+                        MEDIA_ROOT, str(user.user_profile_path)))
+
+                    local_file_path = os.path.join(MEDIA_ROOT, file_name)
+                    with open(local_file_path, 'wb') as local_file:
+                        for chunk in user_image.chunks():
+                            local_file.write(chunk)
+            if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
+                user.nickname = nickname
+            user.save()
+
+        messages.success(request, '정보가 성공적으로 변경되었습니다.')
         return redirect('user:inform')
 
 
@@ -422,10 +449,11 @@ class UserLikeBooksView(APIView):
                 books = books.order_by('book_title')
             else:
                 books = books.order_by('book_id')
-            serializer = BookSerializer(books, many = True)
+            serializer = BookSerializer(books, many=True)
             context = {
                 'books': serializer.data,
                 'active_tab': 'user_like'
+
             }
 
         # 만약 요청이 Ajax라면 JSON 형식으로 응답
@@ -446,21 +474,23 @@ class UserLikeVoicesView(APIView):
         voice_id_list = user.user_favorite_voices  # 유저가 좋아요한 책 Pk를 조회
 
         if voice_id_list == None:
-            context = {'voices': None}
+            context = {'voices': None,
+                       'active_tab': 'user_like'}
         else:
-            order_by = request.GET.get('orderBy','latest')
-            voice_list = Voice.objects.filter(pk__in = voice_id_list)
-            
+            order_by = request.GET.get('orderBy', 'latest')
+            voice_list = Voice.objects.filter(pk__in=voice_id_list)
+
             if order_by == 'name':
                 voice_list = voice_list.order_by('-voice_name')
             else:
                 voice_list = voice_list.order_by('voice_id')
 
-            serializer = VoiceSerializer(voice_list, many = True)
-            context = {'voices' : serializer.data,
-                        'active_tab': 'user_like'}
-            
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest': #Ajax 요청일경우.
+            serializer = VoiceSerializer(voice_list, many=True)
+            context = {'voices': serializer.data,
+                       'active_tab': 'user_like'}
+
+        # Ajax 요청일경우.
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse(context)
 
         # Ajax 요청이 아닐경우.
@@ -476,10 +506,10 @@ class BookHistoryView(APIView):
         user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_book_history  # 유저 독서이력을 조회.
 
-        if book_id_list is None:  # 유저가 좋아요한 목록이 없을 경우.
+        if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
             context = {
                 'books': None,
-                'active_tab': 'user_book_history'
+                'active_tab': 'user_book_history',
             }
         else:
             # 정렬 방식을 라디오 버튼 값으로 받아오기
@@ -490,8 +520,8 @@ class BookHistoryView(APIView):
             else:
                 books = books.order_by('book_id')
 
-            serializer = BookSerializer(books, many = True)
-        
+            serializer = BookSerializer(books, many=True)
+
             context = {
                 'books': serializer.data,
                 'active_tab': 'user_book_history'
@@ -517,9 +547,9 @@ class InquiryListView(APIView):
             }
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
-            context = {'inquiries' : serializer.data,
-                        'active_tab': 'user_faq'}
-        
+            context = {'inquiries': serializer.data,
+                       'active_tab': 'user_faq'}
+
         return render(request, self.template_name, context)
 
 
@@ -528,15 +558,11 @@ class InquiryDetailView(APIView):
     template_name = 'user/inquiry_detail.html'
 
     def get(self, request, inquiry_id):
-        inquiry = Inquiry.objects.get(inquiry_id = inquiry_id)
+        inquiry = Inquiry.objects.get(inquiry_id=inquiry_id)
         serializer = InquirySerializer(inquiry)
-        context = {'inquiry' : serializer.data,
-                    'active_tab': 'user_faq'}
+        context = {'inquiry': serializer.data,
+                   'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
-
-# 개인정보처리
-def privacy_policy(request):
-    return render(request, 'user/privacy_policy.html')
 
 
 def get_file_path(self):
