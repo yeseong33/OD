@@ -1,0 +1,111 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block content %}
+
+    <style>
+        .content-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .form-group {
+            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+        .form-group label {
+            margin-right: 20px; /* 라벨 간의 오른쪽 마진 추가 */
+            font-weight: bold;
+            font-size: 18px;
+            
+        }
+        .form-group input {
+            margin-right: 5px; /* 라디오 버튼과 텍스트 간의 간격 */
+        }
+
+        .table {
+            width: 80%;
+        }
+        .table thead th {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .table th, .table td {
+            padding: 12px; /* 위, 아래, 양옆에 10px의 패딩 적용 */
+            line-height: 1.6; /* 줄 간격 설정 */
+        }
+    
+    </style>
+
+    <div class="content-center">
+
+        <!-- 필터링 옵션을 선택하는 폼 -->
+        <form class ='form-group'>
+            <label><input type="radio" name="show_answered" value="all" checked> 전체</label>
+            <label><input type="radio" name="show_answered" value="answered"> 답변 완료</label>
+            <label><input type="radio" name="show_answered" value="not_answered"> 답변 대기</label>
+        </form>
+
+        <!-- 질문 목록을 보여주는 테이블 -->
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>카테고리</th>
+                    <th>제목</th>
+                    <th>내용</th>
+                    <th>답변 상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- AJAX로 업데이트 될 내용 -->
+            </tbody>
+        </table class='table'>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- AJAX 요청을 처리하기 위한 JavaScript -->
+    <script>
+        $(document).ready(function() {
+            function filterInquiries(showAnswered) {
+                // 템플릿 리터럴 쓸 때 백틱(`) 사용
+                var baseUrl = `{% url 'manager:api_inquiries' %}`;
+                var url = `${baseUrl}?show_answered=${showAnswered}`;
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        // console.log(data);
+                        let html = '';
+                        data.forEach(inquiry => {
+                            html += `
+                                <tr>
+                                    <td>${inquiry.inquiry_category}</td>
+                                    <td>${inquiry.inquiry_title}</td>
+                                    <td><a href="${inquiry.detail_url}">${inquiry.inquiry_content}</a></td>  <!-- 직접적으로 AJAX 응답 내에 Django 템플릿 태그를 사용할 수는 없음 -->
+                                    <td>${inquiry.inquiry_is_answered ? '답변됨' : '답변 안 됨'}</td>
+                                </tr>
+                            `;
+                        });
+                        $('tbody').html(html);
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            $('input[name="show_answered"]').change(function() {
+                var showAnswered = $(this).val();
+                // console.log(showAnswered);
+                filterInquiries(showAnswered);
+            });
+
+            // 페이지 로딩 시 기본적으로 '모두 보기'로 필터링
+            filterInquiries('all');
+        });
+    </script>
+
+{% endblock %}
