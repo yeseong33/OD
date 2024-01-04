@@ -100,6 +100,7 @@ class BookShareHtml(APIView):
 
         return Response(context, template_name=self.template_name)
 
+
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookShareContentHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -387,6 +388,7 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
         subject, message,  from_email=from_email, to=recipient_list)
     EmailThread(email).start()
 
+
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -435,6 +437,8 @@ class BookCompleteView(APIView):
             return Response(context)
 
 # 1:1 문의
+
+
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -556,9 +560,3 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# 개인정보처리
-
-
-def privacy_policy(request):
-    return render(request, 'community/privacy_policy.html')

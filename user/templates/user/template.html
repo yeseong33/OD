@@ -98,11 +98,45 @@
         {% endblock %}
     </div>
 
+    <!-- 푸터 내용 -->
     <footer class="footer mt-auto py-3 bg-dark-subtle">
-        <div class="container text-center">
-            <!-- 푸터 내용 -->
-            <a href="{% url 'user:privacy_policy' %}">개인정보처리방침</a>
-        </div>
+        <div class="container">
+            <div class="row">
+                <!-- 규정 및 사업자 정보-->
+                <div class="col-8">
+                    <div class="row mb-1">
+                        <div class="col-auto">
+                            <span>© 2024 All Rights Reserved.
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-auto">
+                            <span><a href="#" class="text-decoration-none text-reset">서비스 약관</a></span>&nbsp;&nbsp;|&nbsp;&nbsp; 
+                            <span><a href="{% url 'privacy_policy' %}" class="text-decoration-none text-reset">개인정보처리방침</a></span>&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <span><a href="#" class="text-decoration-none text-reset">결제 이용 약관</a></span>&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <span><a href="#" class="text-decoration-none text-reset">제휴 문의</a></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-auto">
+                            <p class="mb-1"><strong>사업자 등록 번호:</strong> 123-45-67890</p>
+                            <p class="mb-1"><strong>대표자명:</strong> 박우영</p>
+                            <p class="mb-1"><strong>주소:</strong> 서울 강남구 테헤란로 120</p>
+                            <p class="mb-1"><strong>전화번호:</strong> 070-1234-5678</p>
+                            <p><strong>이메일:</strong> wooyoung9654@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4 d-flex align-items-center justify-content-center">
+                    <a class="navbar-brand" style="color:#FD7E14; font-size:100px;" href="/">
+                        &nbsp;&nbsp;O: D
+                    </a>                    
+                </div>
+            </div>
+        </div>        
     </footer>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
