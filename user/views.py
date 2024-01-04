@@ -27,6 +27,7 @@ from user.serializers import UserSerializer, SubscriptionSerializer
 
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
 from django.core.files.base import ContentFile
+from django.contrib import messages
 
 load_dotenv()
 
@@ -259,20 +260,23 @@ class UserInformView(APIView):
         nickname = request.POST.get('nickname')
         
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
-        if user_image:
-            temp_file_name = user.email.replace('@','_at_')
-            file_name = f"user_images/{temp_file_name}_profile.jpg"
-            file_path += file_name
-            if FILE_SAVE_POINT == 'local':
-                os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #기존에 유저 이미지 파일 삭제.
-                
-                local_file_path = os.path.join(MEDIA_ROOT, file_name)
-                with open(local_file_path, 'wb') as local_file:
-                    for chunk in user_image.chunks():
-                        local_file.write(chunk)
-        if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
-            user.nickname = nickname
-        user.save()
+        if user_image or nickname:
+            if user_image:
+                temp_file_name = user.email.replace('@','_at_')
+                file_name = f"user_images/{temp_file_name}_profile.jpg"
+                file_path += file_name
+                if FILE_SAVE_POINT == 'local':
+                    os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #기존에 유저 이미지 파일 삭제.
+                    
+                    local_file_path = os.path.join(MEDIA_ROOT, file_name)
+                    with open(local_file_path, 'wb') as local_file:
+                        for chunk in user_image.chunks():
+                            local_file.write(chunk)
+            if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
+                user.nickname = nickname
+            user.save()
+            
+        messages.success(request, '정보가 성공적으로 변경되었습니다.')
         return redirect('user:inform')
 
 

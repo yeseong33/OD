@@ -8,6 +8,14 @@
 {% block content %}
 <div class="container">
     <div class="row" style="min-height: 80vh;">
+        {% if messages %}
+            <script>
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+
         {% include 'user/sub_navbar.html' %}
 
         <div class="col-9">
@@ -47,6 +55,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block script %}
 <script>
     document.addEventListener("DOMContentLoaded", (event) => {
