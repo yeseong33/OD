@@ -27,7 +27,8 @@ from community.models import BookRequest, UserRequestBook, Inquiry
 from audiobook.models import Book
 from .models import FAQ
 from user.models import Subscription
-from .serializers import BookSerializer, InquirySerializer, FAQSerializer
+from .serializers import InquirySerializer, FAQSerializer
+from community.serializers import BookSerializer
 from community.views import send_async_mail
 import datetime
 from datetime import datetime as dt

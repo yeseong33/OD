@@ -3,6 +3,7 @@ import json
 import os
 import threading
 from pathlib import Path
+from datetime import datetime
 
 # 서드 파티 라이브러리
 import requests
@@ -208,7 +209,12 @@ class BookDetail(APIView):
     def put(self, request, pk, format=None):
         book = self.get_object(pk)
         print(request.data)
-        serializer = BookSerializer(book, data=request.data, partial=True)
+        # 현재 시간의 달 추출
+        current_month = datetime.now().month
+        context = {
+            "month": current_month
+        }
+        serializer = BookSerializer(book, context=context,data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

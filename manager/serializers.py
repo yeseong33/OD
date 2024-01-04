@@ -1,13 +1,7 @@
 from rest_framework import serializers
-from audiobook.models import Book
 from .models import FAQ
 from community.models import Inquiry
 
-
-class BookSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = '__all__'
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
