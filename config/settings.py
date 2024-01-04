@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'config.context_processors.common_context',
             ],
         },
     },
@@ -151,7 +152,8 @@ if (FILE_SAVE_POINT == 'local'):
 else:
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-MEDIA_ROOT = 'C:\\S3_bucket'  # 파일이 저장될 로컬 경로
+# MEDIA_ROOT = 'C:\\S3_bucket'
+MEDIA_ROOT = '/Users/junghokyun/Desktop/S3_bucket'  # 파일이 저장될 로컬 경로 (Mac 경로여서 팀원분들은 이부분 주석 처리하고 현재 라인 주석처리해주시고 윗줄 주석 처리 풀어주세요)
 MEDIA_URL = '/media/'
 
 # AWS S3 설정

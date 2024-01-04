@@ -56,7 +56,7 @@
                         <li class="nav-item dropdown list-unstyled d-flex align-items-center">
                             <a class="nav-link d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {% if request.user.user_profile_path %}
-                                    <img src="/media/{{request.user.user_profile_path}}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
+                                    <img src="{{file_path}}{{request.user.user_profile_path}}" alt="프로필 사진" width="30" height="30" class="rounded-circle">
                                 {% else %}
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                         <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
