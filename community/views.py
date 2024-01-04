@@ -41,11 +41,12 @@ from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from manager.serializers import FAQSerializer
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+
 load_dotenv()  # 환경 변수를 로드함
 
+
 # 토론방
-
-
 class BookShareContentList(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share.html'

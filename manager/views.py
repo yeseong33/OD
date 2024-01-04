@@ -37,9 +37,21 @@ from rest_framework import status
 from .forms import InquiryResponseForm
 from django.http import JsonResponse
 
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
 
 
 load_dotenv()  # 환경 변수를 로드함
+
+
+# 데코레이터 설정
+def is_specific_user_condition(user):
+    # 여기에 특정 사용자 속성을 만족시키는 조건을 작성
+    return user.is_authenticated and user.is_admin == True
+
+specific_user_required = user_passes_test(is_specific_user_condition, login_url='manager:access_deny')
+
+
 
 
 # 책 수요 변화
@@ -49,6 +61,7 @@ def book_view_count(request):
 
 
 @csrf_exempt
+@specific_user_required
 @require_http_methods(["POST", "GET"])
 def book_view(request):
 
@@ -214,7 +227,7 @@ def book_view(request):
         return render(request, 'manager/book_cover.html')
     return HttpResponse("적절한 응답 메시지")
 
-
+@specific_user_required
 def cover_complete(request):
     return render(request, 'manager/book_complete.html')
 
@@ -257,7 +270,7 @@ def get_book_details_from_naver(isbn):
     else:
         return None
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRequestListView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_request.html'
@@ -292,7 +305,7 @@ class BookRequestListView(APIView):
 
         return Response(context)
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register.html'
@@ -307,7 +320,7 @@ class BookRegisterView(APIView):
         else:
             return Response({"error": "book_datail이 존재하지 않습니다"})
 
-
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register_complete.html'
@@ -425,10 +438,11 @@ class BookRegisterCompleteView(APIView):
 
 
 # 문의 답변
-
+@specific_user_required
 def inquiry_list(request):  # 문의글 목록 페이지
     return render(request, 'manager/inquiry_list.html')
 
+@specific_user_required
 def inquiry_detail(request, inquiry_id):
     inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
     
@@ -450,6 +464,7 @@ def inquiry_detail(request, inquiry_id):
 
     return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryListAPI(APIView):
     def get(self, request, *args, **kwargs):
         show_answered = request.query_params.get('show_answered', 'all')
@@ -464,6 +479,7 @@ class InquiryListAPI(APIView):
         serializer = InquirySerializer(inquiries, many=True)
         return Response(serializer.data)
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryDetailAPI(APIView):
     def get(self, request, inquiry_id, format=None):
         inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
@@ -472,13 +488,14 @@ class InquiryDetailAPI(APIView):
 
 
 # 구독 및 수익 관리
-
+@specific_user_required
 def show_subscription(request):
     if not request.user.is_admin:
             return redirect('audiobook:main')
         
     return render(request, 'manager/subscription.html')
-    
+
+@method_decorator(specific_user_required, name='dispatch')
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
@@ -505,9 +522,7 @@ class SubscriptionCountAPI(APIView):
 
 
 # FAQ 관리
-
-
-
+@method_decorator(specific_user_required, name='dispatch')
 class ManagerFAQHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/faq.html'
@@ -520,7 +535,8 @@ class ManagerFAQHtml(APIView):
             'faqs': serializers.data,
         }
         return Response(context, template_name=self.template_name)
-    
+
+@method_decorator(specific_user_required, name='dispatch')
 class ManagerFAQPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/faq_post.html'
@@ -536,6 +552,16 @@ class ManagerFAQPostHtml(APIView):
 
 # 개인정보처리
 
-
+@specific_user_required
 def privacy_policy(request):
     return render(request, 'manager/privacy_policy.html')
+
+
+# 접근 제한
+
+class AccessDenyHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/access_deny.html'
+
+    def get(self, request):
+        return Response(template_name=self.template_name)

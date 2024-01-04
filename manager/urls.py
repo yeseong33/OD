@@ -31,4 +31,7 @@ urlpatterns = [
     ## 개인정보처리
     path('privacy_policy/', views.privacy_policy,
          name='privacy_policy'),
+    
+    ## 접근 제한
+    path('access/deney/', views.AccessDenyHtml.as_view(), name='access_deny')
 ]
