@@ -1,3 +1,12 @@
+import json
+import os
+import requests
+import datetime
+import time
+import concurrent.futures
+import matplotlib.pyplot as plt
+import numpy as np
+import shutil
 # 표준 라이브러리
 from manager.forms import InquiryResponseForm
 from community.views import send_async_mail
@@ -11,6 +20,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from dateutil.relativedelta import relativedelta
+from django.core.cache import cache
+from django.core.files.base import ContentFile
+from django.core.paginator import Paginator
+from django.shortcuts import redirect, render, get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 from django.template.loader import render_to_string
@@ -40,6 +55,14 @@ import numpy as np
 import requests
 import matplotlib
 matplotlib.use('Agg')
+from django.contrib import messages
+import matplotlib.font_manager as fm
+import boto3
+from botocore.exceptions import NoCredentialsError
+from config.settings import FILE_SAVE_POINT
+matplotlib.use('Agg')
+from config.context_processors import get_file_path
+from django.core.files import File
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -77,14 +100,17 @@ def book_view(request):
         if request_type == 'create_graph':
             search_text = data.get('search_text')
             try:
+                
+                
+                global book_title, book_description, book_id, book_image_path, book
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-
-                global book_title, book_description, book_id
                 book_title = book.book_title
                 book_description = book.book_description
                 book_id = book.book_isbn
+                book_image_path = book.book_image_path
+                
 
                 # book_view_count 데이터 확인
                 if book.book_view_count:
@@ -113,24 +139,33 @@ def book_view(request):
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
 
+            # 데이터 설정
             months = list(range(1, 13))
             views = [monthly_views.get(str(month), 0) for month in months]
+
+            # 폰트 파일 경로 설정
+            font_path = os.path.join('static', 'fonts', 'NotoSansKR-Light.ttf')
+
+            # Matplotlib 폰트 설정
+            font_prop = fm.FontProperties(fname=font_path, size=12)
 
             # 그래프 생성
             plt.figure(figsize=(10, 6))
             plt.bar(months, views, color='skyblue')
-            plt.xlabel('month')
-            plt.ylabel('count')
+            plt.xlabel('월별', fontproperties=font_prop)
+            plt.ylabel('사용량', fontproperties=font_prop)
 
-            plt.title('book title of month count')
+            plt.title(f'<{book_title}> 월별 사용자 추이', fontproperties=font_prop)
             plt.xticks(months)
 
-            # 파일 경로 설정
-            file_path = os.path.join('static', 'images', 'graph.png')
+            # 축 레이블에 폰트 적용
+            for label in (plt.gca().get_xticklabels() + plt.gca().get_yticklabels()):
+                label.set_fontproperties(font_prop)
 
-            # 그래프 파일로 저장
+            # 파일 경로 설정 및 그래프 저장
+            file_path = os.path.join('static', 'images', 'graph.png')
             plt.savefig(file_path)
-            plt.close()  # 리소스 해제
+            plt.close() 
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
 
         elif request_type == 'search':
@@ -208,21 +243,46 @@ def book_view(request):
         elif request_type == 'update_cover':
             data = json.loads(request.body)
             image_number = data.get('image_number')
+            # 새 이미지 파일 경로
+            new_image_path = f'static/images/Redraw_image_{image_number}.png'
+            
+            if FILE_SAVE_POINT == 'local':
+                try:
+                    # 새 이미지 파일을 Django의 File 객체로 열기
+                    with open(new_image_path, 'rb') as new_image_file:
+                        django_file = File(new_image_file)
+                        # 모델의 이미지 필드에 File 객체를 할당
+                        current_filename = os.path.basename(book_image_path.name)
+                        book_image_path.save(current_filename, django_file, save=True)
 
-            # 이미지 번호를 기반으로 새 이미지 경로 설정
-            new_image_path = os.path.join(
-                'static', 'images', f'Redraw_image_{image_number}.png')
 
-            # 기존 이미지 경로 설정
-            existing_image_path = os.path.join(
-                'C:\\', 'S3_bucket', 'book_images', f'{book_id}_image.jpg')
+                    return JsonResponse({'status': 'success', 'message': '커버 이미지가 성공적으로 업데이트되었습니다.'})
 
-            # 기존 이미지를 새 이미지로 교체
-            if os.path.exists(new_image_path):
-                shutil.copy(new_image_path, existing_image_path)
-                return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                except Book.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': '해당 책이 존재하지 않습니다.'})
+                except IOError:
+                    return JsonResponse({'status': 'error', 'message': '이미지 파일을 열 수 없습니다.'})
+  
             else:
-                return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+            
+                
+
+                # S3 클라이언트 생성
+                s3 = boto3.client('s3')
+                s3_bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME')
+                bucket_name = s3_bucket_name  # S3 버킷 이름
+                
+            
+                # S3 버킷 내 기존 이미지 파일 경로
+                existing_image_path = str(book_image_path)
+                try:
+                    # 새 이미지 파일을 S3 버킷으로 업로드
+                    s3.upload_file(new_image_path, bucket_name, existing_image_path)
+                    return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                except FileNotFoundError:
+                    return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+                except NoCredentialsError:
+                    return JsonResponse({'status': 'error', 'message': 'Credentials not available.'})
 
     elif request.method == 'GET':
         return render(request, 'manager/book_cover.html')
@@ -437,7 +497,6 @@ class BookRegisterCompleteView(APIView):
             'message': 'Book registered successfully.'
         }, status=200)
 
-
 # 문의 답변
 @specific_user_required
 def inquiry_list(request):  # 문의글 목록 페이지
@@ -561,3 +620,25 @@ class AccessDenyHtml(APIView):
 
     def get(self, request):
         return Response(template_name=self.template_name)
+
+# 삭제 버튼
+
+@require_http_methods(["POST"])
+def book_delete(request):
+    # POST 요청에서 ISBN을 가져옵니다.
+    book_isbn = request.POST.get('book_isbn')
+    book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
+    user_request_books = UserRequestBook.objects.filter(request=book_request)
+    book_request.delete()
+    user_request_books.delete()
+    try:
+        # 해당 ISBN을 가진 도서를 찾아 삭제합니다.
+        book = Book.objects.get(book_isbn=book_isbn)
+        book.delete()
+        messages.success(request, '도서가 성공적으로 삭제되었습니다.')
+    except Book.DoesNotExist:
+        # 도서가 존재하지 않는 경우 에러 메시지를 추가합니다.
+        messages.error(request, '해당 도서를 찾을 수 없습니다.')
+
+    # 삭제 후 관리자 페이지로 리디렉션합니다.
+    return redirect('manager:book_request')
