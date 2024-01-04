@@ -79,8 +79,8 @@
         text-align: center; /* 모든 내용을 가운데 정렬합니다. */
         margin: 10px;
         padding: 60px;
-        background-color: #f9f9f9;
-        
+        background-color: #FFFFF
+        height: 600px;
     }
     .button-group .cover-button {
         padding: 5px 10px;
@@ -141,7 +141,9 @@
     
     /* This will be your left section for the local image */
     .local-image-section {
-        flex-basis: 40%; /* Takes up half the width */
+        flex-basis: 600px; /* 고정된 너비 값으로 설정 */
+        max-width: 600px; /* 최대 너비 설정 */
+        min-width: 600px; /* 최소 너비 설정 */
         display: flex;
         justify-content: left;
         align-items: left; /* This centers the content */
@@ -156,7 +158,7 @@
     /* You might need to adjust your image styles for responsiveness */
     img {
         max-width: 100%;
-        height: auto;
+        
     }
     
     .loading-indicator {
@@ -178,7 +180,7 @@
     <div class="layout-container">
         <div class="local-image-section">
             <!-- Place your image tag here -->
-            <img id="graphImage" src="{% static 'images/ready.gif' %}" alt="Ready Image" style="width: 1500px; height: auto;">
+            <img id="graphImage" src="{% static 'images/ready.gif' %}" alt="Ready Image" style ="height:500px";>
         </div>
         
         <!-- Your existing cover-creation-section -->
@@ -216,15 +218,15 @@
                 <div class="button-group">
                 <!-- 이미지 버튼 1 -->
                     <button class="image-button" onclick="selectImage(0)">
-                        <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" style="width: 180px; height: 200px;">
+                        <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" style="width: 170px; height: 200px;">
                     </button>
                     <!-- 이미지 버튼 2 -->
                     <button class="image-button" onclick="selectImage(1)">
-                        <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" style="width: 180px; height: 200px;">
+                        <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" style="width: 170px; height: 200px;">
                     </button>
                     <!-- 이미지 버튼 3 -->
                     <button class="image-button" onclick="selectImage(2)">
-                        <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" style="width: 180px; height: 200px;">
+                        <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" style="width: 170px; height: 200px;">
                     </button>
                 </div>
             </div>

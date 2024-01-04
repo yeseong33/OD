@@ -35,8 +35,8 @@ from dateutil.relativedelta import relativedelta
 from rest_framework import status
 from .forms import InquiryResponseForm
 from django.http import JsonResponse
-
-
+from django.contrib import messages
+import matplotlib.font_manager as fm
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -98,24 +98,33 @@ def book_view(request):
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
 
+            # 데이터 설정
             months = list(range(1, 13))
             views = [monthly_views.get(str(month), 0) for month in months]
+
+            # 폰트 파일 경로 설정
+            font_path = os.path.join('static', 'fonts', 'NotoSansKR-Light.ttf')
+
+            # Matplotlib 폰트 설정
+            font_prop = fm.FontProperties(fname=font_path, size=12)
 
             # 그래프 생성
             plt.figure(figsize=(10, 6))
             plt.bar(months, views, color='skyblue')
-            plt.xlabel('month')
-            plt.ylabel('count')
+            plt.xlabel('월별', fontproperties=font_prop)
+            plt.ylabel('사용량', fontproperties=font_prop)
 
-            plt.title('book title of month count')
+            plt.title(f'<{book_title}> 월별 사용자 추이', fontproperties=font_prop)
             plt.xticks(months)
 
-            # 파일 경로 설정
-            file_path = os.path.join('static', 'images', 'graph.png')
+            # 축 레이블에 폰트 적용
+            for label in (plt.gca().get_xticklabels() + plt.gca().get_yticklabels()):
+                label.set_fontproperties(font_prop)
 
-            # 그래프 파일로 저장
+            # 파일 경로 설정 및 그래프 저장
+            file_path = os.path.join('static', 'images', 'graph.png')
             plt.savefig(file_path)
-            plt.close()  # 리소스 해제
+            plt.close() 
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
 
         elif request_type == 'search':
@@ -515,3 +524,26 @@ def faq(request):
 
 def privacy_policy(request):
     return render(request, 'manager/privacy_policy.html')
+
+
+# 삭제 버튼
+
+@require_http_methods(["POST"])
+def book_delete(request):
+    # POST 요청에서 ISBN을 가져옵니다.
+    book_isbn = request.POST.get('book_isbn')
+    book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
+    user_request_books = UserRequestBook.objects.filter(request=book_request)
+    book_request.delete()
+    user_request_books.delete()
+    try:
+        # 해당 ISBN을 가진 도서를 찾아 삭제합니다.
+        book = Book.objects.get(book_isbn=book_isbn)
+        book.delete()
+        messages.success(request, '도서가 성공적으로 삭제되었습니다.')
+    except Book.DoesNotExist:
+        # 도서가 존재하지 않는 경우 에러 메시지를 추가합니다.
+        messages.error(request, '해당 도서를 찾을 수 없습니다.')
+
+    # 삭제 후 관리자 페이지로 리디렉션합니다.
+    return redirect('manager:book_request')

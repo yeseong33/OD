@@ -51,6 +51,12 @@
             <button type="submit" class="btn btn-orange-400">새 도서 등록하기</button>
           </div>
         </form>
+        <form method="post" action="{% url 'manager:book_delete' %}">
+          {% csrf_token %}
+          <input type="hidden" name="book_isbn" value="{{isbn}}">
+          <button type="submit" class="btn btn-danger">도서 삭제하기</button>
+        </form>
+
       </div>
     </div>
   </div>
