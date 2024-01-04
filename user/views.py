@@ -1,33 +1,35 @@
+# 표준 라이브러리
 import os
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
+# 제3자 라이브러리
 import bcrypt
 import requests
 from dotenv import load_dotenv
 from jose import jwt
 
+# Django 관련 임포트
 from django.conf import settings
+from django.contrib import messages
+from django.core.files.base import ContentFile
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-
 from django.utils import timezone
+
+# Django REST framework 관련 임포트
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import TemplateHTMLRenderer
 
-from .models import *
-from audiobook.models import *
-
-from django.http import JsonResponse
-from community.serializers import BookSerializer, InquirySerializer
-from audiobook.serializers import VoiceSerializer
+# 로컬 애플리케이션/모델 관련 임포트
+from .models import *  # 이 부분은 구체적인 모델 이름을 명시하는 것이 좋습니다.
+from audiobook.models import *  # 이 부분도 마찬가지입니다.
 from community.models import Inquiry
-from community.serializers import BookSerializer, UserSerializer
+from audiobook.serializers import VoiceSerializer
+from community.serializers import BookSerializer, InquirySerializer
+from user.serializers import UserSerializer, SubscriptionSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-from django.core.files.base import ContentFile
-from config.settings import FILE_SAVE_POINT
 from config.context_processors import get_file_path
-
 
 load_dotenv()
 
@@ -47,10 +49,15 @@ def logout(request):
 
 
 def sign_in(user_data):
-    serializer = UserSerializer(data=user_data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    return user
+    user_serializer = UserSerializer(data=user_data)
+
+    if user_serializer.is_valid():
+        user = user_serializer.save()
+        sub_serializer = SubscriptionSerializer(
+            data={'user': user.user_id, 'is_subscribed': False})
+        if sub_serializer.is_valid():
+            sub_serializer.save()
+        return user
 
 
 def kakao_login(request):
@@ -221,24 +228,20 @@ class SubscribeView(APIView):
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
             user = User.objects.get(user_id=user_inform['user_id'])
+            subscribe = Subscription.objects.get(user_id=user.user_id)
 
-            try:
-                subscribe = Subscription.objects.get(user_id=user.user_id)
-            except Subscription.DoesNotExist:
-                template_name = "user/non_pay_inform.html"
+            if subscribe.is_subscribed:  # 구독 했을 경우.
+                # 남은 요일 계산.
+                left_days = (subscribe.sub_end_date - timezone.now()).days
                 context = {
-                    'active_tab': 'user_subscription'
+                    'user': user,
+                    'left_days': left_days,
+                    'active_tab': 'user_subscription',
                 }
-                return Response(context, template_name=template_name)
-            template_name = 'user/pay_inform.html'
-            left_days = (subscribe.sub_end_date - timezone.now()).days
-
-            context = {
-                'user': user,
-                'left_days': left_days,
-                'active_tab': 'user_subscription'
-            }
-            return Response(context, template_name=template_name)
+                return Response(context, template_name='user/pay_inform.html')
+            else:  # 구독하지 않은 경우.
+                context = {'active_tab': 'user_subscription', }
+                return Response(context, template_name='user/non_pay_inform.html')
 
 
 class UserInformView(APIView):
@@ -267,22 +270,25 @@ class UserInformView(APIView):
         nickname = request.POST.get('nickname')
 
         # 사진 저장 로직 구현 필요. 보류 아마존 s3 버킷에 이미지를 저장.
-        if user_image:
-            temp_file_name = user.email.replace('@', '_at_')
-            file_name = f"user_images/{temp_file_name}_profile.jpg"
-            file_path += file_name
-            if FILE_SAVE_POINT == 'local':
-                # 기존에 유저 이미지 파일 삭제.
-                os.remove(os.path.join(
-                    MEDIA_ROOT, str(user.user_profile_path)))
+        if user_image or nickname:
+            if user_image:
+                temp_file_name = user.email.replace('@', '_at_')
+                file_name = f"user_images/{temp_file_name}_profile.jpg"
+                file_path += file_name
+                if FILE_SAVE_POINT == 'local':
+                    # 기존에 유저 이미지 파일 삭제.
+                    os.remove(os.path.join(
+                        MEDIA_ROOT, str(user.user_profile_path)))
 
-                local_file_path = os.path.join(MEDIA_ROOT, file_name)
-                with open(local_file_path, 'wb') as local_file:
-                    for chunk in user_image.chunks():
-                        local_file.write(chunk)
-        if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
-            user.nickname = nickname
-        user.save()
+                    local_file_path = os.path.join(MEDIA_ROOT, file_name)
+                    with open(local_file_path, 'wb') as local_file:
+                        for chunk in user_image.chunks():
+                            local_file.write(chunk)
+            if nickname:  # body에 들어있다면 nickname이 들어있다면 변경
+                user.nickname = nickname
+            user.save()
+
+        messages.success(request, '정보가 성공적으로 변경되었습니다.')
         return redirect('user:inform')
 
 
@@ -333,7 +339,8 @@ class UserLikeVoicesView(APIView):
         voice_id_list = user.user_favorite_voices  # 유저가 좋아요한 책 Pk를 조회
 
         if voice_id_list == None:
-            context = {'voices': None}
+            context = {'voices': None,
+                       'active_tab': 'user_like'}
         else:
             order_by = request.GET.get('orderBy', 'latest')
             voice_list = Voice.objects.filter(pk__in=voice_id_list)
@@ -364,10 +371,10 @@ class BookHistoryView(APIView):
         user = User.objects.get(user_id=user_inform['user_id'])
         book_id_list = user.user_book_history  # 유저 독서이력을 조회.
 
-        if book_id_list is None:  # 유저가 좋아요한 목록이 없을 경우.
+        if book_id_list == None:  # 유저가 좋아요한 목록이 없을 경우.
             context = {
                 'books': None,
-                'active_tab': 'user_book_history'
+                'active_tab': 'user_book_history',
             }
         else:
             # 정렬 방식을 라디오 버튼 값으로 받아오기

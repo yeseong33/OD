@@ -36,6 +36,7 @@ from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
+from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
 from django.contrib.auth.decorators import login_required
