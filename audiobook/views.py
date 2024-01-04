@@ -531,12 +531,63 @@ class ContentPlay(APIView):
     def get(self, request, book_id):
         try:
             book = Book.objects.get(pk=book_id)
+            voice_name = request.GET.get("voice_name")
+            
+            '''
+            config = dotenv_values(".env")
+            hostname = config.get("RVC_IP")
+            username = config.get("RVC_USER")
+            key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
+
+            # SSH 클라이언트 생성
+            client = paramiko.SSHClient()
+            # 호스트 키 자동으로 수락
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            # SSH 연결 (키 기반 인증)
+            client.connect(hostname=hostname, username=username, key_filename=key_filename)
+            
+            try:
+                sftp = client.open_sftp()
+
+                # 전송할 파일의 경로
+                local_file_path = f'media/voice_rvcs/{voice_name}.pth'
+                # 파일을 전송할 원격 경로
+                remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
+
+                # 파일 전송
+                sftp.put(local_file_path, remote_file_path)
+
+                # 연결 종료
+                sftp.close()
+            except:
+                return Response(status=405, template_name=self.template_name)
+
+            # 셸 세션 열기
+            shell = client.invoke_shell()
+
+            def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
+                # prompt 문자열이 나타날 때까지 출력을 읽습니다.
+                # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
+                buffer = ''
+                shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
+                try:
+                    while not buffer.endswith(prompt):
+                        response = shell.recv(1024).decode('utf-8',errors='replace')
+                        buffer += response
+                except socket.timeout:
+                    print("No data received before timeout")
+                return buffer
+            
+            client.close()
+            '''
+            
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
         context = {
             'result': True,
             'book': book,
+            'voice_name': voice_name
         }
         return Response(context, template_name=self.template_name)
 
@@ -568,11 +619,35 @@ class voice_custom(APIView):
 def voice_celebrity(request):
     pass
 
-def voice_custom_upload(request):
-    return render(request, 'audiobook/voice_custom_upload.html')
+class voice_custom_upload(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_custom_upload.html'
+    
+    def get(self, request):
+        book_id = request.GET.get("book_id")
 
-def voice_custom_complete(request):
-    return render(request, 'audiobook/voice_custom_complete.html')
+        try:
+            context ={
+                'book_id': book_id
+            }
+            return Response(context, template_name=self.template_name)
+        except :
+            return Response(status=404,template_name=self.template_name)
+
+class voice_custom_complete(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_custom_complete.html'
+    
+    def get(self, request):
+        book_id = request.GET.get("book_id")
+
+        try:
+            context ={
+                'book_id': book_id
+            }
+            return Response(context, template_name=self.template_name)
+        except :
+            return Response(status=404,template_name=self.template_name)
 
 def voice_custom_upload_post(request):
     return render(request, 'audiobook/voice_custom.html')

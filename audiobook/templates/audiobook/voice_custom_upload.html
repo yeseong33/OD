@@ -246,7 +246,7 @@
                     request.onload = function() {
                         if (request.status == 200) {
                             console.log(request.response);  // 성공 시 응답 출력
-                            window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
+                            window.location.href = "{% url 'audiobook:voice_custom_complete' %}" + "?book_id={{ book_id }}";
                             document.getElementById('loadingIndicator').style.display = 'none';
                         } else {
                             console.log(Error(request.statusText));  // 실패 시 에러 출력

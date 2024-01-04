@@ -23,8 +23,8 @@ urlpatterns = [
      # 성우
      path('voice/custom/<int:book_id>', views.voice_custom.as_view(), name='voice_custom'),
      path('voice/celebrity/', views.voice_celebrity, name='voice_celebrity'),
-     path('voice/custom/upload/', views.voice_custom_upload,name='voice_custom_upload'),
-     path('voice/custom/complete/', views.voice_custom_complete,name='voice_custom_complete'),
+     path('voice/custom/upload/', views.voice_custom_upload.as_view(),name='voice_custom_upload'),
+     path('voice/custom/complete/', views.voice_custom_complete.as_view(),name='voice_custom_complete'),
      path('voice/custom/complete/upload', views.voice_custom_upload_post, name='voice_custom_upload_post'),
      path('voice/custom/search/',views.Voice_Custom_Search.as_view(),name='voice_custom_search'),
 

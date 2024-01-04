@@ -70,7 +70,7 @@
 {% block script %}
     <script>
         document.getElementById('listen').addEventListener('click', function() {
-            window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}"
+            window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}"+ '?voice_name={{voice_name}}'
         }); 
 
         document.getElementById('voice_img').addEventListener('click', function() {

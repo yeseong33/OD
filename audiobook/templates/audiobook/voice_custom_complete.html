@@ -125,7 +125,7 @@
                 request.onload = function() {
                     if (request.status == 200) {
                         console.log(request.response);  // 성공 시 응답 출력
-                        window.location.href = "{% url 'audiobook:voice_custom' %}";
+                        window.location.href = "{% url 'audiobook:voice_custom' book_id=book_id %}";
                         document.getElementById('loadingIndicator').style.display = 'none';
                     } else {
                         console.log("Went here")
@@ -150,7 +150,7 @@
                 request.onload = function() {
                     if (request.status == 200) {
                         console.log(request.response);  // 성공 시 응답 출력
-                        window.location.href = "{% url 'audiobook:voice_custom_upload' %}";
+                        window.location.href = "{% url 'audiobook:voice_custom_upload' book_id=book_id %}";
                         document.getElementById('loadingIndicator').style.display = 'none';
                     } else {
                         console.log("Went here")
