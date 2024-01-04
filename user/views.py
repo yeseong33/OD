@@ -22,7 +22,9 @@ from django.http import JsonResponse
 from community.serializers import BookSerializer,InquirySerializer
 from audiobook.serializers import VoiceSerializer
 from community.models import Inquiry
-from community.serializers import BookSerializer,UserSerializer
+from community.serializers import BookSerializer
+from user.serializers import UserSerializer, SubscriptionSerializer
+
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
 from django.core.files.base import ContentFile
 
@@ -43,10 +45,14 @@ def logout(request):
     return response
 
 def sign_in (user_data):
-    serializer = UserSerializer(data=user_data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    return user
+    user_serializer = UserSerializer(data=user_data)
+    
+    if user_serializer.is_valid():
+        user = user_serializer.save()
+        sub_serializer = SubscriptionSerializer(data={'user': user.user_id, 'is_subscribed': False})
+        if sub_serializer.is_valid():
+            sub_serializer.save()
+        return user
 
 def kakao_login(request):
     print("kakao Login 클릭")
@@ -212,24 +218,19 @@ class SubscribeView(APIView):
         else:
             user_inform = decode_jwt(request.COOKIES.get("jwt"))
             user = User.objects.get(user_id=user_inform['user_id'])
-
-            try:
-                subscribe = Subscription.objects.get(user_id=user.user_id)
-            except Subscription.DoesNotExist:
-                template_name = "user/non_pay_inform.html"
+            subscribe = Subscription.objects.get(user_id=user.user_id)
+            
+            if subscribe.is_subscribed: # 구독 했을 경우.
+                left_days = (subscribe.sub_end_date - timezone.now()).days #남은 요일 계산.
                 context = {
-                    'active_tab': 'user_subscription'
-                }
-                return Response(context, template_name=template_name)
-            template_name = 'user/pay_inform.html'
-            left_days = (subscribe.sub_end_date - timezone.now()).days
-
-            context = {
                 'user': user,
                 'left_days': left_days,
-                'active_tab': 'user_subscription'
-            }
-            return Response(context, template_name=template_name)
+                'active_tab': 'user_subscription',
+                }
+                return Response(context, template_name = 'user/pay_inform.html')
+            else: # 구독하지 않은 경우.
+                context = { 'active_tab': 'user_subscription',}
+                return Response(context, template_name = 'user/non_pay_inform.html')
 
 
 class UserInformView(APIView):
