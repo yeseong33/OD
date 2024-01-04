@@ -43,6 +43,7 @@ from botocore.exceptions import NoCredentialsError
 from config.settings import FILE_SAVE_POINT
 matplotlib.use('Agg')
 from config.context_processors import get_file_path
+from django.core.files import File
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -69,11 +70,12 @@ def book_view(request):
         if request_type == 'create_graph':
             search_text = data.get('search_text')
             try:
+                
+                
+                global book_title, book_description, book_id, book_image_path, book
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-                
-                global book_title, book_description, book_id, book_image_path 
                 book_title = book.book_title
                 book_description = book.book_description
                 book_id = book.book_isbn
@@ -215,13 +217,23 @@ def book_view(request):
             new_image_path = f'static/images/Redraw_image_{image_number}.png'
             
             if FILE_SAVE_POINT == 'local':
-                existing_image_path = get_file_path() + str(book_image_path)
-                
-                if os.path.exists(new_image_path):
-                    shutil.copy(new_image_path, existing_image_path)
-                    return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
-                else:
-                    return JsonResponse({'status': 'error', 'message': 'New image not found.'})    
+                try:
+                    # 새 이미지 파일을 Django의 File 객체로 열기
+                    with open(new_image_path, 'rb') as new_image_file:
+                        django_file = File(new_image_file)
+                        # 모델의 이미지 필드에 File 객체를 할당
+                        current_filename = os.path.basename(book_image_path.name)
+                        print(current_filename)
+                        book_image_path.save(current_filename, django_file, save=True)
+
+
+                    return JsonResponse({'status': 'success', 'message': '커버 이미지가 성공적으로 업데이트되었습니다.'})
+
+                except Book.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': '해당 책이 존재하지 않습니다.'})
+                except IOError:
+                    return JsonResponse({'status': 'error', 'message': '이미지 파일을 열 수 없습니다.'})
+  
             else:
             
                 
