@@ -36,6 +36,7 @@ from audiobook.models import Book
 from user.models import User
 from .models import BookRequest, Post, UserRequestBook
 from .serializers import *
+from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 
 load_dotenv()  # 환경 변수를 로드함
@@ -544,7 +545,7 @@ class UserDetail(APIView):
 
     def put(self, request, pk, format=None):
         user = self.get_object(pk)
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = alizer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

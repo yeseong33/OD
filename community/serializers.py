@@ -2,29 +2,10 @@ import os
 from contextlib import nullcontext
 
 from rest_framework import serializers
-
+from user.serializers import UserSerializer
 from audiobook.models import Book
 from .models import Post, User, Comment, Inquiry
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email', 'nickname', 'oauth_provider',
-                    'user_profile_path', 'password', 'user_favorite_books', 'user_book_history', 'user_id','username']
-
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        user = super(UserSerializer, self).create(validated_data)
-        if password is not None:
-            user.set_password(password)
-            
-        user.save()
-        return user
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -38,7 +19,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['post_id', 'post_title', 'post_content', 'user_id',
-                  'user_nickname', 'post_created_date', 'post_updated_date']
+                    'user_nickname', 'post_created_date', 'post_updated_date']
 
     def save(self, **kwargs):
         book_id = self.context.get('book_id')
