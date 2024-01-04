@@ -65,7 +65,7 @@ def book_view(request):
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-
+                
                 global book_title, book_description, book_id
                 book_title = book.book_title
                 book_description = book.book_description
