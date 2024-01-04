@@ -26,10 +26,12 @@
                 <div class = "col-2">내용</div>
                 <div class = "col-10">{{inquiry.inquiry_content}}</div>
             </div>
+            {% if inquiry.inquiry_is_answered %}
             <div class = "row">
                 <div class = "col-2">답변</div>
                 <div class = "col-10">{{inquiry.inquiry_response}}</div>
             </div>
+            {% endif %}
         </div>
 
     </div>
