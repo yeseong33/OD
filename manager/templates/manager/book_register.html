@@ -16,42 +16,46 @@
         <p><strong>출판사:</strong> {{ publisher }}</p>
         <p><strong>책 소개</strong>: {{ description }}</p>
 
-        <!-- 책 정보 입력하기 -->
-        <form method="post" action="{% url 'manager:book_register_complete' %}" enctype="multipart/form-data">
-          {% csrf_token %}
-          <input type="hidden" name="book_isbn" value="{{isbn}}">
+        <!-- 책 정보 입력 및 삭제 버튼 -->
+        <div class="row">
+          <div class="col">
+            <form method="post" action="{% url 'manager:book_register_complete' %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="book_isbn" value="{{isbn}}">
+              
+              <!-- 장르 선택 -->
+              <div class="mb-3">
+                <label for="book_genre" class="form-label"><strong>장르:</strong></label>
+                <select name="book_genre" id="book_genre" class="form-select">
+                  <option value="novel">소설</option>
+                  <option value="humanities">인문</option>
+                  <option value="nature">자연</option>
+                  <option value="self_improvement">자기계발</option>
+                  <option value="children">아동</option>
+                  <option value="etc">기타</option>
+                </select>
+              </div>
 
-          <div class="row mb-3">
-            <div class="col-auto d-flex align-items-center">
-              <label for="book_genre" class="form-label my-auto"><strong>장르:</strong></label>
-            </div>            
-            <div class="col-auto d-flex align-items-center">
-              <select name="book_genre" id="book_genre" class="form-select">
-                <option value="novel">소설</option>
-                <option value="humanities">인문</option>
-                <option value="nature">자연</option>
-                <option value="self_improvement">자기계발</option>
-                <option value="children">아동</option>
-                <option value="etc">기타</option>
-              </select>
-            </div>
+              <!-- 도서 내용 파일 -->
+              <div class="mb-3">
+                <label for="book_content" class="form-label"><strong>도서 내용 파일:</strong></label>
+                <input type="file" name="book_content" class="form-control">
+              </div>
 
+              <!-- 버튼들 -->
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-orange-400 me-2">새 도서 등록하기</button>
+              </div>
+            </form>
           </div>
-
-          <div class="row mb-3">
-            <div class="col-auto d-flex align-items-center">
-              <label for="book_content" class="form-label my-auto"><strong>도서 내용 파일:</strong></label>
-            </div>
-            <div class="col-auto">
-              <input type="file" name="book_content" class="form-control">
-            </div>
+          <div class="col-auto d-flex align-items-end">
+            <form method="post" action="{% url 'manager:book_delete' %}">
+              {% csrf_token %}
+              <input type="hidden" name="book_isbn" value="{{isbn}}">
+              <button type="submit" class="btn btn-danger">도서 삭제하기</button>
+            </form>
           </div>
-
-          <!-- 등록 버튼 -->
-          <div class="text-end">
-            <button type="submit" class="btn btn-orange-400">새 도서 등록하기</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
