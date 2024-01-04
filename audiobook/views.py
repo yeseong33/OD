@@ -31,6 +31,7 @@ from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from config.context_processors import get_file_path
 
 load_dotenv()
 
@@ -74,13 +75,6 @@ class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main.html'
 
-    # 데이터 저장 위치를 .env의 FILE_SAVE_POINT에 따라 결정
-    def get_file_path(self):
-        if FILE_SAVE_POINT == 'local':
-            return MEDIA_URL
-        else:
-            return AWS_S3_CUSTOM_DOMAIN
-
     def get(self, request):
         # 이달의 TOP 10 책
         top_books = Book.objects.all().order_by('-book_likes')[:10]
@@ -104,7 +98,6 @@ class MainView(APIView):
             'user_history_book': user_history_book,
             'top_voices': top_voices,
             'user': request.user,
-            'file_path': self.get_file_path(),
         }
 
         return Response(context)
@@ -114,42 +107,19 @@ class MainSearchView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_search.html'
 
-    def get_file_path(self):
-        if FILE_SAVE_POINT == 'local':
-            return MEDIA_URL
-        else:
-            return AWS_S3_CUSTOM_DOMAIN
-
     def get(self, request):
         query = request.query_params.get('query', '')
         book_list = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query))
 
-        file_path = self.get_file_path()
-        for book in book_list:
-            book.book_image_path = f"{file_path}{book.book_image_path}"
-
-        context = {
-            'book_list': book_list,
-            'file_path': file_path
-        }
-
-        return Response(context)
+        return Response({'book_list': book_list})
 
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_genre.html'
 
-    def get_file_path(self):
-        if FILE_SAVE_POINT == 'local':
-            return MEDIA_URL
-        else:
-            return AWS_S3_CUSTOM_DOMAIN
-
     def get(self, request):
-        file_path = self.get_file_path()
-
         categories = {
             '소설': Book.objects.filter(book_genre='novel').order_by('-book_likes')[:10],
             '인문': Book.objects.filter(book_genre='humanities').order_by('-book_likes')[:10],
@@ -158,13 +128,8 @@ class MainGenreView(APIView):
             '아동': Book.objects.filter(book_genre='children').order_by('-book_likes')[:10],
             '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
         }
-
-        context = {
-            'file_path': file_path,
-            'categories': categories,
-        }
-
-        return Response(context)
+        
+        return Response({'categories': categories })
 
 # RvcTrain
 
@@ -527,14 +492,7 @@ class ContentHTML(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/content.html'
 
-    def get_file_path(self):
-        if FILE_SAVE_POINT == 'local':
-            return MEDIA_URL
-        else:
-            return AWS_S3_CUSTOM_DOMAIN
-
     def get(self, request, book_id):
-        file_path = self.get_file_path()
         book = get_object_or_404(Book, pk=book_id)
         if request.user.is_authenticated:
             print('로그인')
@@ -550,7 +508,6 @@ class ContentHTML(APIView):
         context = {
             'result': True,
             'book': book,
-            'file_path': file_path,
             'user_book_history': user_book_history,
             'user': user,
         }

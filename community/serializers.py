@@ -1,8 +1,7 @@
 import os
 from contextlib import nullcontext
-
 from rest_framework import serializers
-
+from django.urls import reverse
 from audiobook.models import Book
 from .models import Post, User, Comment, Inquiry
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
@@ -112,7 +111,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class InquirySerializer(serializers.ModelSerializer):
+    detail_url = serializers.SerializerMethodField()  # get_detail_url() 의 return 
     inquiry_created_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    inquiry_answered_date= serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    
     class Meta:
         model = Inquiry
         fields = '__all__'
+        
+    def get_detail_url(self, obj):
+        return reverse('manager:inquiry_detail', kwargs={'inquiry_id': obj.inquiry_id})

@@ -31,6 +31,6 @@ urlpatterns = [
          name='api_subscription_count'),
 
     # FAQ
-    path('faq/', views.faq, name='faq'),
+    path('faq/', views.FAQView.as_view(), name='faq'),
 
 ]

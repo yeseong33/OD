@@ -36,12 +36,6 @@ import requests
 import matplotlib
 matplotlib.use('Agg')
 
-# Django 관련 임포트
-
-# Django REST framework 관련 임포트
-
-# 로컬 애플리케이션/모델 관련 임포트
-
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -514,6 +508,24 @@ class SubscriptionCountAPI(APIView):
 
 # FAQ 관리
 
+class FAQView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq.html'
 
+    def get(self, request):
+        if not request.user.is_admin:
+            return redirect('audiobook:main')
+
+        return Response()
+
+<<<<<<< HEAD
 def faq(request):
     return Response({'message': 'Good'})
+=======
+
+
+# 개인정보처리
+
+def privacy_policy(request):
+    return render(request, 'manager/privacy_policy.html')
+>>>>>>> origin/feature/admin-total
