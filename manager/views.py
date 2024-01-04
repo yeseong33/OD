@@ -253,7 +253,6 @@ def book_view(request):
                         django_file = File(new_image_file)
                         # 모델의 이미지 필드에 File 객체를 할당
                         current_filename = os.path.basename(book_image_path.name)
-                        print(current_filename)
                         book_image_path.save(current_filename, django_file, save=True)
 
 
@@ -276,9 +275,6 @@ def book_view(request):
             
                 # S3 버킷 내 기존 이미지 파일 경로
                 existing_image_path = str(book_image_path)
-                print("덮어쓰기",existing_image_path)
-                print("new", new_image_path)
-                print(type(existing_image_path))
                 try:
                     # 새 이미지 파일을 S3 버킷으로 업로드
                     s3.upload_file(new_image_path, bucket_name, existing_image_path)
