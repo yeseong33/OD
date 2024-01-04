@@ -17,12 +17,12 @@ urlpatterns = [
     path('main/genre/', views.MainGenreView.as_view(), name='main_genre'),
 
     # 청취
-    path('content/<int:book_id>', views.Content.as_view(), name='content'),
+    path('content/<int:book_id>', views.ContentHTML.as_view(), name='content'),
     path('content/play/<int:book_id>',
-         views.ContentPlay.as_view(), name='content_play'),
+         views.ContentPlayHTML.as_view(), name='content_play'),
 
     # 성우
-    path('voice/custom/', views.voice_custom, name='voice_custom'),
+    path('voice/custom/', views.VoiceCustomHTML.as_view(), name='voice_custom'),
     path('voice/celebrity/', views.voice_celebrity, name='voice_celebrity'),
     path('voice/custom/upload/', views.voice_custom_upload,
          name='voice_custom_upload'),
