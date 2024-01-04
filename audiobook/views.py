@@ -509,6 +509,7 @@ class Content(APIView):
 
     def get(self, request, book_id):
         file_path = self.get_file_path()
+        voice_name = request.GET.get("voice_name")
 
         try:
             book = Book.objects.get(pk=book_id)
@@ -518,7 +519,8 @@ class Content(APIView):
         context = {
             'result': True,
             'book': book,
-            'file_path': file_path
+            'file_path': file_path,
+            'voice_name': voice_name
         }
         return Response(context, template_name=self.template_name)
 
@@ -539,8 +541,29 @@ class ContentPlay(APIView):
         return Response(context, template_name=self.template_name)
 
 # 성우
-def voice_custom(request):
-    return render(request, 'audiobook/voice_custom.html')
+class voice_custom(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_custom.html'
+    
+    def get(self, request, book_id):
+        user_id = request.user.user_id
+        print("user_id is",user_id)
+        print("book id is",book_id)
+
+        # Voice 모델에서 voice_name 값이 일치하는 객체 찾기
+        try:
+            voices_with_user_id = Voice.objects.filter(user_id=user_id)
+            voices_without_user_id = Voice.objects.exclude(user_id=user_id)
+            voice_names1 = [voice.voice_name for voice in voices_with_user_id]
+            voice_names2 = [voice.voice_name for voice in voices_without_user_id]
+            context ={
+                'voice_names1': voice_names1,
+                'voice_names2': voice_names2,
+                'book_id': book_id
+            }
+            return Response(context, template_name=self.template_name)
+        except :
+            return Response(status=404,template_name=self.template_name)
 
 def voice_celebrity(request):
     pass
@@ -596,19 +619,3 @@ class Voice_Custom_Search(View):
             return JsonResponse({'check': 'True'})
         except Voice.DoesNotExist:
             return JsonResponse({'check': 'False'})
-
-#내거랑 아닌거 나누기
-class Voice_Custom_My(View):
-    def get(self, request):
-        user_id = request.user.user_id
-        print("user_id is",user_id)
-
-        # Voice 모델에서 voice_name 값이 일치하는 객체 찾기
-        try:
-            voices_with_user_id = Voice.objects.filter(user_id=user_id)
-            voices_without_user_id = Voice.objects.exclude(user_id=user_id)
-            voice_names1 = [voice.voice_name for voice in voices_with_user_id]
-            voice_names2 = [voice.voice_name for voice in voices_without_user_id]
-            return JsonResponse({'voice_names1': voice_names1, 'voice_names2': voice_names2})
-        except :
-            return JsonResponse({'check': 'error'})

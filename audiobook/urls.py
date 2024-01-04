@@ -21,13 +21,12 @@ urlpatterns = [
      path('content/play/<int:book_id>', views.ContentPlay.as_view(), name='content_play'),
 
      # 성우
-     path('voice/custom/', views.voice_custom, name='voice_custom'),
+     path('voice/custom/<int:book_id>', views.voice_custom.as_view(), name='voice_custom'),
      path('voice/celebrity/', views.voice_celebrity, name='voice_celebrity'),
      path('voice/custom/upload/', views.voice_custom_upload,name='voice_custom_upload'),
      path('voice/custom/complete/', views.voice_custom_complete,name='voice_custom_complete'),
      path('voice/custom/complete/upload', views.voice_custom_upload_post, name='voice_custom_upload_post'),
      path('voice/custom/search/',views.Voice_Custom_Search.as_view(),name='voice_custom_search'),
-     path('voice/custom/my/',views.Voice_Custom_My.as_view(),name='voice_custom_my'),
 
      # 개인정보처리
      path('privacy_policy/', views.privacy_policy, name='privacy_policy'),

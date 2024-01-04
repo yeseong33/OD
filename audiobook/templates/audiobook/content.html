@@ -46,7 +46,7 @@
                 <h3>현재 선택 성우</h3>
             </div>
             <div class="row mb-5">
-                <img id="voice_img" src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid rounded" style="cursor:pointer;">
+                <img id="voice_img" alt="성우 사진" class="img-fluid rounded" style="cursor:pointer;">
             </div>
             <div class="row">
                 <div class="col-auto">
@@ -56,7 +56,7 @@
                 </div>
         
                 <div class="col-auto">
-                    <p>샘플 듣기</p>
+                    <button onclick="playMusic()">샘플 듣기</button>
                 </div>
             </div>
         
@@ -69,31 +69,31 @@
 
 {% block script %}
     <script>
-        var isPlaying = false; // 소리가 현재 재생 중인지 여부를 나타내는 변수
-
         document.getElementById('listen').addEventListener('click', function() {
             window.location.href = "{% url 'audiobook:content_play' book_id=book.book_id %}"
         }); 
 
         document.getElementById('voice_img').addEventListener('click', function() {
-            window.location.href = "{% url 'audiobook:voice_custom' %}"
+            window.location.href = "{% url 'audiobook:voice_custom' book_id=book.book_id %}"
         }); 
 
-        document.getElementById('sampleBtn').addEventListener('click', function() {
-            playSample();
-        });
+        var imageElement = document.getElementById('voice_img');
+        imageElement.src = '\\media\\voice_images\\{{voice_name}}.jpg';
+        var audio;
+        audio = new Audio('\\media\\voice_sample\\{{voice_name}}.mp3');
+        console.log(audio)
 
-        function playSample() {
-            var audioPlayer = document.getElementById('audioPlayer');
-            if (!isPlaying) {
-                audioPlayer.play();
-                isPlaying = true;
+        function playMusic() {
+            // 오디오 재생 전에 로드 상태를 확인합니다.
+            if (audio.readyState >= 2) {
+              audio.play();
             } else {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                isPlaying = false;
+              // 오디오가 로드되지 않았다면, 로드를 시도합니다.
+              audio.load();
+              audio.play();
+              console.log("came in")
             }
-        }
+          }
 
     </script>
 {% endblock %}
