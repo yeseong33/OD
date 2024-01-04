@@ -81,14 +81,14 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all()
-        
+
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
             books = books.filter(book_title__icontains=search_term)
-            
+
         # 페이지네이터 설정
-        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
+        paginator = Paginator(books, 12)  # 페이지당 12개의 아이템
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -128,7 +128,6 @@ class BookShareContentHtml(APIView):
             'page_obj': page_obj,
         }
 
-        print(serialized_json)
         return Response(context, template_name=self.template_name)
 
 
@@ -137,9 +136,6 @@ class BookShareContentPostHtml(APIView):
     template_name = 'community/book_share_content_post.html'
 
     def get(self, request):
-        return Response(template_name=self.template_name)
-
-    def post(self, request):
         return Response(template_name=self.template_name)
 
 
@@ -170,6 +166,8 @@ class BookShareContentPostDetailHtml(APIView):
             'comments': comment_serializer.data,
             'user_id': request.user.user_id,
         }
+
+        print(comments)
         return Response(context, template_name=self.template_name)
 
 
@@ -229,13 +227,15 @@ class PostList(APIView):
         return Response({"books": serializer.data})
 
     def post(self, request):
-        print('pas')
         user_id = request.user.user_id
         book_id = request.data['book_id']
         context = {
             'book_id': book_id,
             'user_id': user_id
         }
+        print(user_id)
+        print(book_id)
+
         serializer = PostSerializer(data=request.data, context=context)
         if serializer.is_valid():
             serializer.save()
@@ -295,7 +295,7 @@ class CommentList(APIView):
     def post(self, request):
         comment_serializer = CommentSerializer(data=request.data, context={
             'post_id': request.data['post'],
-            'user_id': request.user.user_id,})
+            'user_id': request.user.user_id, })
         if comment_serializer.is_valid():
             comment = comment_serializer.save()
             post_id = comment.post.post_id
@@ -331,7 +331,8 @@ class CommentDetail(APIView):
         comment = get_object_or_404(Comment, pk=pk)
         post_id = comment.post.post_id
         comment.delete()
-        redirect_url = reverse('community:book_share_content_post_detail', kwargs={'pk': post_id})    
+        redirect_url = reverse(
+            'community:book_share_content_post_detail', kwargs={'pk': post_id})
         return Response({'result': True, 'redirect_url': redirect_url})
 
 
@@ -555,7 +556,9 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
 # 개인정보처리
+
+
 def privacy_policy(request):
     return render(request, 'community/privacy_policy.html')

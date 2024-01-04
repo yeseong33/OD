@@ -42,10 +42,35 @@
     .search-bar-container button:hover {
         background-color: #FFA01E;
     }
+
+    .search-results {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 120px; /* 검색바의 높이와 위치에 따라 조절 */
+        right: 95px;
+        width: 230px; /* 검색바의 너비와 일치 */
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000; /* 다른 요소들 위에 표시 */
+    }
+
+    .search-results li {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .search-results li:hover {
+        background-color: #f0f0f0;
+    }
     /* ... 기존 CSS 스타일 ... */
     .cover-selection,
     .cover-selection + .button-group {
-        display: none;  /* 초기 상태를 숨김으로 설정합니다. */
+        display: none; /* 초기 상태를 숨김으로 설정합니다. */
     }
     .cover-creation-section {
         display: flex;
@@ -162,6 +187,9 @@
             <div class="search-bar-container">
                 <input type="text" placeholder="검색...">
                 <button>📙</button>
+                <ul id="searchResults" class="search-results" style="display: none;">
+                    <!-- 검색 결과가 여기에 나타납니다 -->
+                </ul>
             </div>
             <h2>표지 변경 옵션</h2>
 
@@ -396,7 +424,8 @@
     // 검색 처리 로직 
     document.querySelector('.search-bar-container button').addEventListener('click', function() {
         const searchText = document.querySelector('.search-bar-container input[type="text"]').value;
-    
+        const searchResults = document.getElementById('searchResults');
+        searchResults.style.display = 'none';
         // AJAX 요청 전 이미지를 ready.png로 변경합니다.
         document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
     
@@ -424,6 +453,54 @@
             alert('책 제목을 다시 입력해주세요');
             document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
         });
+    });
+    document.querySelector('.search-bar-container input[type="text"]').addEventListener('input', function() {
+        const searchText = this.value;
+    
+        fetch('', {  // 적절한 URL로 변경하세요
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                request_type: 'search',
+                search_query: searchText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';  // 이전 검색 결과를 지웁니다
+            searchResults.style.display = 'block';  // 목록을 표시합니다
+    
+            data.books.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.textContent = book.title;
+                searchResults.appendChild(listItem);
+            });
+    
+            if (data.books.length === 0) {
+                searchResults.innerHTML = '<li>검색 결과가 없습니다.</li>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    function setupSearchResultClickListener() {
+        const searchResults = document.getElementById('searchResults');
+        searchResults.addEventListener('click', function(event) {
+            const clickedItem = event.target;
+            if (clickedItem.tagName === 'LI') {
+                const searchBar = document.querySelector('.search-bar-container input[type="text"]');
+                searchBar.value = clickedItem.textContent.trim();
+            }
+        });
+    }
+    
+    // 페이지 로드 시 검색 결과 클릭 이벤트 리스너를 설정합니다.
+    document.addEventListener('DOMContentLoaded', function() {
+        setupSearchResultClickListener();
     });
 
 </script>

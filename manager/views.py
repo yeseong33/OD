@@ -23,12 +23,20 @@ from dotenv import load_dotenv
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-
-from community.models import BookRequest, UserRequestBook
+from community.models import BookRequest, UserRequestBook, Inquiry
 from audiobook.models import Book
 from user.models import Subscription
-from .serializers import BookSerializer
+from .serializers import BookSerializer, InquirySerializer
 from community.views import send_async_mail
+import datetime
+from datetime import datetime as dt
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+from rest_framework import status
+from .forms import InquiryResponseForm
+from django.http import JsonResponse
+
+
 
 load_dotenv()  # 환경 변수를 로드함
 
@@ -45,10 +53,6 @@ def book_view(request):
 
     OPENAI_API_KEY = os.getenv('OPENAI_API')
 
-    # 일단 바로 정의했는데, DB에 있는 데이터를 가져오도록 수정해야할듯.
-    # book_title = '노인과 바다'
-    # book_description = '주인공 산티아고 노인은 쿠바 섬 해변의 오두막집에서 혼자 사는 홀아비 어부이다. 고독한 처지이지만 고기잡이를 배우고자 그를 잘 따르는 마놀린이라는 소년이 이웃에 살고 있다. 소년은 노인에게 유일한 말동무이자 친구이자 생의 반려자가 되어 주고 가끔 음식도 갖다 준다.'
-
     MAX_RETRIES = 3  # 오류 뜰 경우 재시도 횟수
 
     if request.method == 'POST':
@@ -61,36 +65,39 @@ def book_view(request):
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-                global book_title, book_description
 
+                global book_title, book_description, book_id
                 book_title = book.book_title
                 book_description = book.book_description
+                book_id = book.book_isbn
 
-                # 임시 수요 데이터 입력
-                data = {
-                    '1': 60,
-                    '2': 60,
-                    '3': 60,
-                    '4': 60,
-                    '5': 60,
-                    '6': 10,
-                    '7': 10,
-                    '8': 10,
-                    '9': 60,
-                    '10': 10,
-                    '11': 50,
-                    '12': 10
-                }
-                json_data = json.dumps(data)
-                book.book_view_count = json_data
-                # 변경 사항 저장
-                book.save()
+                # book_view_count 데이터 확인
+                if book.book_view_count:
+                    # JSON 문자열을 파이썬 딕셔너리로 변환
+                    monthly_views = json.loads(book.book_view_count)
+                else:
+                    # 임시 수요 데이터 입력
+                    monthly_views = {
+                        '1': 60,
+                        '2': 60,
+                        '3': 60,
+                        '4': 60,
+                        '5': 60,
+                        '6': 10,
+                        '7': 10,
+                        '8': 10,
+                        '9': 60,
+                        '10': 10,
+                        '11': 50,
+                        '12': 10
+                    }
+                    book.book_view_count = json.dumps(monthly_views)
+                    book.save()
+
             except Book.DoesNotExist:
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
 
-            # JSON 문자열을 파이썬 딕셔너리로 변환
-            monthly_views = json.loads(book.book_view_count)
             months = list(range(1, 13))
             views = [monthly_views.get(str(month), 0) for month in months]
 
@@ -110,6 +117,20 @@ def book_view(request):
             plt.savefig(file_path)
             plt.close()  # 리소스 해제
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
+
+        elif request_type == 'search':
+            data = json.loads(request.body)
+            search_query = data.get('search_query', '').strip()
+
+            if search_query:
+                # 책 제목이 검색 쿼리를 포함하는 모든 책을 검색
+                books = Book.objects.filter(book_title__icontains=search_query)
+                results = [{'title': book.book_title} for book in books]
+                # print(results)
+                return JsonResponse({'books': results}, safe=False)
+
+            return JsonResponse({'books': []})
+
         elif request_type == 'create_cover':
 
             try:
@@ -179,7 +200,7 @@ def book_view(request):
 
             # 기존 이미지 경로 설정
             existing_image_path = os.path.join(
-                'static', 'images', 'origin_image.png')
+                'C:\\', 'S3_bucket', 'book_images', f'{book_id}_image.jpg')
 
             # 기존 이미지를 새 이미지로 교체
             if os.path.exists(new_image_path):
@@ -196,8 +217,8 @@ def book_view(request):
 def cover_complete(request):
     return render(request, 'manager/book_complete.html')
 
-# 도서 신청 확인
 
+# 도서 신청 확인
 
 def get_book_details_from_naver(isbn):
 
@@ -294,9 +315,6 @@ class BookRegisterCompleteView(APIView):
         if not request.user.is_admin:
             return redirect('audiobook:main')
 
-        print('request 디버깅')
-        print(request.data)
-
         # ISBN으로 이미 존재하는 책을 확인
         book_isbn = request.POST.get('book_isbn')
 
@@ -312,17 +330,9 @@ class BookRegisterCompleteView(APIView):
             # 책이 존재하지 않으면 처리를 계속
             pass
 
-        # 권한 확인
-        if request.user.is_admin == False:
-            print("You are not admin.")
-            return Response({
-                'status': 'error',
-                'message': 'You are not admin.'
-            }, status=403)
-
         # Naver API를 호출하여 책의 상세 정보를 가져옴
         book_details = get_book_details_from_naver(book_isbn)
-        print(book_details)
+        # print(book_details)
         if book_details is None:
             print("There is no book details.")
             return Response({
@@ -415,17 +425,60 @@ class BookRegisterCompleteView(APIView):
 
 # 문의 답변
 
-def inquiry(request):
-    return Response({'message': 'Good'})
+def inquiry_list(request):  # 문의글 목록 페이지
+    return render(request, 'manager/inquiry_list.html')
+
+def inquiry_detail(request, inquiry_id):
+    inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
+    
+    if request.method == 'POST':
+        form = InquiryResponseForm(request.POST)
+        if form.is_valid():
+            inquiry.inquiry_response = form.cleaned_data['response']
+            inquiry.inquiry_is_answered = True
+            inquiry.inquiry_answered_date = timezone.now()
+            inquiry.save()
+            
+            serializer = InquirySerializer(inquiry)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+
+    else:
+        form = InquiryResponseForm()
+
+    return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
+
+class InquiryListAPI(APIView):
+    def get(self, request, *args, **kwargs):
+        show_answered = request.query_params.get('show_answered', 'all')
+        if show_answered == 'answered':
+            inquiries = Inquiry.objects.filter(inquiry_is_answered=True)
+        elif show_answered == 'not_answered':
+            inquiries = Inquiry.objects.filter(inquiry_is_answered=False)
+        else:
+            inquiries = Inquiry.objects.all()
+
+        # 여러 인스턴스 직렬화
+        serializer = InquirySerializer(inquiries, many=True)
+        return Response(serializer.data)
+
+class InquiryDetailAPI(APIView):
+    def get(self, request, inquiry_id, format=None):
+        inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
+        serializer = InquirySerializer(inquiry)
+        return Response(serializer.data)
 
 
 # 구독 및 수익 관리
 
 def show_subscription(request):
+    if not request.user.is_admin:
+            return redirect('audiobook:main')
+        
     return render(request, 'manager/subscription.html')
-
-
-class SubscriptionCountAPIView(APIView):
+    
+class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
         dates = [today - relativedelta(months=n) for n in range(11, -1, -1)]
@@ -437,7 +490,7 @@ class SubscriptionCountAPIView(APIView):
         for date_point in dates:
             # 날짜를 'aware' datetime 객체로 변환
             aware_date_point = timezone.make_aware(
-                datetime.combine(date_point, datetime.min.time()))
+                dt.combine(date_point, dt.min.time()))
 
             count = Subscription.objects.filter(
                 sub_start_date__lte=aware_date_point,
@@ -445,7 +498,7 @@ class SubscriptionCountAPIView(APIView):
             ).count()
             data['dates'].append(aware_date_point.strftime('%Y-%m'))
             data['counts'].append(count)
-        print(data)
+        # print(data)
 
         return Response(data)
 
