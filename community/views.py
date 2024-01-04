@@ -38,6 +38,7 @@ from user.models import User
 from .models import BookRequest, Post, UserRequestBook
 from manager.models import FAQ
 from .serializers import *
+from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from manager.serializers import FAQSerializer
 
@@ -103,6 +104,7 @@ class BookShareHtml(APIView):
         }
 
         return Response(context, template_name=self.template_name)
+
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookShareContentHtml(APIView):
@@ -396,6 +398,7 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
         subject, message,  from_email=from_email, to=recipient_list)
     EmailThread(email).start()
 
+
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
 class BookCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -444,6 +447,8 @@ class BookCompleteView(APIView):
             return Response(context)
 
 # 1:1 문의
+
+
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
 class InquiryPostHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -616,9 +621,3 @@ class FAQDetail(APIView):
         faq = self.get_object(pk)
         faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# 개인정보처리
-
-
-def privacy_policy(request):
-    return render(request, 'community/privacy_policy.html')
