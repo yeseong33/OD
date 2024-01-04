@@ -100,7 +100,7 @@ class MainView(APIView):
             'user': request.user,
         }
 
-        return Response(context)
+        return Response(context, template_name=self.template_name)
 
 
 class MainSearchView(APIView):
@@ -128,8 +128,8 @@ class MainGenreView(APIView):
             '아동': Book.objects.filter(book_genre='children').order_by('-book_likes')[:10],
             '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
         }
-        
-        return Response({'categories': categories })
+
+        return Response({'categories': categories})
 
 # RvcTrain
 
