@@ -23,7 +23,7 @@
         <div class="col-6">            
             <div id="graphImageWrapper" class="local-image-section">
                 <!-- Place your image tag here -->
-                <img id="graphImage" src="{% static 'images/ready.gif' %}" alt="Ready Image" style ="height:500px";>
+                <img id="graphImage" class="img-fluid" src="{% static 'images/ready.gif' %}" alt="Ready Image" style ="height:500px";>
             </div>
         </div>
         
@@ -39,7 +39,7 @@
                         </div>
                         <!-- 버튼 열 -->
                         <div class="col-auto">
-                            <button class="btn btn-outline-orange-400">검색</button>
+                            <button id="bookSearchBtn" class="btn btn-outline-orange-400">검색</button>
                         </div>
                     </div>
                     <ul id="searchResults" class="search-results mt-2" style="display: none;">
@@ -47,25 +47,36 @@
                     </ul>
                 </div>
 
-                <!-- 표지 변경 옵션 -->
-                <h2 class="fw-bold">표지 변경 옵션</h2>
+                <!-- 표지 스타일 -->
+                <h2 class="fw-bold">표지 스타일</h2>
                 <div class="button-group d-flex justify-content-center mb-3">
-                    <!-- Bootstrap 버튼 스타일 적용 -->
-                    <button class="btn btn-outline-orange-400 mx-1">디즈니</button>
-                    <button class="btn btn-outline-orange-400 mx-1">지브리</button>
-                    <button class="btn btn-outline-orange-400 mx-1">마블</button>
+                    <!-- 체크박스 및 라벨을 사용한 토글 버튼 -->
+                    <input type="radio" class="btn-check" id="style-disney" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-disney">디즈니</label>
+                
+                    <input type="radio" class="btn-check" id="style-ghibli" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-ghibli">지브리</label>
+                
+                    <input type="radio" class="btn-check" id="style-marvel" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-marvel">마블</label>
                 </div>
                 <div class="button-group d-flex justify-content-center mb-3">
-                    <button class="btn btn-outline-orange-400 mx-1">카툰</button>
-                    <button class="btn btn-outline-orange-400 mx-1">컬러풀</button>
-                    <button class="btn btn-outline-orange-400 mx-1">드로잉</button>
+                    <input type="radio" class="btn-check" id="style-cartoon" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-cartoon">카툰</label>
+                
+                    <input type="radio" class="btn-check" id="style-colorful" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-colorful">컬러풀</label>
+                
+                    <input type="radio" class="btn-check" id="style-drawing" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-drawing">드로잉</label>
                 </div>
                 <div class="button-group d-flex justify-content-center mb-3">
-                    <button id="createCoverBtn" class="btn btn-orange-400">#표지 생성하기</button>
+                    <button id="createCoverBtn" class="btn btn-orange-400">표지 생성하기</button>
                 </div>
                 
                 <!-- 표지 선택하기 -->
-                <div class="cover-selection mb-4">
+                <h2 class="fw-bold">표지 선택하기</h2>
+                <div class="cover-selection mb-3">
                     <div class="row">
                         <!-- Bootstrap 5 그리드 시스템과 이미지 클래스 적용 -->
                         <div class="col">
@@ -119,7 +130,7 @@
     document.querySelector('#bookSearchInput').addEventListener('input', function() {
         const searchText = this.value;
     
-        fetch('/book/view/', {
+        fetch('', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -134,15 +145,20 @@
             const searchResults = document.getElementById('searchResults');
             searchResults.innerHTML = '';  // 이전 검색 결과를 지웁니다
             searchResults.style.display = 'block';  // 목록을 표시합니다
+            searchResults.classList.add('list-group'); // Bootstrap 리스트 그룹 클래스 추가
     
             data.books.forEach(book => {
                 const listItem = document.createElement('li');
                 listItem.textContent = book.title;
+                listItem.classList.add('list-group-item'); // Bootstrap 리스트 아이템 클래스 추가
                 searchResults.appendChild(listItem);
             });
     
             if (data.books.length === 0) {
-                searchResults.innerHTML = '<li>검색 결과가 없습니다.</li>';
+                const emptyItem = document.createElement('li');
+                emptyItem.textContent = '검색 결과가 없습니다.';
+                emptyItem.classList.add('list-group-item');
+                searchResults.appendChild(emptyItem);
             }
         })
         .catch(error => {
@@ -150,15 +166,31 @@
         });
     });
 
-    // 검색 처리 로직 
-    document.querySelector('.search-bar-container button').addEventListener('click', function() {
-        const searchText = document.querySelector('.search-bar-container input[type="text"]').value;
+    function setupSearchResultClickListener() {
+        const searchResults = document.getElementById('searchResults');
+        searchResults.addEventListener('click', function(event) {
+            const clickedItem = event.target;
+            if (clickedItem.tagName === 'LI') {
+                const searchBar = document.querySelector('#bookSearchInput');
+                searchBar.value = clickedItem.textContent.trim();
+            }
+        });
+    }
+    
+    // 페이지 로드 시 검색 결과 클릭 이벤트 리스너
+    document.addEventListener('DOMContentLoaded', function() {
+        setupSearchResultClickListener();
+    });
+
+    // 도서 검색 후 이미지 생성
+    document.querySelector('#bookSearchBtn').addEventListener('click', function() {
+        const searchText = document.querySelector('#bookSearchInput').value;
         const searchResults = document.getElementById('searchResults');
         searchResults.style.display = 'none';
-        // AJAX 요청 전 이미지를 ready.png로 변경합니다.
+        // AJAX 요청 전 이미지를 ready.png로 변경
         document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
     
-        fetch('/book/view/', { // Django 뷰 경로로 수정하세요
+        fetch('', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -184,7 +216,7 @@
         });
     });
    
-
+    // 표지 생성하기 버튼 클릭 이벤트
     // CSRF 토큰을 가져오는 함수
     function getCookie(name) {
         let cookieValue = null;
@@ -200,8 +232,7 @@
         }
         return cookieValue;
     }
-
-    // 표지 생성하기 버튼 클릭 이벤트 핸들러
+    
     document.getElementById('createCoverBtn').addEventListener('click', function() {
         showLoadingIndicator();
         const selectedStyleButton = document.querySelector('.button-group .cover-button.clicked');
@@ -292,22 +323,6 @@
         const selectedButton = document.querySelector(`.cover-selection .image-button:nth-child(${imageNumber})`);
         selectedButton.classList.add('clicked'); // 선택된 버튼에 'clicked' 클래스 추가
     }
-
-    function setupSearchResultClickListener() {
-        const searchResults = document.getElementById('searchResults');
-        searchResults.addEventListener('click', function(event) {
-            const clickedItem = event.target;
-            if (clickedItem.tagName === 'LI') {
-                const searchBar = document.querySelector('.search-bar-container input[type="text"]');
-                searchBar.value = clickedItem.textContent.trim();
-            }
-        });
-    }
-    
-    // 페이지 로드 시 검색 결과 클릭 이벤트 리스너를 설정합니다.
-    document.addEventListener('DOMContentLoaded', function() {
-        setupSearchResultClickListener();
-    });
 
 </script>
 {% endblock %}
