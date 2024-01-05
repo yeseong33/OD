@@ -1,7 +1,6 @@
 {% extends 'manager/template.html' %}
 {% load static %}
-
-{% block content %}
+{% block style %}
 <style>
     .search-bar-container {
         position: absolute;
@@ -84,9 +83,10 @@
         text-align: center; /* 모든 내용을 가운데 정렬합니다. */
         margin: 10px;
         padding: 60px;
-        background-color: #FFFFF
+        background-color: #FFFFFF;
         height: 600px;
     }
+
     .button-group .cover-button {
         padding: 5px 10px;
         border: none;
@@ -173,8 +173,14 @@
         transform: translate(-50%, -50%);
         z-index: 1000; /* 화면의 다른 요소들 위에 표시되도록 z-index 설정 */
     }
-
 </style>
+{% endblock %}
+
+
+{% block content %}
+<div class="row my-5">
+    <h1 class="menu-font">책 수요 변화</h1>
+</div>
 
 <div id="loadingIndicator" class="loading-indicator" style="display: none;">
     <img src="{% static 'images/loading.gif' %}" alt="Loading..." />
