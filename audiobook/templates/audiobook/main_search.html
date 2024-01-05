@@ -2,40 +2,38 @@
 {% load static %}
 
 {% block content %}
-  <link rel="stylesheet" href="/static/css/bottomContainer.css">
-  <link rel="stylesheet" href="/static/css/scrollContainer.css">
-  
-  <style> /* 상단 네비게이터와의 여백을 20px로 수정 */
-    .scrolling-wrapper h2 {
-      margin-bottom: 40px;
-    }
-  </style>
-  
-  <div class="scrolling-wrapper">
-    <h2>이용 가능한 도서 검색 결과</h2>
-    <button class="scroll-left-button">‹</button>
-    <div class="scrolling-container">
-        {% for book in book_list %}
-        <div class="book-card">
-          <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
-            <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
-          </a>
-          <div class="book-info">
-            <h5>{{ book.book_title }}</h5>
-            <p>저자: {{ book.book_author }}</p>
-          </div>
-        </div>
-        {% endfor %}
-    </div>
-    <button class="scroll-right-button">›</button>
-  </div>
+<link rel="stylesheet" href="{% static 'css/mainContainer.css' %}">
 
-  <div class="bottom-container">
-    <p>찾고 계시는 도서가 없으세요? 신규 도서 신청을 해보세요.</p>
-    <a href="{% url 'community:book_search' %}">신규 도서 신청하기</a>
-  </div>  
+<div class="scrolling-wrapper">
+  <h2>이용 가능한 도서 검색 결과</h2>
+  <div class="scrolling-container" id="bookContainer">
+      <!-- 초기 도서 목록은 서버에서 렌더링하여 여기에 삽입 -->
+      {% for book in book_list %}
+      <div class="book-card">
+        <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
+          <img class="book-img" src="{{file_path}}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+        </a>
+        <div class="book-info">
+          <h5>{{ book.book_title }}</h5>
+          <p>저자: {{ book.book_author }}</p>
+        </div>
+      </div>
+      {% endfor %} 
+  </div>
+  <div id="loading" style="display: none;">Loading more books...</div>
+  <!-- 페이지의 나머지 부분 -->
+</div>
+
+<div class="bottom-container">
+  <p>찾고 계시는 도서가 없으세요? 신규 도서 신청을 해보세요.</p>
+  <a href="{% url 'community:book_search' %}">신규 도서 신청하기</a>
+</div>
 {% endblock %}
 
 {% block script %}
-  <script src="/static/js/scrollContainer.js"></script>
+<script type="text/javascript">
+  var apiBookListUrl = "{% url 'audiobook:api_book_list' %}";
+  var file_path = "{{ file_path }}";
+</script>
+<script src="{% static 'js/infiniteScroll.js' %}"></script>
 {% endblock %}

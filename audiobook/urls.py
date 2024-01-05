@@ -13,7 +13,8 @@ urlpatterns = [
 
     # 메인화면
     path('main/', views.MainView.as_view(), name='main'),
-    path('main/search/', views.MainSearchView.as_view(), name='main_search'),
+    path('main/search/', views.main_search, name='main_search'),
+    path('api/book/list/', views.BookListAPI.as_view(), name='api_book_list'),
     path('main/genre/', views.MainGenreView.as_view(), name='main_genre'),
 
     # 청취
