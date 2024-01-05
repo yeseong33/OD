@@ -11,9 +11,9 @@
             <div class="scrolling-container">
                 {% for book in books %}
                 <div class="book-card">
-                <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
-                    <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
-                </a>
+                    <a href="{% url 'audiobook:content' book.book_id %}?voice_name=IU" >
+                        <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
+                    </a>
                 <div class="book-info">
                     <h5>{{ book.book_title }}</h5>
                     <p>저자: {{ book.book_author }}</p>

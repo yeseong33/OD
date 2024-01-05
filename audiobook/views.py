@@ -533,7 +533,11 @@ class ContentPlay(APIView):
             book = Book.objects.get(pk=book_id)
             voice_name = request.GET.get("voice_name")
             
-            '''
+            if FILE_SAVE_POINT == 'local':
+                model_path = f'C:\\S3_bucket\\voice_rvcs\\{voice_name}.pth'
+            else:
+                model_path = 0
+                
             config = dotenv_values(".env")
             hostname = config.get("RVC_IP")
             username = config.get("RVC_USER")
@@ -545,23 +549,22 @@ class ContentPlay(APIView):
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             # SSH 연결 (키 기반 인증)
             client.connect(hostname=hostname, username=username, key_filename=key_filename)
-            
+    
             try:
                 sftp = client.open_sftp()
-
-                # 전송할 파일의 경로
-                local_file_path = f'media/voice_rvcs/{voice_name}.pth'
+                
                 # 파일을 전송할 원격 경로
                 remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
                 # 파일 전송
-                sftp.put(local_file_path, remote_file_path)
+                sftp.put(model_path, remote_file_path)
 
                 # 연결 종료
                 sftp.close()
             except:
                 return Response(status=405, template_name=self.template_name)
 
+            '''
             # 셸 세션 열기
             shell = client.invoke_shell()
 
@@ -577,9 +580,9 @@ class ContentPlay(APIView):
                 except socket.timeout:
                     print("No data received before timeout")
                 return buffer
-            
-            client.close()
             '''
+            client.close()
+            
             
         except Book.DoesNotExist:
             print('book not exist.')
