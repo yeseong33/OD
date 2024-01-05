@@ -1,7 +1,7 @@
 {% extends 'manager/template.html' %}
 {% load static %}
 
-{% block title %}manager-FAQ{% endblock %}
+{% block title %}O :D - FAQ{% endblock %}
 {% block style %}
     <style>
     .custom-accordion {
@@ -16,24 +16,36 @@
 {% endblock %}
 
 {% block content %}
-    <!-- 여백 -->
-    <div class="row my-5"></div>
+    <div class="row my-5">
+        <h1 class="menu-font">FAQ</h1>
+    </div>
 
     <!-- FAQ -->
     <div class="row mb-3 justify-content-center">
         <div class="col-9 justify-content-center">
             <div class="accordion" id="accordionPanelsStayOpenExample">
                 {% for faq in faqs %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse-{{faq.faq_id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapse-{{faq.faq_id}}">
-                                {{faq.faq_title}}
-                            </button>
-                        </h2>
-                        <div id="panelsStayOpen-collapse-{{faq.faq_id}}" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                {{faq.faq_content|safe}}
+                    <div class="row mb-3 justify-content-center">
+                        <div class="col-10 justify-content-center">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse-{{faq.faq_id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapse-{{faq.faq_id}}">
+                                        {{faq.faq_title}}
+                                    </button>
+                                </h2>
+                                <div id="panelsStayOpen-collapse-{{faq.faq_id}}" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        {{faq.faq_content|safe}}
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                            <span id="delete-{{faq.faq_id}}" class="d-flex align-items-center justify-content-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FF0000" class="bi bi-x" viewBox="0 0 16 16" style="cursor: pointer;">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+                            </span>
                         </div>
                     </div>
                 {% endfor %}
@@ -41,8 +53,6 @@
         </div>
     </div>
     <div class="row my-5"></div>
-    <div class="row my-5"></div>
-
 
     <!-- 글쓰기 버튼 -->
     <div class="row">
@@ -53,12 +63,65 @@
 {% endblock %}
 
 {% block script %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
+        var deleteElements = document.querySelectorAll('[id^="delete-"]');
         // 글쓰기 버튼 클릭 시 이벤트 핸들러
         document.getElementById('postButton').addEventListener('click', function () {
             event.preventDefault();  // 폼 전송 기본 동작 막기
-            
             window.location.href = "{% url 'manager:faq_post' %}";
+        });
+
+        // 쿠키에서 CSRF 토큰을 가져오는 함수
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    return cookie.substring('csrftoken='.length, cookie.length);
+                }
+            }
+            return null;
+        }
+   
+        // 삭제 버튼 클릭 시 이벤트 핸들러
+        deleteElements.forEach(function(element) {
+            const elementIdParts = element.id.split('-');
+            const delete_id = elementIdParts[1];
+            // "댓글 삭제" 버튼에 대한 클릭 이벤트
+
+            element.addEventListener('click', function() {
+                event.preventDefault();  // 기본 동작 막기
+                const csrfToken = getCSRFToken();
+                // CSRF 토큰이 있는지 확인
+                if (!csrfToken) {
+                    console.error("CSRF 토큰을 찾을 수 없습니다.");
+                    return;
+                }
+
+                // DELETE 요청 보내기
+                fetch("{% url 'community:faq_detail' pk=0%}".replace("0", delete_id), {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json",
+                        // 헤더에 CSRF 토큰 포함
+                        "X-CSRFToken": csrfToken,
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    // 성공적으로 데이터를 받아온 경우 실행되는 로직
+                    window.location.href = "{% url 'manager:faq'%}";
+                })
+                .catch(error => {
+                    // 오류가 발생한 경우 처리
+                    console.error('오류 발생:', error);
+                });
+            });
         });
     </script>
 {% endblock %}

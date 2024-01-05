@@ -1,11 +1,18 @@
 {% extends 'audiobook/template.html' %}
 {% load static %}
 
-{% block title %}O: D{% endblock %}
+{% block title %}O :D{% endblock %}
 {% block style %}
 {% endblock %}
 
 {% block content %}
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                alert("{{ message }}");
+            {% endfor %}
+        </script>
+    {% endif %}
 
     <!-- 캐러셀 -->
     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
