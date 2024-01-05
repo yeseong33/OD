@@ -10,7 +10,7 @@
     <div class="scrolling-container">
         {% for book in top_books %}
         <div class="book-card">
-          <a href="{% url 'audiobook:content' book.book_id %}" target="_blank">
+          <a href="{% url 'audiobook:content' book.book_id %}?voice_name=IU" >
             <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
           </a>
           <div class="book-info">
