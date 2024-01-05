@@ -13,7 +13,8 @@ urlpatterns = [
 
     # 메인화면
     path('main/', views.MainView.as_view(), name='main'),
-    path('main/search/', views.MainSearchView.as_view(), name='main_search'),
+    path('main/search/', views.main_search, name='main_search'),
+    path('api/book/list/', views.BookListAPI.as_view(), name='api_book_list'),
     path('main/genre/', views.MainGenreView.as_view(), name='main_genre'),
 
     # 청취
@@ -21,16 +22,13 @@ urlpatterns = [
     path('content/play/<int:book_id>',
          views.ContentPlayHTML.as_view(), name='content_play'),
 
-    # 성우
-    path('voice/custom/', views.VoiceCustomHTML.as_view(), name='voice_custom'),
-    path('voice/celebrity/', views.VoiceCelebrityHTML.as_view(),
-         name='voice_celebrity'),
-    path('voice/custom/upload/', views.voice_custom_upload,
-         name='voice_custom_upload'),
-    path('voice/custom/complete/', views.voice_custom_complete,
-         name='voice_custom_complete'),
-    path('voice/custom/complete/upload', views.voice_custom_upload_post,
-         name='voice_custom_upload_post'),
+     # 성우
+     path('voice/custom/<int:book_id>', views.VoiceCustomHTML.as_view(), name='voice_custom'),
+     path('voice/celebrity/', views.VoiceCelebrityHTML.as_view(), name='voice_celebrity'),
+     path('voice/custom/upload/', views.voice_custom_upload.as_view(),name='voice_custom_upload'),
+     path('voice/custom/complete/', views.voice_custom_complete.as_view(),name='voice_custom_complete'),
+     path('voice/custom/complete/upload', views.voice_custom_upload_post, name='voice_custom_upload_post'),
+     path('voice/custom/search/',views.Voice_Custom_Search.as_view(),name='voice_custom_search'),
 
     # rvc train
     path('rvc_train/', views.Rvc_Train.as_view(), name='rvc_train'),

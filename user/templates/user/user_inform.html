@@ -44,15 +44,20 @@
                         <input type="text" class="form-control"  name="nickname" placeholder={{user.nickname}}>
                     </div>
 
-                    <span class="d-flex justify-content-center mb-3">
-                        <button type="submit" class="btn btn-orange-400 btn-sm" id='modifyBtn'>수정하기</button>
-                    </span>
-                    
-                    <span class="d-flex justify-content-center">
-                        <button type="button" class="btn btn-orange-400 btn-sm" id='deleteBtn'>탈퇴하기</button>
-                    </span>
+                    <!-- 여백 -->
+                    <div class="row my-3"></div>
 
-                </form>
+                    <div class="d-flex justify-content-center mb-3 gap-3">
+                        <!-- 탈퇴 -->
+                        {% if not request.user.is_admin %}
+                            <button type="button" class="btn btn-danger btn-sm fw-bold" id="deleteBtn">탈퇴하기</button>
+                        {% endif %}
+                        
+                        <!-- 수정 -->
+                        <button type="submit" class="btn btn-orange-400 btn-sm" id="modifyBtn">수정하기</button>
+                    </div>
+
+              </form>
             </div>
 
         </div>
