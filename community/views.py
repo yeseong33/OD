@@ -384,11 +384,10 @@ class BookSearchView(APIView):
                 
             else:
                 context['error'] = "An error occurred while searching for books."
-
+            # print(context['books'])
         return Response(context)
 
 # 신규 도서 신청 완료 페이지
-
 
 class EmailThread(threading.Thread):  # threading 모듈을 사용하여 이메일 전송을 별도의 스레드에서 실행
     def __init__(self, email):
@@ -406,23 +405,18 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
 
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
-class BookCompleteView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'community/book_complete.html'
-
+class BookRequestAPI(APIView):
     def get(self, request, isbn):
         context = {
             'active_tab': 'book_search'
         }
-        if Book.objects.filter(book_isbn=isbn).exists():
-            context['message'] = '이미 등록되어 사용 가능한 책입니다.'
-            context['image'] = static('images/exist.png')
-            return Response(context)
 
+        book_request, created = BookRequest.objects.get_or_create(request_isbn=isbn, defaults={'request_count': 0})
+        
+        existing_user_request = UserRequestBook.objects.filter(user_id=request.user.user_id, request=book_request).exists()
+        if existing_user_request:
+            context['message'] = "이미 신청한 책입니다. 등록이 완료되면 메일로 알려드리겠습니다."
         else:
-            book_request, created = BookRequest.objects.get_or_create(
-                request_isbn=isbn, defaults={'request_count': 0})
-
             # Atomically increment the request_count to ensure accuracy with concurrent requests
             with transaction.atomic():
                 BookRequest.objects.filter(request_isbn=isbn).update(
@@ -431,26 +425,24 @@ class BookCompleteView(APIView):
 
             UserRequestBook.objects.create(
                 user=request.user, request=book_request)
+            context['message'] = '신규 도서 신청이 완료되었습니다. 등록이 완료되면 메일로 알려드리겠습니다.'
 
-            context['message'] = '신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
-            context['image'] = static('images/complete_book.png')
+        # 이메일 보내기
+        if request.user.email:
+            try:
+                subject = '[오디 알림] 책 신청 완료'
+                html_content = render_to_string(
+                    'community/email_template.html', {'nickname': request.user.nickname})
+                plain_message = strip_tags(html_content)
+                from_email = '오디 <wooyoung9654@gmail.com>'
+                send_async_mail(subject, plain_message,
+                                from_email, [request.user.email])
+                print('Email sent successfully')
+            except Exception as e:
+                # 로그 기록, 오류 처리 등
+                print(f'Error sending email: {e}')
 
-            # 이메일 보내기
-            if request.user.email:
-                try:
-                    subject = '[오디 알림] 책 신청 완료'
-                    html_content = render_to_string(
-                        'community/email_template.html', {'nickname': request.user.nickname})
-                    plain_message = strip_tags(html_content)
-                    from_email = '오디 <wooyoung9654@gmail.com>'
-                    send_async_mail(subject, plain_message,
-                                    from_email, [request.user.email])
-                    print('Email sent successfully')
-                except Exception as e:
-                    # 로그 기록, 오류 처리 등
-                    print(f'Error sending email: {e}')
-
-            return Response(context)
+        return Response(context)
 
 # 1:1 문의
 
