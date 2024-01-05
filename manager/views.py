@@ -38,8 +38,8 @@ import json
 import time
 import datetime
 from datetime import datetime as dt
-import shutil
 import concurrent.futures
+from django.template.loader import render_to_string
 
 import numpy as np
 import requests
@@ -175,7 +175,7 @@ def book_view(request):
                 }
                 data = {
                     "model": "dall-e-3",
-                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
+                    "prompt": f"A vibrant and detailed illustration representing the story of [{book_title}]. The image should capture key elements of the story: [{book_description}]. The style should be [{selected_style}], focusing on the atmosphere and mood of the story rather than the physical appearance of a book.",
                     "n": 1,
                     "size": "1024x1024"
                 }
@@ -268,7 +268,7 @@ def book_view(request):
 
 @specific_user_required
 def cover_complete(request):
-    return render(request, 'manager/book_complete.html')
+    return render(request, 'manager/book_cover.html')
 
 
 # 도서 신청 확인
