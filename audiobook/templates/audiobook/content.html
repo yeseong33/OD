@@ -46,7 +46,6 @@
     <div class="row d-flex align-items-center justify-content-center my-5">
         <div id="listen" class="col-auto d-flex align-items-center" style="cursor:pointer;">
             <button class="btn btn-orange-400 btn-lg">청취하기</button>
-        </div>
     </div>
 
     <audio id="audioPlayer" style="display: none">
@@ -118,24 +117,26 @@
         }); 
 
         document.getElementById('voice_img').addEventListener('click', function() {
-            window.location.href = "{% url 'audiobook:voice_custom' %}"
+            window.location.href = "{% url 'audiobook:voice_custom' book_id=book.book_id %}"
         }); 
 
-        document.getElementById('sampleBtn').addEventListener('click', function() {
-            playSample();
-        });
+        var imageElement = document.getElementById('voice_img');
+        imageElement.src = '\\media\\voice_images\\{{voice_name}}.jpg';
+        var audio;
+        audio = new Audio('\\media\\voice_sample\\{{voice_name}}.mp3');
+        console.log(audio)
 
-        function playSample() {
-            var audioPlayer = document.getElementById('audioPlayer');
-            if (!isPlaying) {
-                audioPlayer.play();
-                isPlaying = true;
+        function playMusic() {
+            // 오디오 재생 전에 로드 상태를 확인합니다.
+            if (audio.readyState >= 2) {
+              audio.play();
             } else {
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                isPlaying = false;
+              // 오디오가 로드되지 않았다면, 로드를 시도합니다.
+              audio.load();
+              audio.play();
+              console.log("came in")
             }
-        }
+          }
 
     </script>
 {% endblock %}
