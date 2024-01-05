@@ -45,9 +45,14 @@
                         <input type="text" class="form-control"  name="nickname" placeholder={{user.nickname}}>
                     </div>
 
-                    <span class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-orange-400 btn-sm">수정하기</button>
+                    <span class="d-flex justify-content-center mb-3">
+                        <button type="submit" class="btn btn-orange-400 btn-sm" id = 'modifyBtn'>수정하기</button>
                     </span>
+                    
+                    <span class="d-flex justify-content-center">
+                        <button type="button" class="btn btn-orange-400 btn-sm" id = 'deleteBtn' >탈퇴하기</button>
+                    </span>
+
                 </form>
             </div>
 
@@ -59,9 +64,25 @@
 {% block script %}
 <script>
     document.addEventListener("DOMContentLoaded", (event) => {
+        var modifyBtn = document.getElementById('modifyBtn');
+        var deleteBtn = document.getElementById('deleteBtn');
+
         document.getElementById('user-image').addEventListener('click', function() {
             document.getElementById('file-input').click();
         });
+
+        deleteBtn.addEventListener('click', function(event) {
+            var confirmDelete = confirm("정말 계정을 삭제 하시겠습니까?");
+            if (confirmDelete) {
+                var user_id = "{{user.user_id}}";
+                window.location.href = "{% url 'user:delete' 0 %}".replace('0', user_id);
+
+            } else {
+                event.preventDefault();
+            }
+        });
     });
 </script>
+
 {% endblock %}
+

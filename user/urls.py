@@ -28,4 +28,5 @@ urlpatterns = [
     path('profile/inquiry/', views.InquiryListView.as_view(), name='inquiry'),
     path('profile/inquiry/<int:inquiry_id>/',
          views.InquiryDetailView.as_view(), name='inquiry_detail'),
+    path('profile/delete/<int:user_id>/', views.UserDeleteView.as_view(), name = 'delete')
 ]

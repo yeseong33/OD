@@ -6,6 +6,13 @@
 {% endblock %}
 
 {% block content %}
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                alert("{{ message }}");
+            {% endfor %}
+        </script>
+    {% endif %}
 
     <!-- 캐러셀 -->
     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
