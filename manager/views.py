@@ -63,7 +63,6 @@ import numpy as np
 import requests
 import matplotlib
 matplotlib.use('Agg')
-matplotlib.use('Agg')
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -113,8 +112,7 @@ def book_view(request):
 
                 # book_view_count 데이터 확인
                 if book.book_view_count:
-                    # JSON 문자열을 파이썬 딕셔너리로 변환
-                    monthly_views = json.loads(book.book_view_count)
+                    monthly_views = book.book_view_count
                 else:
                     # 임시 수요 데이터 입력
                     monthly_views = {
@@ -131,7 +129,7 @@ def book_view(request):
                         '11': 50,
                         '12': 10
                     }
-                    book.book_view_count = json.dumps(monthly_views)
+                    book.book_view_count = monthly_views
                     book.save()
 
             except Book.DoesNotExist:
@@ -196,7 +194,7 @@ def book_view(request):
                 }
                 data = {
                     "model": "dall-e-3",
-                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
+                    "prompt": f"A vibrant and detailed illustration representing the story of [{book_title}]. The image should capture key elements of the story: [{book_description}]. The style should be [{selected_style}], focusing on the atmosphere and mood of the story rather than the physical appearance of a book.",
                     "n": 1,
                     "size": "1024x1024"
                 }
@@ -289,7 +287,7 @@ def book_view(request):
 
 @specific_user_required
 def cover_complete(request):
-    return render(request, 'manager/book_complete.html')
+    return render(request, 'manager/book_cover.html')
 
 
 # 도서 신청 확인
