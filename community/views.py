@@ -375,7 +375,13 @@ class BookSearchView(APIView):
             response = requests.get(url, headers=headers, params=params)
 
             if response.status_code == 200:
-                context['books'] = response.json()['items']
+                api_books = response.json()['items']
+                
+                # Book 테이블에 없는 책들만 필터링
+                existing_isbns = set(Book.objects.values_list('book_isbn', flat=True))
+                filtered_books = [book for book in api_books if book['isbn'] not in existing_isbns]
+                context['books'] = filtered_books
+                
             else:
                 context['error'] = "An error occurred while searching for books."
 
