@@ -1,7 +1,7 @@
 {% extends 'user/template.html' %}
 {% load static %}
 
-{% block title %}O: D - 회원 정보{% endblock %}
+{% block title %}O :D - 회원 정보{% endblock %}
 {% block style %}
 {% endblock %}
 
@@ -27,7 +27,7 @@
                 <form class="d-flex flex-column align-items-center justify-content-center" method="post" action="{% url 'user:inform'%}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row d-flex justify-content-center mb-3">
-                        <img src="{{user.user_profile_path}}" id="user-image" class="img-thumbnail rounded" style="max-width: 100px; height: auto; cursor:pointer;">
+                        <img src="{{ file_path }}{{request.user.user_profile_path}}" id="user-image" class="img-thumbnail rounded" style="max-width: 100px; height: auto; cursor:pointer;">
                     </div>
 
                     <div class="mb-3" style="display:none;">
