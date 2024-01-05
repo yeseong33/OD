@@ -54,10 +54,19 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        
+    def create(self, validated_data):
+        if not validated_data.get('book_view_count'):
+            validated_data['book_view_count'] = {"1": 0, "2": 0, "3": 0,"4": 0,"5": 0,"6": 0,
+                                                 "7": 0, "8": 0, "9": 0,"10": 0,"11": 0,"12": 0}
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        likes = validated_data.get('book_likes')
-        instance.book_likes += likes
+        if validated_data.get('book_likes'):
+            instance.book_likes += validated_data.get('book_likes')
+        if validated_data.get('book_view_count'):
+            month = self.context['month']
+            instance.book_view_count[str(month)] += 1
         instance.save()
         return instance
 

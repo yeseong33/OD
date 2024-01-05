@@ -29,7 +29,6 @@ from audiobook.serializers import VoiceSerializer
 from community.serializers import BookSerializer, InquirySerializer
 from user.serializers import UserSerializer, SubscriptionSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
-from config.context_processors import get_file_path
 
 load_dotenv()
 
@@ -99,7 +98,7 @@ def kakao_callback(request):
     # access_token으로 유저 개인 정보 발급 받기
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {access_token}",
-               "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
@@ -200,10 +199,10 @@ def google_callback(request):
 def get_jwt_token(user):
     print(f"create jwt 메소드 진입.")
     payload = {"user_id": user.user_id, "user_email": user.email,
-               "exp": datetime.utcnow() + timedelta(hours=24)}
+                "exp": datetime.utcnow() + timedelta(hours=24)}
     secret_key = os.getenv("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key,
-                       algorithm=os.getenv("JWT_ALGORITHM"))
+                        algorithm=os.getenv("JWT_ALGORITHM"))
 
     print(f"JWT token 생성 완료 : {token}")
     decode_jwt(token)
@@ -396,7 +395,7 @@ class UserInformView(APIView):
         return Response(context, template_name=template_name)
 
     def post(self, request):
-        file_path = get_file_path()
+        file_path = get_file_path(self)
         # cookie에 저장된 jwt 정보를 이용해 유저 받아오기
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
@@ -475,7 +474,7 @@ class UserLikeVoicesView(APIView):
 
         if voice_id_list == None:
             context = {'voices': None,
-                       'active_tab': 'user_like'}
+                        'active_tab': 'user_like'}
         else:
             order_by = request.GET.get('orderBy', 'latest')
             voice_list = Voice.objects.filter(pk__in=voice_id_list)
@@ -487,7 +486,7 @@ class UserLikeVoicesView(APIView):
 
             serializer = VoiceSerializer(voice_list, many=True)
             context = {'voices': serializer.data,
-                       'active_tab': 'user_like'}
+                        'active_tab': 'user_like'}
 
         # Ajax 요청일경우.
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -548,12 +547,12 @@ class InquiryListView(APIView):
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
             context = {'inquiries': serializer.data,
-                       'active_tab': 'user_faq'}
+                        'active_tab': 'user_faq'}
 
         return render(request, self.template_name, context)
 
 
-class InquiryDetailView(APIView):
+class InquiryDetailView(APIView): # 세부 1:1 문의 내역 보는 view
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'user/inquiry_detail.html'
 
@@ -561,9 +560,22 @@ class InquiryDetailView(APIView):
         inquiry = Inquiry.objects.get(inquiry_id=inquiry_id)
         serializer = InquirySerializer(inquiry)
         context = {'inquiry': serializer.data,
-                   'active_tab': 'user_faq'}
+                    'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
+class UserDeleteView(APIView): # 회원탈퇴 함수.
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/index.html' # 탈퇴하면 index.html로 이동.
+    
+    def get (self, request, user_id):
+        
+        user = User.objects.get(user_id = user_id)
+        os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #유저 이미지 삭제.
+        user.delete()  # 유저 테이블 삭제.
+        response = redirect('audiobook:index')
+        response.delete_cookie('jwt') # 유저 쿠키 삭제.
+        messages.success(request, '계정이 삭제되었습니다.')
+        return(response)
 
 def get_file_path(self):
     if FILE_SAVE_POINT == 'local':

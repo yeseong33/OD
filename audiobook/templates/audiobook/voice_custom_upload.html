@@ -2,133 +2,73 @@
 {% load static %}
 
 {% block content %}
-    <style>
-        .blue-box {
-            background-color: #007BFF;
-            padding: 20px;
-            color: #fff;
-            border-radius: 10px;
-        }
-
-        .upload-section {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-
-        .icon-svg {
-            width: 50px;
-            height: 50px;
-        }
-
-        .icon-img {
-            height: 100px;
-        }
-
-        .loading-indicator {
-            display: none;
-            position: fixed;  /* 화면에 고정 */
-            top: 50%;  /* 화면의 상단으로부터 50% 위치에 배치 */
-            left: 50%;  /* 화면의 왼쪽으로부터 50% 위치에 배치 */
-            transform: translate(-50%, -50%);  /* 자신의 너비와 높이의 절반만큼 이동해서 정중앙에 배치 */
-            z-index: 9999;  /* 다른 요소 위에 표시 */
-        }
-    </style>
-
-    <!-- 첫 번째 행 -->
-    <div class="row mb-4">
-        <div class="col">
-            <p class="fs-3 fw-bold">나만의 목소리</p>
-        </div>
+    <div class="row my-5">
+        <h1 class="menu-font">나만의 목소리</h1>
     </div>
-
-    <!-- 두 번째 행 -->
-    <div class="row justify-content-center align-items-center gap-5 ">
-        <div class="col-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-mic-fill icon-svg" viewBox="0 0 16 16" style="width: 100px; height: 100px;">
+    
+    <!-- 목소리 만드는 방법 -->
+    <div class="border rounded row justify-content-center align-items-center py-5 gap-5">
+        <div class="col-3 d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-mic-fill icon-svg mb-3" viewBox="0 0 16 16" style="width: 100px; height: 100px;">
                 <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/>
                 <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
             </svg>
+            <p class="fs-6 text-center">10분 분량의 음성 파일 녹음이 필요해요</p>
         </div>
-        <div class="col-3">
-            <img src="/static/images/speak.jpg" alt="Image 3" class="img" style='height:90px;'>
+        <div class="col-3 d-flex flex-column align-items-center">
+            <img src="/static/images/speak.jpg" alt="Image 3" class="img mb-3" style="height: 90px;">
+            <p class="fs-6 text-center">정확하고 다양한 높낮이로 녹음할수록 목소리가 잘 만들어져요</p>
         </div>
-        <div class="col-3">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-hourglass-split icon-svg" viewBox="0 0 16 16" style="width: 100px; height: 100px;">
-                <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2h-7zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48V8.35zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z"/>
+        <div class="col-3 d-flex flex-column align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-hourglass-split icon-svg mb-3" viewBox="0 0 16 16" style="width: 100px; height: 100px;">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
             </svg>
-        </div>
-        <div class="col-3">
-            <p class="fs-6">  10분 분량의 음성 파일 녹음이 필요해요</p>
-        </div>
-        <div class="col-3">
-            <p class="fs-6">  정확하고 다양한 높낮이로 녹음할수록 목소리가 잘 만들어져요</p>
-        </div>
-        <div class="col-3">
-            <p class="fs-6">  목소리를 만드는데는 약 1시간이 걸려요</p>
+            <p class="fs-6 text-center">목소리를 만드는데는 약 1시간이 걸려요</p>
         </div>
     </div>
 
-    <!-- 공백  -->
-    <div class="row justify-content-end"> </div>
-    
+    <!-- 공백 -->
+    <div class="row my-3"> </div>
 
-    <!-- rvc 필요한 부분  -->
-    
-    <!-- 네 번째 행 -->
-    <div class="row mt-5 mb-3">
-        <div class="col">
-            <h2 class="bold-text text-center">음성을 정해주세요</h2>
-        </div>
-    </div>
-
-    <!-- 다섯 번째 행 -->
-    <div class="row gap-3 justify-content-center">
+    <!-- 음성 이름 입력 -->
+    <div class="row justify-content-center my-4">
         <div class="col-6">
-            <div class="input-group gap-4">
-                <input type="file" class="form-control" id="voice_file" name="voice_file" accept="audio/*" aria-label="음성 파일 선택" aria-describedby="upload-btn">
-                <div class="input-group-append">
-                    <button id="upload-btn" class="btn btn-primary" type="button">음성 파일 업로드</button>
-                </div>
+            <div class="input-group">
+                <input type="text" class="form-control" id="voice_name" name="voice_name" placeholder="내 목소리의 이름" aria-label="내 목소리의 이름">
+                <button id="duplicate-check-btn" class="btn btn-outline-orange-400" type="button">중복 확인</button>
             </div>
         </div>
     </div>
 
-    <div class="row mt-5"> </div>
-
-    <!-- 네 번째 행 -->
-    <div class="row mt-5 mb-3">
-        <div class="col">
-            <h2 class="bold-text text-center">내 음성의 이름을 정해주세요</h2>
-        </div>
-    </div>
-    
-
-    <!-- 다섯 번째 행 -->
-    <div class="row gap-3 justify-content-center">
+    <!-- 음성 사진 업로드 -->
+    <div class="row justify-content-center my-4">
         <div class="col-6">
-            <div class="input-group gap-4">
-                <input type="text" class="form-control" id="voice_name" name="voice_name" placeholder="내 목소리의 이름" aria-label="내 목소리의 이름" aria-describedby="duplicate-check">
-                <div class="input-group-append">
-                    <button id="duplicate-check-btn" class="btn btn-primary" type="button">중복 확인</button>
-                </div>
+            <div class="input-group">
+                <input type="file" class="form-control" id="voice_photo" name="voice_photo" accept="image/*" aria-label="음성 사진 선택">
+                <button id="photo-upload-btn" class="btn btn-outline-orange-400" type="button">사진 업로드</button>
             </div>
         </div>
     </div>
 
-    <div class="row justify-content-end mt-5"> </div>
-
-    <!-- 목소리 생성하기 버튼 -->
-    <div class="row justify-content-end mt-5">
-        <!-- 필요한 필드들 추가 -->
-        <div class="row justify-content-center">
-            <div class="col-3">
-                <button id="voice-create-btn" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#voiceCreateModal">목소리생성</button>
+    <!-- 음성 파일 업로드 -->
+    <div class="row justify-content-center my-4">
+        <div class="col-6">
+            <div class="input-group">
+                <input type="file" class="form-control" id="voice_file" name="voice_file" accept="audio/*" aria-label="음성 파일 선택">
+                <button id="upload-btn" class="btn btn-outline-orange-400" type="button">음성 업로드</button>
             </div>
         </div>
     </div>
 
+    <!-- 생성 버튼 -->
+    <div class="row justify-content-center my-5">
+        <div class="col-6 d-flex justify-content-center">
+            <button id="voice-create-btn" type="button" class="btn btn-orange-400 btn-lg" data-bs-toggle="modal" data-bs-target="#voiceCreateModal">생성하기</button>
+        </div>
+    </div>
+
+    <!-- 히든 폼 -->
     <div id="loadingIndicator" class="loading-indicator" style="display: none;">
         <img src="{% static 'images/loading.gif' %}" alt="Loading..." />
     </div>
@@ -159,76 +99,121 @@
             
             // 클릭 활성화
             document.getElementById('duplicate-check-btn').addEventListener('click', checkDuplicate);
-            
+
+            var dup_check = 0
             // 중복 확인 버튼
             function checkDuplicate() {
                 // voice_name 데이터를 localStorage에 저장
                 var voiceName = document.getElementById('voice_name').value;
                 console.log("실행됨", voiceName)
                 localStorage.setItem('voice_name', voiceName);
+
+                fetch('{% url "audiobook:voice_custom_search" %}' + '?voice_name=' + voiceName, { 
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'), // CSRF 토큰 추가
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 서버 응답 처리
+                    console.log('서버 응답:', data);
+                    if (data['check'] == 'False'){
+                        alert("없는 모델명입니다!");
+                        dup_check = 1
+                    }
+                    else{
+                        alert("있는 모델명입니다!");
+                    }
+                })
+                .catch(error => {
+                    console.error('에러 발생:', error);
+                });
             }
 
-            // modal-btn 클릭 시 다음 페이지로 이동
-            document.getElementById('modal-btn').addEventListener('click', function() {
-                window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
-            });
+        // modal-btn 클릭 시 다음 페이지로 이동
+        document.getElementById('modal-btn').addEventListener('click', function() {
+            window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
+        });
 
-            // 목소리 업로드 버튼
-            var uploadBtn = document.getElementById("upload-btn");
-            var voiceFileInput = document.getElementById("voice_file");
+        // 목소리 업로드 버튼
+        var uploadBtn = document.getElementById("upload-btn");
+        var voiceFileInput = document.getElementById("voice_file");
 
-            uploadBtn.addEventListener("click", function() {
-                // 파일 선택 창 열기
-                voiceFileInput.click();
-            });
+        uploadBtn.addEventListener("click", function() {
+            // 파일 선택 창 열기
+            voiceFileInput.click();
+        });
 
-            voiceFileInput.addEventListener("change", function() {
-                // 선택한 파일 정보 가져오기
-                var file = voiceFileInput.files[0];
+        voiceFileInput.addEventListener("change", function() {
+            // 선택한 파일 정보 가져오기
+            var file = voiceFileInput.files[0];
 
-                // 선택한 파일이 MP3인지 확인
-                if (file && file.type.match('audio/mpeg')) {
-                    // FileReader 객체 생성
-                    var reader = new FileReader();
+            // 선택한 파일이 MP3인지 확인
+            if (file && file.type.match('audio/mpeg')) {
+                // FileReader 객체 생성
+                var reader = new FileReader();
 
-                    reader.onload = function(e) {
-                        // 선택한 파일을 input 요소에 설정
-                        voiceFileInput.setAttribute('value', e.target.result);
-                    };
+                reader.onload = function(e) {
+                    // 선택한 파일을 input 요소에 설정
+                    voiceFileInput.setAttribute('value', e.target.result);
+                };
 
-                    reader.readAsDataURL(file);
-                } else {
-                    // MP3 파일이 아닌 경우, 사용자에게 알림
-                    alert('올바른 MP3 파일을 선택해주세요.');
-                }
-            });
-            //
+                reader.readAsDataURL(file);
+            } else {
+                // MP3 파일이 아닌 경우, 사용자에게 알림
+                alert('올바른 MP3 파일을 선택해주세요.');
+            }
+        });
+        //
 
             //목소리 생성하기 버튼
             document.getElementById("voice-create-btn").addEventListener("click", function() {
-                var voice_file = document.getElementById('voice_file').files[0];  // 파일 데이터
-                var voice_name = document.getElementById('voice_name').value;  // 텍스트 데이터
-                document.getElementById('loadingIndicator').style.display = 'block';
-            
-                var formData = new FormData();
-                formData.append('voice_file', voice_file);
-                formData.append('voice_name', voice_name);
-                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
-            
-                var request = new XMLHttpRequest();
-                request.open("POST", "/rvc_train/");  // views.py에 정의된 url
-                request.send(formData);
-            
-                request.onload = function() {
-                    if (request.status == 200) {
-                        console.log(request.response);  // 성공 시 응답 출력
-                        window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
-                        document.getElementById('loadingIndicator').style.display = 'none';
-                    } else {
-                        console.log(Error(request.statusText));  // 실패 시 에러 출력
+                if (dup_check == 1){
+                    var voice_file = document.getElementById('voice_file').files[0];  // 파일 데이터
+                    var voice_name = document.getElementById('voice_name').value;  // 텍스트 데이터
+                    document.getElementById('loadingIndicator').style.display = 'block';
+                
+                    var formData = new FormData();
+                    formData.append('voice_file', voice_file);
+                    formData.append('voice_name', voice_name);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
+                
+                    var request = new XMLHttpRequest();
+                    request.open("POST", "/rvc_train/");  // views.py에 정의된 url
+                    request.send(formData);
+                
+                    request.onload = function() {
+                        if (request.status == 200) {
+                            console.log(request.response);  // 성공 시 응답 출력
+                            window.location.href = "{% url 'audiobook:voice_custom_complete' %}" + "?book_id={{ book_id }}";
+                            document.getElementById('loadingIndicator').style.display = 'none';
+                        } else {
+                            console.log(Error(request.statusText));  // 실패 시 에러 출력
+                        }
                     }
                 }
+                else{
+                    alert("중복체크를 하세요!")
+                }
             });
+
+            // CSRF 토큰을 쿠키에서 가져오는 함수
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        // 쿠키 이름으로 시작하는 경우
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
         });
 
     </script>

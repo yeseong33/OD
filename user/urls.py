@@ -35,4 +35,8 @@ urlpatterns = [
     # 결제
     path('payments/', views.payments, name= 'payments'),
     path('payment/approval/', views.approval, name='approval'),  # 결제 승인 URL 추가
+
+    path('profile/inquiry/<int:inquiry_id>/',
+         views.InquiryDetailView.as_view(), name='inquiry_detail'),
+    path('profile/delete/<int:user_id>/', views.UserDeleteView.as_view(), name = 'delete')
 ]

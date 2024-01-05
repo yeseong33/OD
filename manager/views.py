@@ -1,43 +1,63 @@
-# 표준 라이브러리
-from manager.forms import InquiryResponseForm
-from community.views import send_async_mail
-from manager.serializers import BookSerializer, InquirySerializer
-from user.models import Subscription
+from config.settings import FILE_SAVE_POINT
+from config.context_processors import get_file_path
+from .serializers import FAQSerializer
+from .models import FAQ
 from audiobook.models import Book
+from user.models import Subscription
+from community.serializers import BookSerializer
 from community.models import BookRequest, UserRequestBook, Inquiry
-from rest_framework import status
+from community.views import send_async_mail
+from manager.serializers import InquirySerializer
+from manager.forms import InquiryResponseForm
 from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.utils.html import strip_tags
+from rest_framework.response import Response
+from rest_framework import status
 from django.utils import timezone
-from django.template.loader import render_to_string
-from django.shortcuts import redirect, render, get_object_or_404
+from django.utils.html import strip_tags
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.shortcuts import redirect, render, get_object_or_404
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
-from django.core.cache import cache
+from django.urls import reverse
+from django.contrib import messages
+from django.core.files import File
 from dotenv import load_dotenv
-import concurrent.futures
 from dateutil.relativedelta import relativedelta
+from botocore.exceptions import NoCredentialsError
+import boto3
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
-import json
 import os
-import shutil
+import json
 import time
 import datetime
 from datetime import datetime as dt
+import concurrent.futures
+from django.template.loader import render_to_string
 
-# 외부 라이브러리
 import numpy as np
 import requests
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # 쓰레드 메모리 누수 방지
 
 
 load_dotenv()  # 환경 변수를 로드함
+
+
+# 데코레이터 설정
+def is_specific_user_condition(user):
+    # 여기에 특정 사용자 속성을 만족시키는 조건을 작성
+    return user.is_authenticated and user.is_admin == True
+
+
+specific_user_required = user_passes_test(
+    is_specific_user_condition, login_url='manager:access_deny')
 
 
 # 책 수요 변화
@@ -47,6 +67,7 @@ def book_view_count(request):
 
 
 @csrf_exempt
+@specific_user_required
 @require_http_methods(["POST", "GET"])
 def book_view(request):
 
@@ -61,60 +82,68 @@ def book_view(request):
         if request_type == 'create_graph':
             search_text = data.get('search_text')
             try:
+
+                global book_title, book_description, book_id, book_image_path, book
                 # 책 객체 조회
                 book = Book.objects.get(book_title=search_text)
                 # DB에서 책 제목과 설명 가져오기
-
-                global book_title, book_description, book_id
                 book_title = book.book_title
                 book_description = book.book_description
                 book_id = book.book_isbn
+                book_image_path = book.book_image_path
 
                 # book_view_count 데이터 확인
                 if book.book_view_count:
-                    # JSON 문자열을 파이썬 딕셔너리로 변환
-                    monthly_views = json.loads(book.book_view_count)
+                    monthly_views = book.book_view_count
                 else:
                     # 임시 수요 데이터 입력
                     monthly_views = {
-                        '1': 60,
-                        '2': 60,
-                        '3': 60,
-                        '4': 60,
-                        '5': 60,
-                        '6': 10,
-                        '7': 10,
-                        '8': 10,
-                        '9': 60,
-                        '10': 10,
-                        '11': 50,
-                        '12': 10
+                        '1': 10,
+                        '2': 20,
+                        '3': 30,
+                        '4': 40,
+                        '5': 50,
+                        '6': 60,
+                        '7': 70,
+                        '8': 80,
+                        '9': 90,
+                        '10': 100,
+                        '11': 110,
+                        '12': 120
                     }
-                    book.book_view_count = json.dumps(monthly_views)
                     book.save()
 
             except Book.DoesNotExist:
                 # 책이 존재하지 않는 경우 에러 처리
                 return None
 
+            # 데이터 설정
             months = list(range(1, 13))
             views = [monthly_views.get(str(month), 0) for month in months]
+
+            # 폰트 파일 경로 설정
+            font_path = os.path.join('static', 'fonts', 'NotoSansKR-Light.ttf')
+
+            # Matplotlib 폰트 설정
+            font_prop = fm.FontProperties(fname=font_path, size=12)
 
             # 그래프 생성
             plt.figure(figsize=(10, 6))
             plt.bar(months, views, color='skyblue')
-            plt.xlabel('month')
-            plt.ylabel('count')
+            plt.xlabel('월별', fontproperties=font_prop)
+            plt.ylabel('사용량', fontproperties=font_prop)
 
-            plt.title('book title of month count')
+            plt.title(f'<{book_title}> 월별 사용자 추이', fontproperties=font_prop)
             plt.xticks(months)
 
-            # 파일 경로 설정
-            file_path = os.path.join('static', 'images', 'graph.png')
+            # 축 레이블에 폰트 적용
+            for label in (plt.gca().get_xticklabels() + plt.gca().get_yticklabels()):
+                label.set_fontproperties(font_prop)
 
-            # 그래프 파일로 저장
+            # 파일 경로 설정 및 그래프 저장
+            file_path = os.path.join('static', 'images', 'graph.png')
             plt.savefig(file_path)
-            plt.close()  # 리소스 해제
+            plt.close()
             return JsonResponse({"message": "그래프가 성공적으로 생성되었습니다."}, status=200)
 
         elif request_type == 'search':
@@ -146,7 +175,7 @@ def book_view(request):
                 }
                 data = {
                     "model": "dall-e-3",
-                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
+                    "prompt": f"A vibrant and detailed illustration representing the story of [{book_title}]. The image should capture key elements of the story: [{book_description}]. The style should be [{selected_style}], focusing on the atmosphere and mood of the story rather than the physical appearance of a book.",
                     "n": 1,
                     "size": "1024x1024"
                 }
@@ -192,29 +221,54 @@ def book_view(request):
         elif request_type == 'update_cover':
             data = json.loads(request.body)
             image_number = data.get('image_number')
+            # 새 이미지 파일 경로
+            new_image_path = f'static/images/Redraw_image_{image_number}.png'
 
-            # 이미지 번호를 기반으로 새 이미지 경로 설정
-            new_image_path = os.path.join(
-                'static', 'images', f'Redraw_image_{image_number}.png')
+            if FILE_SAVE_POINT == 'local':
+                try:
+                    # 새 이미지 파일을 Django의 File 객체로 열기
+                    with open(new_image_path, 'rb') as new_image_file:
+                        django_file = File(new_image_file)
+                        # 모델의 이미지 필드에 File 객체를 할당
+                        current_filename = os.path.basename(
+                            book_image_path.name)
+                        book_image_path.save(
+                            current_filename, django_file, save=True)
 
-            # 기존 이미지 경로 설정
-            existing_image_path = os.path.join(
-                'C:\\', 'S3_bucket', 'book_images', f'{book_id}_image.jpg')
+                    return JsonResponse({'status': 'success', 'message': '커버 이미지가 성공적으로 업데이트되었습니다.'})
 
-            # 기존 이미지를 새 이미지로 교체
-            if os.path.exists(new_image_path):
-                shutil.copy(new_image_path, existing_image_path)
-                return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                except Book.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': '해당 책이 존재하지 않습니다.'})
+                except IOError:
+                    return JsonResponse({'status': 'error', 'message': '이미지 파일을 열 수 없습니다.'})
+
             else:
-                return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+
+                # S3 클라이언트 생성
+                s3 = boto3.client('s3')
+                s3_bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME')
+                bucket_name = s3_bucket_name  # S3 버킷 이름
+
+                # S3 버킷 내 기존 이미지 파일 경로
+                existing_image_path = str(book_image_path)
+                try:
+                    # 새 이미지 파일을 S3 버킷으로 업로드
+                    s3.upload_file(new_image_path, bucket_name,
+                                   existing_image_path)
+                    return JsonResponse({'status': 'success', 'message': 'Cover image updated successfully.'})
+                except FileNotFoundError:
+                    return JsonResponse({'status': 'error', 'message': 'New image not found.'})
+                except NoCredentialsError:
+                    return JsonResponse({'status': 'error', 'message': 'Credentials not available.'})
 
     elif request.method == 'GET':
         return render(request, 'manager/book_cover.html')
     return HttpResponse("적절한 응답 메시지")
 
 
+@specific_user_required
 def cover_complete(request):
-    return render(request, 'manager/book_complete.html')
+    return render(request, 'manager/book_cover.html')
 
 
 # 도서 신청 확인
@@ -256,6 +310,7 @@ def get_book_details_from_naver(isbn):
         return None
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class BookRequestListView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_request.html'
@@ -291,6 +346,7 @@ class BookRequestListView(APIView):
         return Response(context)
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register.html'
@@ -306,6 +362,7 @@ class BookRegisterView(APIView):
             return Response({"error": "book_datail이 존재하지 않습니다"})
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class BookRegisterCompleteView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/book_register_complete.html'
@@ -376,6 +433,7 @@ class BookRegisterCompleteView(APIView):
         serializer = BookSerializer(data=book_data)
         if serializer.is_valid():
             book_instance = serializer.save()
+            # 책 저장하기
             # 이미지와 텍스트 파일을 모델 인스턴스에 저장
             # 옵션 save=False 한 후 .save() 해서 한번에 저장
             book_instance.book_image_path.save(
@@ -383,6 +441,36 @@ class BookRegisterCompleteView(APIView):
             book_instance.book_content_path.save(
                 content_file.name, content_file, save=False)
             book_instance.save()
+
+            # 이메일 보내기
+            book_request = get_object_or_404(
+                BookRequest, request_isbn=book_isbn)
+            user_request_books = UserRequestBook.objects.filter(
+                request=book_request)
+            for user_request_book in user_request_books:
+                user = user_request_book.user
+                if user.email:
+                    try:
+                        subject = '[오디 알림] 신청하신 책 등록 완료'
+                        html_content = render_to_string(
+                            'manager/email_template.html', {'nickname': user.nickname})
+                        plain_message = strip_tags(html_content)
+                        from_email = '오디 <wooyoung9654@gmail.com>'
+                        send_async_mail(subject, plain_message,
+                                        from_email, [user.email])
+                        print('Email sent successfully')
+                    except Exception as e:
+                        # 로그 기록, 오류 처리 등
+                        print(f'Error sending email: {e}')
+
+            # BookRequest, UserRequest 삭제
+            book_request.delete()
+            user_request_books.delete()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Book registered successfully.'
+            })
 
         else:
             print(serializer.errors)
@@ -392,42 +480,16 @@ class BookRegisterCompleteView(APIView):
                 'errors': serializer.errors
             }, status=400)
 
-        # 이메일 보내기
-        book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
-        user_request_books = UserRequestBook.objects.filter(
-            request=book_request)
-        for user_request_book in user_request_books:
-            user = user_request_book.user
-            if user.email:
-                try:
-                    subject = '[오디 알림] 신청하신 책 등록 완료'
-                    html_content = render_to_string(
-                        'manager/email_template.html', {'nickname': user.nickname})
-                    plain_message = strip_tags(html_content)
-                    from_email = '오디 <wooyoung9654@gmail.com>'
-                    send_async_mail(subject, plain_message,
-                                    from_email, [user.email])
-                    print('Email sent successfully')
-                except Exception as e:
-                    # 로그 기록, 오류 처리 등
-                    print(f'Error sending email: {e}')
-
-        # BookRequest, UserRequest 삭제
-        book_request.delete()
-        user_request_books.delete()
-
-        return Response({
-            'status': 'success',
-            'message': 'Book registered successfully.'
-        }, status=200)
-
 
 # 문의 답변
 
+
+@specific_user_required
 def inquiry_list(request):  # 문의글 목록 페이지
     return render(request, 'manager/inquiry_list.html')
 
 
+@specific_user_required
 def inquiry_detail(request, inquiry_id):
     inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
 
@@ -450,6 +512,7 @@ def inquiry_detail(request, inquiry_id):
     return render(request, 'manager/inquiry_detail.html', {'inquiry': inquiry, 'form': form})
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryListAPI(APIView):
     def get(self, request, *args, **kwargs):
         show_answered = request.query_params.get('show_answered', 'all')
@@ -465,6 +528,7 @@ class InquiryListAPI(APIView):
         return Response(serializer.data)
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class InquiryDetailAPI(APIView):
     def get(self, request, inquiry_id, format=None):
         inquiry = get_object_or_404(Inquiry, pk=inquiry_id)
@@ -473,7 +537,7 @@ class InquiryDetailAPI(APIView):
 
 
 # 구독 및 수익 관리
-
+@specific_user_required
 def show_subscription(request):
     if not request.user.is_admin:
         return redirect('audiobook:main')
@@ -481,6 +545,7 @@ def show_subscription(request):
     return render(request, 'manager/subscription.html')
 
 
+@method_decorator(specific_user_required, name='dispatch')
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
@@ -507,17 +572,64 @@ class SubscriptionCountAPI(APIView):
 
 
 # FAQ 관리
-
-class FAQView(APIView):
+@method_decorator(specific_user_required, name='dispatch')
+class ManagerFAQHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'manager/faq.html'
 
     def get(self, request):
-        if not request.user.is_admin:
-            return redirect('audiobook:main')
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
-        return Response()
+
+@method_decorator(specific_user_required, name='dispatch')
+class ManagerFAQPostHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/faq_post.html'
+
+    def get(self, request):
+        faqs = FAQ.objects.all()
+        serializers = FAQSerializer(faqs, many=True)
+        context = {
+            'active_tab': 'book_faq',
+            'faqs': serializers.data,
+        }
+        return Response(context, template_name=self.template_name)
 
 
-def faq(request):
-    return Response({'message': 'Good'})
+# 접근 제한
+
+class AccessDenyHtml(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manager/access_deny.html'
+
+    def get(self, request):
+        return Response(template_name=self.template_name)
+
+# 삭제 버튼
+
+
+@require_http_methods(["POST"])
+def book_delete(request):
+    # POST 요청에서 ISBN을 가져옴
+    book_isbn = request.POST.get('book_isbn')
+    book_request = get_object_or_404(BookRequest, request_isbn=book_isbn)
+    user_request_books = UserRequestBook.objects.filter(request=book_request)
+    book_request.delete()
+    user_request_books.delete()
+    try:
+        # 해당 ISBN을 가진 도서를 찾아 삭제
+        book = Book.objects.get(book_isbn=book_isbn)
+        book.delete()
+        messages.success(request, '도서가 성공적으로 삭제되었습니다.')
+    except Book.DoesNotExist:
+        # 도서가 존재하지 않는 경우 에러 메시지를 추가
+        messages.error(request, '해당 도서를 찾을 수 없습니다.')
+
+    # 삭제 후 관리자 페이지로 응답
+    return JsonResponse({'redirect_url': reverse('manager:book_request')})

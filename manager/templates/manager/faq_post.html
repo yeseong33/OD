@@ -1,0 +1,88 @@
+{% extends 'manager/template.html' %}
+{% load static %}
+
+{% block title %}1:1 문의{% endblock %}
+{% block style %}
+<style>
+  
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <!-- 여백 -->
+    <div class="row my-5"></div>
+    <div class="row my-5"></div>
+    <div class="row my-5"></div>
+ 
+    <form id="postForm">
+        {% csrf_token %}
+        <div class="row">
+            <!-- 첫 번째 칸: 제목과 내용 -->
+            <div class="col-md-1">
+                <p class="fs-4 fw-bold">질문</p>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="title1" placeholder="제목을 입력하세요" name="faq_title">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-1">
+                <p class="fs-4 fw-bold">답변</p>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group">
+                    <textarea class="form-control" id="content1" rows="8" placeholder="내용을 입력하세요" name='faq_content'></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-end mt-5"> </div>
+
+
+        <!-- 글쓰기 버튼 -->
+        <div class="row">
+            <div class="col-md-11 d-flex justify-content-end">
+                <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">제출하기</button>
+            </div>
+        </div>
+    </form> 
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 글쓰기 버튼 클릭 시 이벤트 핸들러
+        document.getElementById('postButton').addEventListener('click', function () {
+            event.preventDefault();  // 폼 전송 기본 동작 막기
+            // FormData 객체 생성 및 폼 데이터 추가
+            var formData = new FormData(document.getElementById('postForm'));
+
+            // POST 요청 보내기
+            fetch("{% url 'community:faq_list' %}", {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 성공적으로 데이터를 받아온 경우 실행되는 로직
+                console.log(data);
+                window.location.href = "{% url 'manager:faq'%}";
+            })
+            .catch(error => {
+                // 오류가 발생한 경우 처리
+                console.error('오류 발생:', error);
+            });
+        });
+    });
+
+</script>
+{% endblock %}

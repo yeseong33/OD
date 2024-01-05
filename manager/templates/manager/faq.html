@@ -1,9 +1,9 @@
 {% extends 'manager/template.html' %}
 {% load static %}
 
-{% block title %}FAQ{% endblock %}
+{% block title %}O :D - FAQ{% endblock %}
 {% block style %}
-<style>
+    <style>
     .custom-accordion {
       max-width: 300px; /* Set the maximum width as per your requirement */
       margin: 0 auto; /* Center the accordion on the page */
@@ -16,121 +16,112 @@
 {% endblock %}
 
 {% block content %}
-    <!-- 서브 네비게이션 바 -->
-    {% include 'community/sub_navbar.html' %}
-
-    <!-- 여백 -->
-    <div class="row my-5"></div>
+    <div class="row my-5">
+        <h1 class="menu-font">FAQ</h1>
+    </div>
 
     <!-- FAQ -->
     <div class="row mb-3 justify-content-center">
         <div class="col-9 justify-content-center">
             <div class="accordion" id="accordionPanelsStayOpenExample">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapse-1">
-                            결제 됐는데, 이용하지는 않았어요. 환불 가능한가요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p> 결제 후, 유료 콘텐츠 이용 내역이 없으시면 환불 가능합니다. (결제 후 7일 이내 환불 요청시 적용됩니다) </p>
-                            <p> 가입하신 계정 확인을 위해 1:1 문의로 환불 요청해주시면 확인 후 안내해드리겠습니다. </p>
-                            <p>*환불 불가의 경우 </p>
-                            <p>1.구독 후 이용내역이 있는 경우 </p>
-                            (가족 공유 서비스 이용 시, 초대받으신 분이 이용내역이 있으실 경우 환불이 불가합니다)
-                            <p>2.쿠폰 구매 후, 등록하신 경우 </p>
-                            <p>*단, 아이폰 결제의 경우 앱 스토어 정책으로 앱 스토어에서 환불을 진행해주셔야합니다. </p>
+                {% for faq in faqs %}
+                    <div class="row mb-3 justify-content-center">
+                        <div class="col-10 justify-content-center">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse-{{faq.faq_id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapse-{{faq.faq_id}}">
+                                        {{faq.faq_title}}
+                                    </button>
+                                </h2>
+                                <div id="panelsStayOpen-collapse-{{faq.faq_id}}" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        {{faq.faq_content|safe}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                            <span id="delete-{{faq.faq_id}}" class="d-flex align-items-center justify-content-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#FF0000" class="bi bi-x" viewBox="0 0 16 16" style="cursor: pointer;">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+                            </span>
                         </div>
                     </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
-                            여러 기기(디바이스)에서 같은 아이디로 전자책을 이용할 수 있나요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>여러 기기(디바이스)에서 같은 아이디로 오디오북을 이용하실 수 있어요 :D</p>
-                            <p>다만, 동시 이용은 불가능합니다.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
-                            책은 어떻게 들을 수 있나요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>메인 화면에서 원하는 오디오북을 선택 -> 현재 선택 성우 사진을 클릭해 성우 선택 -> 페이지 가운데 청취하기 버튼 클릭 -> 재생 버튼 클릭</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false" aria-controls="panelsStayOpen-collapseFour">
-                            원하는 성우는 어떻게 만드나요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>저희 서비스는 원하는 성우를 커스텀으로 제작 가능해요.</p>
-                            <p>10분 이상의 음성 파일을 준비해주세요.</p>
-                            <p>성우 선택 -> 개인 탭 -> + 버튼 클릭 -> 음성파일 업로드 및 이름 지정 -> 생성하기(약 1시간 소요) -> 저장하기</p>
-                            <p>이후 개인 성우 내 음성에서 녹음한 성우를 확인할 수 있어요.</p>
-                            <p>다른 사람의 성우를 원할경우 인기 탭을 이용해주세요.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFive" aria-expanded="false" aria-controls="panelsStayOpen-collapseFive">
-                            어떻게 하면 HOT 음성에 제 음성이 올라가나요? 조건이 있나요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseFive" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>이번주 HOT 음성은 사용자분들의 청취 수에 의해 결정돼요.</p>
-                            <p>매주 월요일에 갱신되며, 실시간으로 반영됩니다.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSix" aria-expanded="false" aria-controls="panelsStayOpen-collapseSix">
-                            제가 좋아요한 오디오북, 음성은 어디서 확인 가능한가요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseSix" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>오른쪽 상단 프로필 클릭 -> 내 정보 -> 좋아요 내역을 통해 확인하실수 있어요.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseSeven" aria-expanded="false" aria-controls="panelsStayOpen-collapseSeven">
-                            원하는 책을 신청했는데 언제쯤 결과를 알 수 있을까요?
-                        </button>
-                    </h2>
-                    <div id="panelsStayOpen-collapseSeven" class="accordion-collapse collapse">
-                        <div class="accordion-body">
-                            <p>신청된 책은 매주 갱신되어 반영돼요. 결과는 이메일로 보내드리고 있어요.</p>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
+        </div>
+    </div>
+    <div class="row my-5"></div>
+
+    <!-- 글쓰기 버튼 -->
+    <div class="row">
+        <div class="col-md-11 d-flex justify-content-end">
+            <button id="postButton" type="submit" class="btn btn-orange-400 btn-block mb-3">글쓰기</button>
         </div>
     </div>
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        var deleteElements = document.querySelectorAll('[id^="delete-"]');
+        // 글쓰기 버튼 클릭 시 이벤트 핸들러
+        document.getElementById('postButton').addEventListener('click', function () {
+            event.preventDefault();  // 폼 전송 기본 동작 막기
+            window.location.href = "{% url 'manager:faq_post' %}";
+        });
+
+        // 쿠키에서 CSRF 토큰을 가져오는 함수
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    return cookie.substring('csrftoken='.length, cookie.length);
+                }
+            }
+            return null;
+        }
+   
+        // 삭제 버튼 클릭 시 이벤트 핸들러
+        deleteElements.forEach(function(element) {
+            const elementIdParts = element.id.split('-');
+            const delete_id = elementIdParts[1];
+            // "댓글 삭제" 버튼에 대한 클릭 이벤트
+
+            element.addEventListener('click', function() {
+                event.preventDefault();  // 기본 동작 막기
+                const csrfToken = getCSRFToken();
+                // CSRF 토큰이 있는지 확인
+                if (!csrfToken) {
+                    console.error("CSRF 토큰을 찾을 수 없습니다.");
+                    return;
+                }
+
+                // DELETE 요청 보내기
+                fetch("{% url 'community:faq_detail' pk=0%}".replace("0", delete_id), {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json",
+                        // 헤더에 CSRF 토큰 포함
+                        "X-CSRFToken": csrfToken,
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    // 성공적으로 데이터를 받아온 경우 실행되는 로직
+                    window.location.href = "{% url 'manager:faq'%}";
+                })
+                .catch(error => {
+                    // 오류가 발생한 경우 처리
+                    console.error('오류 발생:', error);
+                });
+            });
+        });
+    </script>
+{% endblock %}

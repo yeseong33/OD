@@ -280,7 +280,7 @@ python manage.py runserver
 
 ### DB 관련 문제
 
-1. DB에서 모든 SCHEMA를 제거합니다.
+1. pgAdmin4에서 'tools-query tool'을 누르고 아래의 명령어를 입력하고 실행해서 DB 내 모든 SCHEMA를 제거합니다.
 
 ```sql
 DROP SCHEMA public CASCADE;
@@ -298,7 +298,7 @@ python manage.py makemigrations
 4. migrate를 통해 DB에 다시 SCHEMA를 생성합니다.
 
 ```sh
-python manage.py migrate --settings=Config.Setting_local
+python manage.py migrate --settings=config.setting_local
 ```
 
 5. 더 좋은 방법이 있다면 알려주세요.

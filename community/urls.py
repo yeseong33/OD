@@ -5,19 +5,19 @@ app_name = 'community'
 
 urlpatterns = [
     # APIs
-    path('api/user/', views.UserList.as_view(), name='user_list'),
-    path('api/user/<int:pk>', views.UserDetail.as_view(), name='user_detail'),
-    path('api/book/', views.BookList.as_view(), name='book_list'),
-    path('api/book/<int:pk>', views.BookDetail.as_view(), name='book_detail'),
-    path('api/post/', views.PostList.as_view(), name='post_list'),
-    path('api/post/<int:pk>', views.PostDetail.as_view(), name='post_detail'),
-    path('api/comment/', views.CommentList.as_view(), name='comment_list'),
-    path('api/comment/<int:pk>',
-         views.CommentDetail.as_view(), name='comment_detail'),
-    path('api/inquiry/', views.InquiryList.as_view(), name='inquiry_list'),
-    path('api/inquiry/<int:pk>',
-         views.InquiryDetail.as_view(), name='inquiry_detail'),
-
+    path('api/user/', views.UserList.as_view(), name='user_list'),  
+    path('api/user/<int:pk>', views.UserDetail.as_view(), name='user_detail'), 
+    path('api/book/', views.BookList.as_view(), name='book_list'),  
+    path('api/book/<int:pk>', views.BookDetail.as_view(), name='book_detail'),  
+    path('api/post/', views.PostList.as_view(), name='post_list'),  
+    path('api/post/<int:pk>', views.PostDetail.as_view(), name='post_detail'),  
+    path('api/comment/', views.CommentList.as_view(), name='comment_list'),  
+    path('api/comment/<int:pk>', views.CommentDetail.as_view(), name='comment_detail'),  
+    path('api/inquiry/', views.InquiryList.as_view(), name='inquiry_list'),  
+    path('api/inquiry/<int:pk>', views.InquiryDetail.as_view(), name='inquiry_detail'), 
+    path('api/faq/', views.FAQList.as_view(), name='faq_list'),  
+    path('api/faq/<int:pk>', views.FAQDetail.as_view(), name='faq_detail'), 
+    
     # html render
     # 토론
     path('books/share/', views.BookShareHtml.as_view(), name='book_share'),
@@ -41,5 +41,5 @@ urlpatterns = [
          name='book_inquiry_complete'),
 
     # FAQ
-    path('books/faq/', views.book_faq, name='book_faq'),
+    path('books/faq/', views.FAQHtml.as_view(), name='book_faq'),
 ]
