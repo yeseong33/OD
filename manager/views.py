@@ -384,7 +384,7 @@ class BookRegisterView(APIView):
 
 
 @method_decorator(specific_user_required, name='dispatch')
-class BookRegisterCompleteView(APIView):
+class BookRegisterAPIView(APIView):
     def post(self, request):
         if not request.user.is_admin:
             return redirect('audiobook:main')
