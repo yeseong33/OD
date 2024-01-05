@@ -363,10 +363,7 @@ class BookRegisterView(APIView):
 
 
 @method_decorator(specific_user_required, name='dispatch')
-class BookRegisterCompleteView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'manager/book_register_complete.html'
-
+class BookRegisterAPIView(APIView):
     def post(self, request):
         if not request.user.is_admin:
             return redirect('audiobook:main')
@@ -458,7 +455,7 @@ class BookRegisterCompleteView(APIView):
                         from_email = '오디 <wooyoung9654@gmail.com>'
                         send_async_mail(subject, plain_message,
                                         from_email, [user.email])
-                        print('Email sent successfully')
+                        # print('Email sent successfully')
                     except Exception as e:
                         # 로그 기록, 오류 처리 등
                         print(f'Error sending email: {e}')

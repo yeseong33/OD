@@ -18,12 +18,13 @@ from django.templatetags.static import static
 from django.core.files import File
 
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.core.files.base import ContentFile
-
+from community.serializers import BookSerializer
 from .serializers import VoiceSerializer
 from .models import *
 from user.views import decode_jwt
@@ -33,6 +34,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from config.context_processors import get_file_path
+from rest_framework.pagination import PageNumberPagination
 
 load_dotenv()
 
@@ -98,17 +100,33 @@ class MainView(APIView):
         return Response(context, template_name=self.template_name)
 
 
-class MainSearchView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'audiobook/main_search.html'
+PAGE_SIZE = 5 # Number of items per page
 
-    def get(self, request):
-        query = request.query_params.get('query', '')
-        book_list = Book.objects.filter(
-            Q(book_title__icontains=query) | Q(book_author__icontains=query))
+def main_search(request):
+    query = request.GET.get('query', '')
+    book_list = Book.objects.filter(
+        Q(book_title__icontains=query) | Q(book_author__icontains=query))[:PAGE_SIZE]
+    # serializers = BookSerializer(book_list, many=True)
+    return render(request, 'audiobook/main_search.html', {'book_list': book_list})
 
-        return Response({'book_list': book_list})
+class CustomPaginationClass(PageNumberPagination):
+    page_size = PAGE_SIZE  
 
+class BookListAPI(ListAPIView):
+    serializer_class = BookSerializer
+    pagination_class = CustomPaginationClass
+
+    def get_queryset(self):
+        query = self.request.query_params.get('query', '')
+        queryset = Book.objects.filter(
+            Q(book_title__icontains=query) | Q(book_author__icontains=query)
+        ).order_by('-book_likes', 'book_id')
+            
+        for book in queryset:
+            print(book.book_image_path)
+        
+        return queryset
+    
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]

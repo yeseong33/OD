@@ -26,7 +26,7 @@
                               <p class="card-text">저자: {{ book.author }}</p>
                           </div>
                           <div class="card-footer d-flex justify-content-end">
-                              <a href="{% url 'community:book_complete' book.isbn %}" class="btn btn-secondary">신청하기</a>
+                            <button type="button" data-isbn="{{ book.isbn }}" class="btn btn-secondary book-request">신청하기</button>
                           </div>
                       </div>
                   </div>
@@ -36,8 +36,35 @@
           <p class="text-center">검색 결과가 없습니다.</p>
       {% endif %}
   </div>
-
 {% endblock %}
 
 {% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // 신청 버튼에 이벤트 리스너 추가
+        document.querySelectorAll('.book-request').forEach(button => {
+            button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const isbn = this.getAttribute('data-isbn');
+            const url = `{% url 'community:book_complete' 'ISBN_PLACEHOLDER' %}`.replace('ISBN_PLACEHOLDER', isbn);
+            
+            // Fetch 요청
+            fetch(url)
+                .then(response => response.json()) // JSON 형식으로 응답을 파싱
+                .then(data => {
+                if (data.success) {
+                    alert(data.message); // 서버에서 받은 메시지를 alert로 표시
+                    // 필요한 경우 추가 작업 수행
+                } else {
+                    alert(data.message); // 오류 메시지 표시
+                }
+                })
+                .catch(error => {
+                console.error('Error:', error);
+                alert('신청 중 오류가 발생했습니다.');
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}
