@@ -39,6 +39,7 @@ import time
 import datetime
 from datetime import datetime as dt
 import concurrent.futures
+from django.template.loader import render_to_string
 
 import numpy as np
 import requests
