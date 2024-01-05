@@ -42,4 +42,6 @@ urlpatterns = [
 
     # FAQ
     path('books/faq/', views.FAQHtml.as_view(), name='book_faq'),
+    
+    path('books/like/', views.BookLikeView.as_view(), name='book_like')
 ]

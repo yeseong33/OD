@@ -25,7 +25,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import JsonResponse
 # Django REST framework 관련 라이브러리
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
@@ -41,7 +41,7 @@ from .serializers import *
 from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from manager.serializers import FAQSerializer
-
+from user.views import decode_jwt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 
@@ -86,7 +86,10 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all()
-
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        user_favorites = user.user_favorite_books # 유저가 좋아요 누른 책 조회.
+        
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
@@ -100,10 +103,35 @@ class BookShareHtml(APIView):
         context = {
             'file_path': file_path,
             'page_obj': page_obj,
+            'user_favorites' : user_favorites,
             'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
+    
+
+class BookLikeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        book_id = int(request.GET.get('book_id'))  # Convert to string if needed
+
+        # Check if user_favorite_books is None and initialize it as an empty list
+        if user.user_favorite_books is None:
+            user.user_favorite_books = [book_id]
+        else:
+            if book_id in map(int, user.user_favorite_books):
+                user.user_favorite_books.remove(book_id)
+            else:
+                user.user_favorite_books.append(book_id)
+
+        user.save()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
 
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
@@ -621,3 +649,5 @@ class FAQDetail(APIView):
         faq = self.get_object(pk)
         faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    
