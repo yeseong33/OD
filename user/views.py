@@ -339,7 +339,7 @@ class UserLikeVoicesView(APIView):
 
         if voice_id_list == None:
             context = {'voices': None,
-                       'active_tab': 'user_like'}
+                        'active_tab': 'user_like'}
         else:
             order_by = request.GET.get('orderBy', 'latest')
             voice_list = Voice.objects.filter(pk__in=voice_id_list)
@@ -351,7 +351,7 @@ class UserLikeVoicesView(APIView):
 
             serializer = VoiceSerializer(voice_list, many=True)
             context = {'voices': serializer.data,
-                       'active_tab': 'user_like'}
+                        'active_tab': 'user_like'}
 
         # Ajax 요청일경우.
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -412,12 +412,12 @@ class InquiryListView(APIView):
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
             context = {'inquiries': serializer.data,
-                       'active_tab': 'user_faq'}
+                        'active_tab': 'user_faq'}
 
         return render(request, self.template_name, context)
 
 
-class InquiryDetailView(APIView):
+class InquiryDetailView(APIView): # 세부 1:1 문의 내역 보는 view
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'user/inquiry_detail.html'
 
@@ -425,9 +425,22 @@ class InquiryDetailView(APIView):
         inquiry = Inquiry.objects.get(inquiry_id=inquiry_id)
         serializer = InquirySerializer(inquiry)
         context = {'inquiry': serializer.data,
-                   'active_tab': 'user_faq'}
+                    'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
+class UserDeleteView(APIView): # 회원탈퇴 함수.
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/index.html' # 탈퇴하면 index.html로 이동.
+    
+    def get (self, request, user_id):
+        
+        user = User.objects.get(user_id = user_id)
+        os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #유저 이미지 삭제.
+        user.delete()  # 유저 테이블 삭제.
+        response = redirect('audiobook:index')
+        response.delete_cookie('jwt') # 유저 쿠키 삭제.
+        messages.success(request, '계정이 삭제되었습니다.')
+        return(response)
 
 def get_file_path(self):
     if FILE_SAVE_POINT == 'local':
