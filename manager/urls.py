@@ -14,6 +14,7 @@ urlpatterns = [
          views.BookRegisterView.as_view(), name='book_register'),
     path('book/register/complete/', views.BookRegisterCompleteView.as_view(),
          name='book_register_complete'),
+    path('book_delete/', views.book_delete, name='book_delete'),
 
     # 1:1 문의 관리
     path('inquiries/', views.inquiry_list, name='inquiries'),

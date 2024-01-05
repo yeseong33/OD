@@ -545,14 +545,21 @@ class VoiceCustomHTML(APIView):
 
     def get(self, request):
         context = {
-            'result': True,
-            'user': request.user,
+            'active_tab': 'voice_private'
         }
-        return Response(template_name=self.template_name)
+        return Response(context, template_name=self.template_name)
 
 
-def voice_celebrity(request):
-    pass
+@method_decorator(login_required(login_url='user:login'), name='dispatch')
+class VoiceCelebrityHTML(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'audiobook/voice_celebrity.html'
+
+    def get(self, request):
+        context = {
+            'active_tab': 'voice_popular'
+        }
+        return Response(context, template_name=self.template_name)
 
 
 def voice_custom_upload(request):
