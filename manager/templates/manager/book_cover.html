@@ -50,24 +50,24 @@
                 <!-- 표지 스타일 -->
                 <h2 class="fw-bold">표지 스타일</h2>
                 <div class="button-group d-flex justify-content-center mb-3">
-                    <!-- 체크박스 및 라벨을 사용한 토글 버튼 -->
-                    <input type="radio" class="btn-check" id="style-disney" autocomplete="off">
+                    <!-- 라디오 버튼에 동일한 name 속성 추가 -->
+                    <input type="radio" class="btn-check" name="style" id="style-disney" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-disney">디즈니</label>
                 
-                    <input type="radio" class="btn-check" id="style-ghibli" autocomplete="off">
+                    <input type="radio" class="btn-check" name="style" id="style-ghibli" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-ghibli">지브리</label>
                 
-                    <input type="radio" class="btn-check" id="style-marvel" autocomplete="off">
+                    <input type="radio" class="btn-check" name="style" id="style-marvel" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-marvel">마블</label>
                 </div>
                 <div class="button-group d-flex justify-content-center mb-3">
-                    <input type="radio" class="btn-check" id="style-cartoon" autocomplete="off">
+                    <input type="radio" class="btn-check" name="style" id="style-cartoon" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-cartoon">카툰</label>
                 
-                    <input type="radio" class="btn-check" id="style-colorful" autocomplete="off">
+                    <input type="radio" class="btn-check" name="style" id="style-colorful" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-colorful">컬러풀</label>
                 
-                    <input type="radio" class="btn-check" id="style-drawing" autocomplete="off">
+                    <input type="radio" class="btn-check" name="style" id="style-drawing" autocomplete="off">
                     <label class="btn btn-outline-orange-400 mx-1" for="style-drawing">드로잉</label>
                 </div>
                 <div class="button-group d-flex justify-content-center mb-3">
@@ -78,28 +78,33 @@
                 <h2 class="fw-bold">표지 선택하기</h2>
                 <div class="cover-selection mb-3">
                     <div class="row">
-                        <!-- Bootstrap 5 그리드 시스템과 이미지 클래스 적용 -->
+                        <!-- 이미지 0 -->
                         <div class="col">
-                            <button class="btn btn-outline-primary w-100" onclick="selectImage(0)">
-                                <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" class="img-fluid">
-                            </button>
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover0" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover0">
+                                <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" class="img-fluid rounded">
+                            </label>
                         </div>
+                        <!-- 이미지 1 -->
                         <div class="col">
-                            <button class="btn btn-outline-primary w-100" onclick="selectImage(1)">
-                                <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" class="img-fluid">
-                            </button>
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover1" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover1">
+                                <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" class="img-fluid rounded">
+                            </label>
                         </div>
+                        <!-- 이미지 2 -->
                         <div class="col">
-                            <button class="btn btn-outline-primary w-100" onclick="selectImage(2)">
-                                <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" class="img-fluid">
-                            </button>
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover2" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover2">
+                                <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" class="img-fluid rounded">
+                            </label>
                         </div>
                     </div>
                 </div>
 
                 <!-- 표지 변경하기 -->
                 <div class="d-flex justify-content-center">
-                    <button id="selectCoverBtn" class="btn btn-success">표지 변경하기</button>
+                    <button id="selectCoverBtn" class="btn btn-orange-400">표지 변경하기</button>
                 </div>  
             </div>
         </div>
@@ -108,22 +113,40 @@
 
 <!-- 여백 -->
 <div class="row my-5"></div>
+
+<!-- 로딩 모달 -->
+<div class="modal" tabindex="-1" id="loadingModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">표지 생성 중</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block script %}
 <script type="text/javascript">
-    // 로딩 이미지
-    function reloadLocalImage() {
-        var localImage = document.querySelector('#graphImageWrapper');
-        localImage.src = "{% static 'images/graph.png' %}?t=" + new Date().getTime();
-    }
-
-    function showLoadingIndicator() {
-        document.getElementById('loadingIndicator').style.display = 'block';
+    // 모달 제어
+    var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+        keyboard: false,
+        backdrop: 'static'
+    });
+    
+    function showLoadingModal() {
+        loadingModal.show(); // 모달 표시
     }
     
-    function hideLoadingIndicator() {
-        document.getElementById('loadingIndicator').style.display = 'none';
+    function hideLoadingModal() {
+        loadingModal.hide(); // 모달 숨김
     }
 
     // 도서 검색 자동완성
@@ -151,6 +174,7 @@
                 const listItem = document.createElement('li');
                 listItem.textContent = book.title;
                 listItem.classList.add('list-group-item'); // Bootstrap 리스트 아이템 클래스 추가
+                listItem.style.cursor = 'pointer';
                 searchResults.appendChild(listItem);
             });
     
@@ -216,7 +240,7 @@
         });
     });
    
-    // 표지 생성하기 버튼 클릭 이벤트
+    
     // CSRF 토큰을 가져오는 함수
     function getCookie(name) {
         let cookieValue = null;
@@ -233,32 +257,30 @@
         return cookieValue;
     }
     
+    // 표지 생성하기 버튼 클릭 이벤트
     document.getElementById('createCoverBtn').addEventListener('click', function() {
-        showLoadingIndicator();
+        showLoadingModal(); // 진행 바 표시
+
         const selectedStyleButton = document.querySelector('.button-group .cover-button.clicked');
         let selectedStyle = '';
         if (selectedStyleButton) {
-            selectedStyle = selectedStyleButton.textContent.trim(); // 버튼의 텍스트를 추출합니다.
+            selectedStyle = selectedStyleButton.textContent.trim(); // 버튼의 텍스트
         }
-        fetch('', {  // '/create_cover/'는 장고 urlconf에 정의된 경로에 맞게 수정해야 합니다.
+        fetch('', {  
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // CSRF 토큰을 요청 헤더에 추가합니다.
+                'X-CSRFToken': getCookie('csrftoken'),  // CSRF 토큰
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                // 여기에 서버에 보낼 데이터를 추가할 수 있습니다.
                 request_type: 'create_cover',
                 style: selectedStyle, //디즈니 or 마블.. 그림체 전송
             })
         })
         .then(response => {
-            hideLoadingIndicator();
             response.json();
         })
         .then(data => {
-            document.querySelector('.cover-selection').style.display = 'block';
-            document.querySelector('.cover-selection + .button-group').style.display = 'block';
             const newTimestamp = new Date().getTime();
             const imageElements = document.querySelectorAll('.cover-selection img');
             imageElements.forEach((img, index) => {
@@ -314,15 +336,5 @@
         });
     });     
     
-    function selectImage(imageNumber) {
-        const imageButtons = document.querySelectorAll('.cover-selection .image-button');
-        imageButtons.forEach(button => {
-            button.classList.remove('clicked'); // 다른 모든 버튼의 'clicked' 클래스 제거
-        });
-    
-        const selectedButton = document.querySelector(`.cover-selection .image-button:nth-child(${imageNumber})`);
-        selectedButton.classList.add('clicked'); // 선택된 버튼에 'clicked' 클래스 추가
-    }
-
 </script>
 {% endblock %}
