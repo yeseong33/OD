@@ -27,12 +27,11 @@
                 <form class="d-flex flex-column align-items-center justify-content-center" method="post" action="{% url 'user:inform'%}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row d-flex justify-content-center mb-3">
-                        <img src="{{ file_path }}{{request.user.user_profile_path}}" id="user-image" class="img-thumbnail rounded" style="max-width: 100px; height: auto; cursor:pointer;">
-                    </div>
-
-                    <div class="mb-3" style="display:none;">
-                        <label class="form-label">사용자 이미지 수정</label>
-                        <input class="form-control" type="file" id="file-input" name="file">
+                        <!-- 이미지를 업로드하면 미리보기로 기존 이미지 자리에 새 이미지를 보여주기 -->
+                        <label for="file-input">
+                            <img src="{{ file_path }}{{request.user.user_profile_path}}" id="user-image" class="img-thumbnail rounded" style="max-width: 100px; height: auto; cursor:pointer;">
+                        </label>
+                        <input style="display:none;" type="file" id="file-input" name="file" accept="image/*">
                     </div>
 
                     <div class="mb-3">
@@ -57,7 +56,8 @@
                         <!-- 수정 -->
                         <button type="submit" class="btn btn-orange-400 btn-sm" id="modifyBtn">수정하기</button>
                     </div>
-                </form>
+
+              </form>
             </div>
 
         </div>
@@ -70,9 +70,15 @@
     document.addEventListener("DOMContentLoaded", (event) => {
         var modifyBtn = document.getElementById('modifyBtn');
         var deleteBtn = document.getElementById('deleteBtn');
+        var fileInput = document.getElementById('file-input');
 
-        document.getElementById('user-image').addEventListener('click', function() {
-            document.getElementById('file-input').click();
+        // 이미지 파일을 선택할 때 미리보기 업데이트
+        fileInput.addEventListener('change', function(event) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('user-image').src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
         });
 
         deleteBtn.addEventListener('click', function(event) {
@@ -89,4 +95,3 @@
 </script>
 
 {% endblock %}
-
