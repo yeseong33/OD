@@ -19,7 +19,7 @@
             <div class = "table-responsive">
                 <table class="table table-hover">
                     <thead>
-                        <tr>
+                        <tr class="text-center">
                             <th scope="col">분류</th>
                             <th scope="col">제목</th>
                             <th scope="col">등록일</th>
@@ -29,16 +29,16 @@
                     <tbody>
                         {% for  inquiry in  inquiries %}
                         <tr>
-                            <th scope="row">{{inquiry.inquiry_category}}</th>
+                            <th class="text-center" class="text-center"scope="row">{{inquiry.inquiry_category}}</th>
                             <td>{{inquiry.inquiry_title}}</td>
-                            <td>{{inquiry.inquiry_created_date|date:"Y-m-d"}}</td>
+                            <td class="text-center" >{{inquiry.inquiry_created_date|date:"Y-m-d"}}</td>
                             {% if inquiry.inquiry_is_answered %}
-                                <td>
-                                    <a href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">완료</a>
+                                <td class="text-center">
+                                    <a class="text-decoration-none text-dark" href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">완료</a>
                                 </td>
                             {% else %}
-                                <td>
-                                    <a href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">진행중</a>
+                                <td class="text-center">
+                                    <a class="text-decoration-none text-dark" href="{% url 'user:inquiry_detail' inquiry.inquiry_id %}">진행중</a>
                                 </td>
                             {% endif %}
                         </tr>

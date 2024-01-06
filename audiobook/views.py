@@ -53,6 +53,8 @@ def play_wav(file_path):
     pygame.quit()
 
 # 첫 화면
+
+
 def index(request):
     if request.user.is_authenticated:  # 로그인 되어 있으면 main 페이지로 리다이렉트
         return redirect('audiobook:main')
@@ -60,13 +62,17 @@ def index(request):
     else:  # 로그인 되어 있지 않으면 index 페이지를 렌더링
         return render(request, 'audiobook/index.html')
 
+
 def test(request):
     return render(request, 'audiobook/ddd.html')
 
 # 메인화면
+
+
 def convert_sample_voice(rvc_path):
     sample_voice_path = ''
     return sample_voice_path
+
 
 class MainView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -100,7 +106,8 @@ class MainView(APIView):
         return Response(context, template_name=self.template_name)
 
 
-PAGE_SIZE = 5 # Number of items per page
+PAGE_SIZE = 5  # Number of items per page
+
 
 def main_search(request):
     query = request.GET.get('query', '')
@@ -109,8 +116,10 @@ def main_search(request):
     # serializers = BookSerializer(book_list, many=True)
     return render(request, 'audiobook/main_search.html', {'book_list': book_list})
 
+
 class CustomPaginationClass(PageNumberPagination):
-    page_size = PAGE_SIZE  
+    page_size = PAGE_SIZE
+
 
 class BookListAPI(ListAPIView):
     serializer_class = BookSerializer
@@ -121,12 +130,12 @@ class BookListAPI(ListAPIView):
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
         ).order_by('-book_likes', 'book_id')
-            
+
         for book in queryset:
             print(book.book_image_path)
-        
+
         return queryset
-    
+
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -370,9 +379,10 @@ def Rvc_Save(request):
         print(f"폴더가 생성되었습니다: {folder_path}")
     else:
         print(f"이미 해당 폴더가 존재합니다: {folder_path}")
-        
-    sftp_client.get(remote_path, os.path.join(project_path, f'static/tts/{voice_name}.mp3'))
-    
+
+    sftp_client.get(remote_path, os.path.join(
+        project_path, f'static/tts/{voice_name}.mp3'))
+
     remote_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
     sftp_client.get(remote_path, os.path.join(
         project_path, f'static/tts/{voice_name}.pth'))
@@ -382,14 +392,14 @@ def Rvc_Save(request):
     voice_data = {
         'voice_name': voice_name,  # 사용자 입력
         'voice_like': 0,
-        #'voice_path': voice_name,
-        #'voice_image_path': voice_name,
-        #'voice_sample_path': 'test',
+        # 'voice_path': voice_name,
+        # 'voice_image_path': voice_name,
+        # 'voice_sample_path': 'test',
         'voice_created_date': datetime.date.today(),
         'voice_is_public':  request.POST['voice_public'],
         'user': request.user.user_id,
     }
-    
+
     with open(os.path.join(project_path, f'static/tts/{voice_name}.mp3'), 'rb') as file:
         voice_sample = ContentFile(file.read())
     voice_image = ContentFile(request.FILES['voice_image'].read())
@@ -511,11 +521,21 @@ class ContentHTML(APIView):
     template_name = 'audiobook/content.html'
 
     def get(self, request, book_id):
-        voice_name = request.GET.get("voice_name")
         file_path = get_file_path()
         book = get_object_or_404(Book, pk=book_id)
+
+        # 쿠키에서 성우 정보 읽기
+        selected_voice_id = request.COOKIES.get('selectedVoiceId')
+        print(selected_voice_id)
+        selected_voice = None
+
+        if selected_voice_id:
+            try:
+                selected_voice = Voice.objects.get(pk=selected_voice_id)
+            except Voice.DoesNotExist:
+                print("Selected voice does not exist.")
+
         if request.user.is_authenticated:
-            print('로그인')
             tmp = request.user.user_book_history
             user_book_history = [] if tmp is None else tmp
             user = request.user
@@ -529,9 +549,8 @@ class ContentHTML(APIView):
             'result': True,
             'book': book,
             'file_path': file_path,
-            'voice_name': voice_name,
             'user_book_history': user_book_history,
-            'user': user,
+            'selected_voice': selected_voice,
         }
         return Response(context, template_name=self.template_name)
 
@@ -545,12 +564,13 @@ class ContentPlayHTML(APIView):
         try:
             book = Book.objects.get(pk=book_id)
             voice_name = request.GET.get("voice_name")
-            
+
+            '''
             if FILE_SAVE_POINT == 'local':
                 model_path = f'C:\\S3_bucket\\voice_rvcs\\{voice_name}.pth'
             else:
                 model_path = 0
-                
+
             config = dotenv_values(".env")
             hostname = config.get("RVC_IP")
             username = config.get("RVC_USER")
@@ -561,9 +581,10 @@ class ContentPlayHTML(APIView):
             # 호스트 키 자동으로 수락
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             # SSH 연결 (키 기반 인증)
-            client.connect(hostname=hostname, username=username, key_filename=key_filename)
+            client.connect(hostname=hostname, username=username,
+                           key_filename=key_filename)
 
-            '''
+            
             try:
                 sftp = client.open_sftp()
                 
@@ -577,9 +598,7 @@ class ContentPlayHTML(APIView):
                 sftp.close()
             except:
                 return Response(status=405, template_name=self.template_name)
-            '''
 
-            '''
             # 셸 세션 열기
             shell = client.invoke_shell()
 
@@ -595,13 +614,14 @@ class ContentPlayHTML(APIView):
                 except socket.timeout:
                     print("No data received before timeout")
                 return buffer
-            '''
+                
             client.close()
-            
-            
+            '''
+
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
+
         user_favorite_books = [
         ] if request.user.user_favorite_books is None else request.user.user_favorite_books
         context = {
@@ -611,34 +631,30 @@ class ContentPlayHTML(APIView):
             'user': request.user,
             'user_favorites': user_favorite_books
         }
+        print(user_favorite_books)
         return Response(context, template_name=self.template_name)
 
+
 # 성우
+
+
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
 class VoiceCustomHTML(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/voice_custom.html'
-    
-    def get(self, request, book_id):
-        user_id = request.user.user_id
-        print("user_id is",user_id)
-        print("book id is",book_id)
 
-        # Voice 모델에서 voice_name 값이 일치하는 객체 찾기
-        try:
-            voices_with_user_id = Voice.objects.filter(user_id=user_id)
-            voices_without_user_id = Voice.objects.exclude(user_id=user_id)
-            voice_names1 = [voice.voice_name for voice in voices_with_user_id]
-            voice_names2 = [voice.voice_name for voice in voices_without_user_id]
-            context ={
-                'voice_names1': voice_names1,
-                'voice_names2': voice_names2,
-                'book_id': book_id,
-                'active_tab': 'voice_private'
-            }
-            return Response(context, template_name=self.template_name)
-        except :
-            return Response(status=404,template_name=self.template_name)
+    def get(self, request):
+        user_voices = Voice.objects.filter(user=request.user)
+        public_voices = Voice.objects.filter(
+            voice_is_public=True).exclude(user=request.user)
+
+        context = {
+            'active_tab': 'voice_private',
+            'user_voices': user_voices,
+            'public_voices': public_voices
+        }
+        return Response(context, template_name=self.template_name)
+
 
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
 class VoiceCelebrityHTML(APIView):
@@ -651,42 +667,153 @@ class VoiceCelebrityHTML(APIView):
         }
         return Response(context, template_name=self.template_name)
 
+
 class voice_custom_upload(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/voice_custom_upload.html'
-    
+
     def get(self, request):
         book_id = request.GET.get("book_id")
 
         try:
-            context ={
+            context = {
                 'book_id': book_id
             }
             return Response(context, template_name=self.template_name)
-        except :
-            return Response(status=404,template_name=self.template_name)
+        except:
+            return Response(status=404, template_name=self.template_name)
+
+    def post(self, request):
+        data = request.data
+
+        # 이름 중복 검사
+        if 'voice_name' in data and 'voice_photo' not in data and 'voice_file' not in data:
+            voice_name = data['voice_name']
+            if Voice.objects.filter(voice_name=voice_name).exists():
+                return JsonResponse({'message': '이미 존재하는 이름입니다.'}, status=200)
+            else:
+                return JsonResponse({'message': '사용 가능한 이름입니다.'}, status=200)
+
+        # Voice 인스턴스 생성
+        elif 'voice_name' in data and 'voice_photo' in data and 'voice_file' in data:
+            voice_name = data['voice_name']
+            voice_photo = request.FILES['voice_photo']
+            voice_file = request.FILES['voice_file']  # client에서 받아온 mp3 파일
+
+            if Voice.objects.filter(voice_name=voice_name).exists():
+                return JsonResponse({'error': '이미 존재하는 이름입니다.'}, status=400)
+
+            # 여기에 mp3를 rvc로 바꾸는 로직을 작성하세요.
+
+            # 파일을 임시 디렉토리에 저장
+            temp_voice_photo = TemporaryFile.objects.create(
+                temp_voice_image_path=voice_photo
+            )
+
+            # 여기에 rvc 파일을 임시로 저장하세요. 현재는 mp3 파일을 그대로 저장합니다.
+            temp_voice_file = TemporaryFile.objects.create(
+                temp_voice_sample_path=voice_file
+            )
+
+            # 세션에 데이터 저장
+            request.session['voice_creation'] = {
+                'voice_name': voice_name,
+                'temp_voice_photo_id': temp_voice_photo.id,
+                'temp_voice_file_id': temp_voice_file.id
+            }
+
+            redirect_url = reverse('audiobook:voice_custom_complete')
+            return JsonResponse({'redirect_url': redirect_url})
+        else:
+            return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
+
 
 class voice_custom_complete(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/voice_custom_complete.html'
-    
+
     def get(self, request):
-        book_id = request.GET.get("book_id")
+        voice_creation_data = request.session.get(
+            'voice_creation')  # 세션에서 데이터를 가져옴
+
+        context = {}
+
+        if voice_creation_data:
+            voice_name = voice_creation_data['voice_name']
+            context['voice_name'] = voice_name  # 세션 데이터를 뷰로 넘겨줌
 
         try:
-            context ={
-                'book_id': book_id
-            }
             return Response(context, template_name=self.template_name)
-        except :
-            return Response(status=404,template_name=self.template_name)
+        except:
+            return Response(status=404, template_name=self.template_name)
+
+    def post(self, request):
+        data = request.data
+        action = data.get('action')
+
+        voice_creation_data = request.session.get('voice_creation')  # 세션 데이터
+
+        if action == 'play':
+            # 'Play'를 누르면 text랑 tone을 넘겨 받음
+            tts_text = data.get('tts_text', '')
+            tone = data.get('tone', 0)
+            print("TTS Text:", tts_text)
+            print("Tone:", tone)
+
+            # 여기에 tts 관련 로직을 작성하세요.
+
+            return JsonResponse({'status': 'TTS processed'})
+
+        elif action == 'save':
+            voice_creation_data = request.session.get(
+                'voice_creation')  # 세션 데이터
+
+            if voice_creation_data:
+                voice_name = voice_creation_data['voice_name']
+                temp_voice_photo_id = voice_creation_data['temp_voice_photo_id']
+                temp_voice_file_id = voice_creation_data['temp_voice_file_id']
+                public_status = data.get('public') == 'true'
+
+                # 임시 파일 객체 가져오기
+                temp_voice_photo = TemporaryFile.objects.get(
+                    id=temp_voice_photo_id)
+                temp_voice_file = TemporaryFile.objects.get(
+                    id=temp_voice_file_id)
+
+                # param 조정된 rvc를 voice_path에 저장하세요.
+                # 적당한 텍스트를 통해 샘플을 생성하고, voice_sample_path에 저장하세요.
+
+                # Voice 인스턴스 생성 및 저장
+                new_voice = Voice(
+                    voice_name=voice_name,
+                    voice_image_path=temp_voice_photo.temp_voice_image_path,
+                    voice_sample_path=temp_voice_file.temp_voice_sample_path,
+                    voice_is_public=public_status,
+                    user=request.user
+                    # 여기에 위에서 추가한 voice_path랑 voice_sample_path를 추가하세요.
+                )
+                new_voice.save()
+
+                # 임시 파일 삭제 및 세션 데이터 제거
+                temp_voice_photo.delete()
+                temp_voice_file.delete()
+                del request.session['voice_creation']
+
+                redirect_url = reverse('audiobook:voice_custom')
+                return JsonResponse({'redirect_url': redirect_url})
+
+        else:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+
 
 def voice_custom_upload_post(request):
     return render(request, 'audiobook/voice_custom.html')
 
+
 @api_view(['GET'])
 def helloAPI(request):
     return Response("hello world!")
+
 
 @api_view(["GET", "POST"])
 def voice_search(request):
@@ -707,13 +834,12 @@ def voice_search(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-#중복찾기
+# 중복찾기
 class Voice_Custom_Search(View):
     def get(self, request):
         voice_name = request.GET.get('voice_name', None)
-        print("i got",voice_name)
-        
+        print("i got", voice_name)
+
         if voice_name is None:
             return JsonResponse({'error': 'voice_name parameter is required.'})
 
