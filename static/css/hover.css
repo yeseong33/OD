@@ -1,0 +1,23 @@
+.card-img-overlay {
+    opacity: 0;
+}
+.card-img {
+    opacity: 1;
+}
+.card-img-overlay:hover {
+    opacity: 0.9;
+}
+.card-img:hover {
+    opacity: 0.3;
+}
+div .col:hover {
+    transform: scale(1.08);
+}
+div .book-like {
+    display:none;
+}
+.like-icon {
+    border: none;
+    outline: none;
+    background-color: transparent;
+}

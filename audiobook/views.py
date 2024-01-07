@@ -95,6 +95,7 @@ class MainView(APIView):
             'user_history_book': user_history_book,
             'top_voices': top_voices,
             'user': request.user,
+            'user_favorites': request.user.user_favorite_books,
         }
 
         return Response(context, template_name=self.template_name)
@@ -142,7 +143,7 @@ class MainGenreView(APIView):
             '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
         }
 
-        return Response({'categories': categories})
+        return Response({'categories': categories, 'user_favorites' : request.user.user_favorite_books})
 
 # RvcTrain
 
@@ -724,3 +725,23 @@ class Voice_Custom_Search(View):
             return JsonResponse({'check': 'True'})
         except Voice.DoesNotExist:
             return JsonResponse({'check': 'False'})
+
+class BookLikeView(APIView):
+    renderer_classes = [JSONRenderer]
+    
+    def post(self,request):
+        data = request.data
+        user = User.objects.get(user_id = request.user.user_id)
+        book = Book.objects.get(book_id = int(data['book_id']))
+        if user.user_favorite_books == None:
+            user.user_favorite_books=[]
+        if book.book_id in user.user_favorite_books:
+            like_state=-1
+            user.user_favorite_books.pop(user.user_favorite_books.index(book.book_id))
+        else:
+            like_state=1
+            user.user_favorite_books.append(book.book_id)
+        book.book_likes+=like_state
+        book.save()
+        user.save()
+        return Response({'result': True, 'like_state': like_state})
