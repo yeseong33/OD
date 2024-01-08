@@ -41,6 +41,11 @@ urlpatterns = [
     path('rvc_train/', views.Rvc_Train.as_view(), name='rvc_train'),
     path('rvc_save/', views.Rvc_Save, name='rvc_save'),
     path('rvc_cancel/', views.Rvc_Cancel, name='rvc_cancel'),
-    path('tts/', views.TTS, name="TTS")
+    path('tts/', views.TTS, name="TTS"),
+    
+     # 좋아요
+    path('books/like/', views.BookLikeView.as_view(), name='book_like'),
+    path('voices/like/', views.VoiceLikeViewKyus.as_view(), name='voice_likes'),
+    
 
 ]

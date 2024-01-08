@@ -55,7 +55,7 @@
         <div class="col">
             <div class="card h-100 text-end">
                 <a href="{% url 'community:book_share_content' book.book_id %}">
-                    <div class="card h-90" style='height: 90%;'>
+                    <div class="card h-90">
                             <img src="{{ file_path }}{{ book.book_image_path }}" class="card-img" alt="{{ book.book_image_path }}" style='height: 250px;'>
                         <div class="card-img-overlay text-bg-secondary">
                             <h5 class="card-title">{{ book.book_title }}</h5>

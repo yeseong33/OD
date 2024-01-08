@@ -95,12 +95,20 @@ class MainView(APIView):
         # for voice in top_voices:
         # voice.voice_sample_path = convert_sample_voice(voice.voice_path) # 객체 속성(필드) 동적 추가
         # voice.voice_sample_path = static('voices/voice_sample.mp3')
-
+        user=User.objects.get(user_id=request.user.user_id)
+        if user.user_favorite_books==None:
+            user.user_favorite_books=[]
+        if user.user_favorite_voices==None:
+            user.user_favorite_voices=[]
+        user.save()
+        
         context = {
             'top_books': top_books,
             'user_history_book': user_history_book,
             'top_voices': top_voices,
             'user': request.user,
+            'user_favorites': request.user.user_favorite_books,
+            'user_favorites_voices' : request.user.user_favorite_voices,
         }
 
         return Response(context, template_name=self.template_name)
@@ -151,7 +159,7 @@ class MainGenreView(APIView):
             '기타': Book.objects.filter(book_genre='etc').order_by('-book_likes')[:10],
         }
 
-        return Response({'categories': categories})
+        return Response({'categories': categories,'user_favorites': request.user.user_favorite_books})
 
 # RvcTrain
 
@@ -796,22 +804,22 @@ class VoiceLikeView(APIView):
         
         if user.user_favorite_voices is None:
             user.user_favorite_voices = [voice_id]
-            voice.voice_like += 1
+            like_state = 1
         else:
             if voice_id in map(int, user.user_favorite_voices):
                 user.user_favorite_voices.remove(voice_id)
-                voice.voice_like -= 1
+                like_state = -1
                 print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
             else:
                 user.user_favorite_voices.append(voice_id)
-                voice.voice_like += 1
+                like_state = 1
                 print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
-                
+        voice.voice_like += like_state
         user.save()
         voice.save()
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True,'like_state':like_state})
 
 
 @api_view(["GET", "POST"])
@@ -849,3 +857,39 @@ class Voice_Custom_Search(View):
             return JsonResponse({'check': 'True'})
         except Voice.DoesNotExist:
             return JsonResponse({'check': 'False'})
+
+class BookLikeView(APIView):
+    renderer_classes = [JSONRenderer]
+    
+    def post(self,request):
+        data = request.data
+        user = User.objects.get(user_id = request.user.user_id)
+        book = Book.objects.get(book_id = int(data['book_id']))
+        if book.book_id in user.user_favorite_books:
+            like_state=-1
+            user.user_favorite_books.pop(user.user_favorite_books.index(book.book_id))
+        else:
+            like_state=1
+            user.user_favorite_books.append(book.book_id)
+        book.book_likes+=like_state
+        book.save()
+        user.save()
+        return Response({'result': True, 'like_state': like_state})
+
+class VoiceLikeViewKyus(APIView):
+    renderer_classes = [JSONRenderer]
+    
+    def post(self,request):
+        data = request.data
+        user = User.objects.get(user_id = request.user.user_id)
+        voice = Voice.objects.get(voice_id = int(data['voice_id']))
+        if voice.voice_id in user.user_favorite_voices:
+            like_state=-1
+            user.user_favorite_voices.pop(user.user_favorite_voices.index(voice.voice_id))
+        else:
+            like_state=1
+            user.user_favorite_voices.append(voice.voice_id)
+        voice.voice_like+=like_state
+        voice.save()
+        user.save()
+        return Response({'result': True, 'like_state': like_state})
