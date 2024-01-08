@@ -25,7 +25,7 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
-
+from django.http import JsonResponse
 # Django REST framework 관련 라이브러리
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
@@ -41,7 +41,7 @@ from .serializers import *
 from user.serializers import UserSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT
 from manager.serializers import FAQSerializer
-
+from user.views import decode_jwt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 
@@ -85,8 +85,11 @@ class BookShareHtml(APIView):
 
     def get(self, request):
         file_path = self.get_file_path()
-        books = Book.objects.all()
-
+        books = Book.objects.all().order_by('book_id')
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        user_favorites = user.user_favorite_books # 유저가 좋아요 누른 책 조회.
+        
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
@@ -100,10 +103,39 @@ class BookShareHtml(APIView):
         context = {
             'file_path': file_path,
             'page_obj': page_obj,
+            'user_favorites' : user_favorites,
             'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
+    
+
+class BookLikeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        book_id = int(request.GET.get('book_id'))  
+        book = Book.objects.get(book_id = book_id)
+
+        if user.user_favorite_books is None:
+            user.user_favorite_books = [book_id]
+            book.book_likes += 1
+        else:
+            if book_id in map(int, user.user_favorite_books):
+                user.user_favorite_books.remove(book_id)
+                book.book_likes -= 1
+            else:
+                user.user_favorite_books.append(book_id)
+                book.book_likes += 1
+                
+        user.save()
+        book.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
 
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
@@ -375,14 +407,19 @@ class BookSearchView(APIView):
             response = requests.get(url, headers=headers, params=params)
 
             if response.status_code == 200:
-                context['books'] = response.json()['items']
+                api_books = response.json()['items']
+                
+                # Book 테이블에 없는 책들만 필터링
+                existing_isbns = set(Book.objects.values_list('book_isbn', flat=True))
+                filtered_books = [book for book in api_books if book['isbn'] not in existing_isbns]
+                context['books'] = filtered_books
+                
             else:
                 context['error'] = "An error occurred while searching for books."
-
+            # print(context['books'])
         return Response(context)
 
 # 신규 도서 신청 완료 페이지
-
 
 class EmailThread(threading.Thread):  # threading 모듈을 사용하여 이메일 전송을 별도의 스레드에서 실행
     def __init__(self, email):
@@ -400,23 +437,18 @@ def send_async_mail(subject, message, from_email, recipient_list):  # 이메일 
 
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
-class BookCompleteView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'community/book_complete.html'
-
+class BookRequestAPI(APIView):
     def get(self, request, isbn):
         context = {
             'active_tab': 'book_search'
         }
-        if Book.objects.filter(book_isbn=isbn).exists():
-            context['message'] = '이미 등록되어 사용 가능한 책입니다.'
-            context['image'] = static('images/exist.png')
-            return Response(context)
 
+        book_request, created = BookRequest.objects.get_or_create(request_isbn=isbn, defaults={'request_count': 0})
+        
+        existing_user_request = UserRequestBook.objects.filter(user_id=request.user.user_id, request=book_request).exists()
+        if existing_user_request:
+            context['message'] = "이미 신청한 책입니다. 등록이 완료되면 메일로 알려드리겠습니다."
         else:
-            book_request, created = BookRequest.objects.get_or_create(
-                request_isbn=isbn, defaults={'request_count': 0})
-
             # Atomically increment the request_count to ensure accuracy with concurrent requests
             with transaction.atomic():
                 BookRequest.objects.filter(request_isbn=isbn).update(
@@ -425,26 +457,24 @@ class BookCompleteView(APIView):
 
             UserRequestBook.objects.create(
                 user=request.user, request=book_request)
+            context['message'] = '신규 도서 신청이 완료되었습니다. 등록이 완료되면 메일로 알려드리겠습니다.'
 
-            context['message'] = '신청이 완료되었습니다.<br>등록이 완료되면 메일로 알려드리겠습니다.'
-            context['image'] = static('images/complete_book.png')
+        # 이메일 보내기
+        if request.user.email:
+            try:
+                subject = '[오디 알림] 책 신청 완료'
+                html_content = render_to_string(
+                    'community/email_template.html', {'nickname': request.user.nickname})
+                plain_message = strip_tags(html_content)
+                from_email = '오디 <wooyoung9654@gmail.com>'
+                send_async_mail(subject, plain_message,
+                                from_email, [request.user.email])
+                print('Email sent successfully')
+            except Exception as e:
+                # 로그 기록, 오류 처리 등
+                print(f'Error sending email: {e}')
 
-            # 이메일 보내기
-            if request.user.email:
-                try:
-                    subject = '[오디 알림] 책 신청 완료'
-                    html_content = render_to_string(
-                        'community/email_template.html', {'nickname': request.user.nickname})
-                    plain_message = strip_tags(html_content)
-                    from_email = '오디 <wooyoung9654@gmail.com>'
-                    send_async_mail(subject, plain_message,
-                                    from_email, [request.user.email])
-                    print('Email sent successfully')
-                except Exception as e:
-                    # 로그 기록, 오류 처리 등
-                    print(f'Error sending email: {e}')
-
-            return Response(context)
+        return Response(context)
 
 # 1:1 문의
 
@@ -621,3 +651,5 @@ class FAQDetail(APIView):
         faq = self.get_object(pk)
         faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    
