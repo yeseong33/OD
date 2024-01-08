@@ -34,6 +34,8 @@ urlpatterns = [
          name='voice_custom_upload_post'),
     path('voice/custom/search/', views.Voice_Custom_Search.as_view(),
          name='voice_custom_search'),
+    path('voice/like/', views.VoiceLikeView.as_view(), name='voice_like'),
+    
 
     # rvc train
     path('rvc_train/', views.Rvc_Train.as_view(), name='rvc_train'),
