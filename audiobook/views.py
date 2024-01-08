@@ -597,10 +597,13 @@ class VoiceCustomHTML(APIView):
     template_name = 'audiobook/voice_custom.html'
 
     def get(self, request):
-        user_voices = Voice.objects.filter(user=request.user)
-        public_voices = Voice.objects.filter(
-            voice_is_public=True).exclude(user=request.user)
-
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        
+        user_favorite_voice = user.user_favorite_voices
+        user_voices = Voice.objects.filter(user = user).order_by('voice_id')
+        public_voices = Voice.objects.filter(voice_is_public=True).exclude(user = user).order_by('voice_id')
+        
         search_term = request.GET.get('search_term')
         if search_term:
             user_voices = user_voices.filter(voice_name__icontains=search_term)
@@ -610,8 +613,10 @@ class VoiceCustomHTML(APIView):
         context = {
             'active_tab': 'voice_private',
             'user_voices': user_voices,
-            'public_voices': public_voices
+            'public_voices': public_voices,
+            'user_favorites' : user_favorite_voice,
         }
+        
         return Response(context, template_name=self.template_name)
 
 
@@ -778,6 +783,35 @@ def voice_custom_upload_post(request):
 @api_view(['GET'])
 def helloAPI(request):
     return Response("hello world!")
+
+
+class VoiceLikeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        voice_id = int(request.GET.get('voice_id'))  
+        voice = Voice.objects.get(voice_id = voice_id)
+        
+        if user.user_favorite_voices is None:
+            user.user_favorite_voices = [voice_id]
+            voice.voice_like += 1
+        else:
+            if voice_id in map(int, user.user_favorite_voices):
+                user.user_favorite_voices.remove(voice_id)
+                voice.voice_like -= 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
+            else:
+                user.user_favorite_voices.append(voice_id)
+                voice.voice_like += 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+                
+        user.save()
+        voice.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
 
 
 @api_view(["GET", "POST"])
