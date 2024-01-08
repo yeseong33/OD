@@ -84,10 +84,14 @@ class MainView(APIView):
 
         # 최근 이용한 책
         user_history_book = []  # 최신 이용한 책 순서로 보이기 위해서 filter를 사용하지 않고 리스트를 만들어서 사용
-        if request.user.user_book_history is not None:
-            for book_id in request.user.user_book_history:
-                book = get_object_or_404(Book, book_id=book_id)
-                user_history_book.append(book)
+        if isinstance(request.user, AnonymousUser):
+            user_history_book = []
+        else:
+            user = request.user
+            if request.user.user_book_history is not None:
+                for book_id in request.user.user_book_history:
+                    book = get_object_or_404(Book, book_id=book_id)
+                    user_history_book.append(book)
 
         # 이달의 TOP 10 음성
         top_voices = Voice.objects.all().order_by('-voice_like')[:10]
@@ -100,7 +104,7 @@ class MainView(APIView):
             'top_books': top_books,
             'user_history_book': user_history_book,
             'top_voices': top_voices,
-            'user': request.user,
+            'user': user,
         }
 
         return Response(context, template_name=self.template_name)
