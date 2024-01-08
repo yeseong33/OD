@@ -14,6 +14,7 @@ class InquirySerializer(serializers.ModelSerializer):
     detail_url = serializers.SerializerMethodField()  # get_detail_url() 의 return 값
     user = serializers.SerializerMethodField()  # get_user() 의 return 값
     inquiry_created_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    inquiry_answered_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
     class Meta:
         model = Inquiry
         fields = '__all__'

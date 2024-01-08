@@ -28,12 +28,12 @@
         <div class="col-6">
             <div class="input-group gap-4">
                 <div class="col">
-                    <input type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
+                    <input id="search-input" type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
                 </div>
                 <div class="input-group-append">
-                    <button class="btn btn-outline-orange-400" type="button">검색</button>
+                    <button id="search-button" class="btn btn-outline-orange-400" type="button">검색</button>
                 </div>
-            </div>
+            </div>  
         </div>
     </div>
 </div>
@@ -99,6 +99,13 @@
             document.cookie = "selectedVoiceId=" + voiceId + ";path=/";
             document.cookie = "selectedVoiceName=" + voiceName + ";path=/";
         }
+
+        // 검색 버튼에 대한 이벤트 리스너 추가
+        document.getElementById('search-button').addEventListener('click', function() {
+            var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+            // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
+            window.location.href = `{% url 'audiobook:voice_custom' %}?search_term=${searchTerm}`;
+        });
     });
 </script>
 {% endblock %}
