@@ -7,10 +7,11 @@ function appendBooks(books) {
     const container = document.getElementById('bookContainer');
     books.forEach(book => {
         const bookElement = document.createElement('div');
+        console.log(book.book_image_path)
         bookElement.innerHTML = `
             <div class="book-card">
                 <a href="/books/${book.book_id}/">
-                    <img src="${book.book_cover}" alt="${book.title}" />
+                    // <img src="${book.book_image_path}" alt="${book.title}" />
                     <div>
                         <h5>${book.title}</h5>
                         <p>${book.author}</p>

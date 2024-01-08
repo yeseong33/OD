@@ -545,6 +545,7 @@ def show_subscription(request):
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
+        now = timezone.now()
         dates = [today - relativedelta(months=n) for n in range(11, -1, -1)]
 
         data = {
@@ -554,7 +555,8 @@ class SubscriptionCountAPI(APIView):
         for date_point in dates:
             # 날짜를 'aware' datetime 객체로 변환
             aware_date_point = timezone.make_aware(
-                dt.combine(date_point, dt.min.time()))
+                dt.combine(date_point.replace(day=today.day), now.time()))
+            print(aware_date_point)
 
             count = Subscription.objects.filter(
                 sub_start_date__lte=aware_date_point,
