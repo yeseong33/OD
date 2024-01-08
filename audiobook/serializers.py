@@ -8,8 +8,4 @@ class VoiceSerializer(serializers.ModelSerializer):
         model = Voice
         fields = ["voice_name", "voice_like", "voice_path", "voice_image_path", "voice_is_public", "user"]
 
-class TemporaryFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TemporaryFile
-        fields = '__all__'
     
