@@ -15,7 +15,8 @@
                 <h1 class="menu-font">책을 원하는 목소리로 들을 수 있는 기회를 누려보세요!</h1>
             </div>
             <div class="row">
-                <form method="post" action="{% url 'user:payments' %}">
+                <!-- SubscribeView의 post 메서드로 POST 요청을 보내는 form -->
+                <form method="post" action="{% url 'user:profile' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-orange-400">구독하기</button>
                 </form>

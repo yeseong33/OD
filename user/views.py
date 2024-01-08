@@ -217,166 +217,210 @@ def decode_jwt(token):
     return user_inform
 
 # 결제
-def payments(request):
-    user = request.user  # Django의 인증 시스템을 통해 현재 로그인한 사용자를 가져옵니다.
+# def payments(request):
+#     user = request.user  # Django의 인증 시스템을 통해 현재 로그인한 사용자를 가져옵니다.
     
-    if not user.is_authenticated:
-        return redirect('user:login')  # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉션합니다.
+#     if not user.is_authenticated:
+#         return redirect('user:login')  # 로그인하지 않은 사용자는 로그인 페이지로 리다이렉션합니다.
 
-    if request.method == "POST":
-        # 주문번호 생성 로직
-        date_str = datetime.now().strftime("%Y%m%d")  # 현재 날짜를 YYYYMMDD 형식으로 가져옵니다.
-        last_order = Subscription.objects.filter(sub_payment_status='pending').last()
+#     if request.method == "POST":
+#         # 주문번호 생성 로직
+#         date_str = datetime.now().strftime("%Y%m%d")  # 현재 날짜를 YYYYMMDD 형식으로 가져옵니다.
+#         last_order = Subscription.objects.filter(sub_payment_status='pending').last()
         
-        if last_order:
-            last_order_id = last_order.partner_order_id
-            order_num = int(last_order_id.split(date_str)[-1]) + 1  # 마지막 주문번호에서 숫자 부분을 추출하여 1을 더합니다.
-        else:
-            order_num = 1  # 주문이 없는 경우 1부터 시작합니다.
+#         if last_order:
+#             last_order_id = last_order.partner_order_id
+#             order_num = int(last_order_id.split(date_str)[-1]) + 1  # 마지막 주문번호에서 숫자 부분을 추출하여 1을 더합니다.
+#         else:
+#             order_num = 1  # 주문이 없는 경우 1부터 시작합니다.
 
-        partner_order_id = f"{date_str}{order_num:04d}"  # 새로운 주문번호를 생성합니다.
-        request.session['partner_order_id'] = partner_order_id
+#         partner_order_id = f"{date_str}{order_num:04d}"  # 새로운 주문번호를 생성합니다.
+#         request.session['partner_order_id'] = partner_order_id
 
-        # 결제 API 요청을 위한 URL 및 헤더
-        URL = 'https://kapi.kakao.com/v1/payment/ready'
-        headers = {
-            "Authorization": "KakaoAK " + os.environ.get('KAKAO_API_KEY'),  # 환경 변수에서 API 키를 가져옵니다.
-            "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-        }
+#         # 결제 API 요청을 위한 URL 및 헤더
+#         URL = 'https://kapi.kakao.com/v1/payment/ready'
+#         headers = {
+#             "Authorization": "KakaoAK " + os.environ.get('KAKAO_API_KEY'),  # 환경 변수에서 API 키를 가져옵니다.
+#             "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+#         }
 
-        # 결제 요청 파라미터
-        params = {
-            "cid": "TC0ONETIME",  # 테스트용 코드
-            "partner_order_id": partner_order_id,  # 생성한 주문번호
-            "partner_user_id": user.user_id,  # 로그인한 사용자의 user_id
-            "item_name": "1개월 구독",  # 구매 물품 이름
-            "quantity": "1",  # 구매 물품 수량
-            "total_amount": "1",  # 구매 물품 가격
-            "tax_free_amount": "0",  # 구매 물품 비과세
-            "approval_url": request.build_absolute_uri(reverse('user:approval')),  # 결제 성공 시 이동할 URL
-            "cancel_url": request.build_absolute_uri(request.get_full_path()),  # 결제 취소 시 이동할 URL
-            "fail_url": request.build_absolute_uri(request.get_full_path()),  # 결제 실패 시 이동할 URL
-        }
+#         # 결제 요청 파라미터
+#         params = {
+#             "cid": "TC0ONETIME",  # 테스트용 코드
+#             "partner_order_id": partner_order_id,  # 생성한 주문번호
+#             "partner_user_id": user.user_id,  # 로그인한 사용자의 user_id
+#             "item_name": "1개월 구독",  # 구매 물품 이름
+#             "quantity": "1",  # 구매 물품 수량
+#             "total_amount": "1",  # 구매 물품 가격
+#             "tax_free_amount": "0",  # 구매 물품 비과세
+#             "approval_url": request.build_absolute_uri(reverse('user:approval')),  # 결제 성공 시 이동할 URL
+#             "cancel_url": request.build_absolute_uri(request.get_full_path()),  # 결제 취소 시 이동할 URL
+#             "fail_url": request.build_absolute_uri(request.get_full_path()),  # 결제 실패 시 이동할 URL
+#         }
 
-        # 결제 요청을 보냅니다.
-        res = requests.post(URL, headers=headers, params=params)
-        if res.status_code != 200:
-            # 요청에 실패한 경우, 오류 메시지를 표시할 수 있습니다.
-            return HttpResponse('결제 준비 요청에 실패하였습니다.', status=500)
+#         # 결제 요청을 보냅니다.
+#         res = requests.post(URL, headers=headers, params=params)
+#         if res.status_code != 200:
+#             # 요청에 실패한 경우, 오류 메시지를 표시할 수 있습니다.
+#             return HttpResponse('결제 준비 요청에 실패하였습니다.', status=500)
 
-        # 결제 승인시 사용할 tid를 세션에 저장하고, 결제 페이지로 넘어갈 URL을 저장합니다.
-        request.session['tid'] = res.json()['tid']  
-        next_url = res.json()['next_redirect_pc_url']  
-        return redirect(next_url)
+#         # 결제 승인시 사용할 tid를 세션에 저장하고, 결제 페이지로 넘어갈 URL을 저장합니다.
+#         request.session['tid'] = res.json()['tid']  
+#         next_url = res.json()['next_redirect_pc_url']  
+#         return redirect(next_url)
     
-    # POST 요청이 아닌 경우 결제 페이지를 렌더링합니다.
-    return render(request, 'payments/payments.html')
+#     # POST 요청이 아닌 경우 결제 페이지를 렌더링합니다.
+#     return render(request, 'payments/payments.html')
     
-def approval(request):
-    partner_order_id = request.session.get('partner_order_id')
-    user = request.user
-    tid = request.session.get('tid')
-    pg_token = request.GET.get("pg_token")
+# def approval(request):
+#     partner_order_id = request.session.get('partner_order_id')
+#     user = request.user
+#     tid = request.session.get('tid')
+#     pg_token = request.GET.get("pg_token")
 
-    if not partner_order_id or not tid or not pg_token:
-        # 필요한 세션 데이터 또는 pg_token이 없을 경우 오류 처리
-        return HttpResponse('필요한 결제 정보가 없습니다.', status=400)
+#     if not partner_order_id or not tid or not pg_token:
+#         # 필요한 세션 데이터 또는 pg_token이 없을 경우 오류 처리
+#         return HttpResponse('필요한 결제 정보가 없습니다.', status=400)
 
-    URL = 'https://kapi.kakao.com/v1/payment/approve'
-    headers = {
-        "Authorization": "KakaoAK " + os.environ.get('KAKAO_API_KEY'),
-        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-    }
-    params = {
-        "cid": "TC0ONETIME",
-        "tid": tid,
-        "partner_order_id": partner_order_id,
-        "partner_user_id": user.id,  # user_id 대신 id를 사용
-        "pg_token": pg_token,
-    }
+#     URL = 'https://kapi.kakao.com/v1/payment/approve'
+#     headers = {
+#         "Authorization": "KakaoAK " + os.environ.get('KAKAO_API_KEY'),
+#         "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+#     }
+#     params = {
+#         "cid": "TC0ONETIME",
+#         "tid": tid,
+#         "partner_order_id": partner_order_id,
+#         "partner_user_id": user.id,  # user_id 대신 id를 사용
+#         "pg_token": pg_token,
+#     }
 
-    res = requests.post(URL, headers=headers, params=params)
+#     res = requests.post(URL, headers=headers, params=params)
 
-    if res.status_code != 200:
-        # 결제 승인 요청에 실패한 경우 오류 처리
-        return HttpResponse('결제 승인 요청에 실패하였습니다.', status=500)
+#     if res.status_code != 200:
+#         # 결제 승인 요청에 실패한 경우 오류 처리
+#         return HttpResponse('결제 승인 요청에 실패하였습니다.', status=500)
 
-    res_json = res.json()
-    amount = res_json['amount']['total']
-    context = {
-        'amount': amount,
-        'res': res_json
-    }
+#     res_json = res.json()
+#     amount = res_json['amount']['total']
+#     context = {
+#         'amount': amount,
+#         'res': res_json
+#     }
 
-    return render(request, 'payments/approval.html', context)
+#     return render(request, 'payments/approval.html', context)
 
 
 class SubscribeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        if request.COOKIES.get("jwt") is None:  # User가 로그인 안했을시.
+        if not request.user.is_authenticated:  # User가 로그인 안 했을 시
             print("user가 로그인하지 않고 Subscribe 페이지 접속.")
             return redirect('user:login')
+        
+        user = request.user
+        subscription, created = Subscription.objects.get_or_create(user=user)
+
+        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date else 0
+
+        if subscription.is_subscribed:
+            # 구독중인 경우
+            template_name = 'user/pay_inform.html'
         else:
-            user_inform = decode_jwt(request.COOKIES.get("jwt"))
-            user = User.objects.get(user_id=user_inform['user_id'])
-            subscribe = Subscription.objects.get(user_id=user.user_id)
+            # 구독중이지 않은 경우
+            template_name = "user/non_pay_inform.html"
 
+        context = {
+            'user': user,
+            'left_days': left_days,
+            'active_tab': 'user_subscription'
+        }
 
-            try:
-                subscribe = Subscription.objects.get(user=user)
-                if subscribe.is_subscribed:
-                    # 구독중인 경우
-                    template_name = 'user/pay_inform.html'
-                    left_days = (subscribe.sub_end_date - timezone.now()).days
-                    context = {
-                        'user': user,
-                        'left_days': left_days,
-                        'active_tab': 'user_subscription'
-                    }
-                else:
-                    # 구독중이지 않은 경우
-                    template_name = "user/non_pay_inform.html"
-                    context = {
-                        'active_tab': 'user_subscription'
-                    }
-            except Subscription.DoesNotExist:
-                # 구독 정보가 없는 경우
-                template_name = "user/non_pay_inform.html"
-                context = {
-                    'user': user,
-                    'left_days': left_days,
-                    'active_tab': 'user_subscription',
-                }
-
-            return Response(context, template_name=template_name)
+        return Response(context, template_name=template_name)
         
     def post(self, request):
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id=user_inform['user_id'])
-
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+        
+        user = request.user
         subscription, created = Subscription.objects.get_or_create(user=user)
-        if not subscription.is_subscribed:
+        
+        # 구독이 새롭게 생성되었거나 아직 구독되지 않았다면,
+        if created or not subscription.is_subscribed:
+            # 최초 구독인 경우, 구독 시작일을 현재로 설정
+            if created or subscription.sub_start_date is None:
+                subscription.sub_start_date = timezone.now()
+            
+            # 구독을 활성화하고 상태를 'success'로 변경
             subscription.is_subscribed = True
-            subscription.sub_start_date = timezone.now()
-            subscription.sub_end_date = timezone.now() + timedelta(days=30)  # 30일 후로 설정
-            subscription.save()
-
-            # 구독 남은 기간 계산
-            left_days = (subscription.sub_end_date - timezone.now()).days
-
-            context = {
-                'user': user,
-                'left_days': left_days,
-                'active_tab': 'user_subscription'
-            }
-            # 구독이 성공적으로 처리되면 pay_inform 페이지로 리다이렉션
+            subscription.sub_payment_status = 'success'
+            
+            # 구독 종료일이 이미 설정되어 있지 않거나 과거일 경우, 현재부터 한달 후로 갱신
+            if not subscription.sub_end_date or subscription.sub_end_date < timezone.now():
+                subscription.sub_end_date = timezone.now() + timedelta(days=30)
+            
+            subscription.save()  # 변경사항을 저장
+            
             return redirect('user:pay_inform')
         else:
-            # 이미 구독중인 경우 에러 메시지와 함께 처리
-            return JsonResponse({'error': '이미 구독중입니다.'}, status=400)
+            # 이미 구독 중인 경우, 구독 종료일만 갱신
+            if subscription.sub_end_date and subscription.sub_end_date > timezone.now():
+                # 기존 구독의 종료일이 현재보다 미래인 경우에만 갱신
+                subscription.sub_end_date += timedelta(days=30)
+                subscription.save()
 
+            return redirect('user:pay_inform')
+def cancel_subscription(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+    
+    user = request.user
+    try:
+        subscription = Subscription.objects.get(user=user, is_subscribed=True)
+        subscription.is_subscribed = False
+        subscription.sub_payment_status = 'pending'  # 결제 상태를 'cancelled'로 변경
+        subscription.save()
+        return JsonResponse({'success': '구독이 취소되었습니다.'})
+    except Subscription.DoesNotExist:
+        return JsonResponse({'error': '구독 정보가 없습니다.'}, status=404)
+    
+def pay_inform_view(request):
+    if not request.user.is_authenticated:
+        return redirect('user:login')
+
+    try:
+        subscription = Subscription.objects.get(user=request.user)
+        
+        # 구독 시작일로부터 현재까지의 개월 수 계산
+        if subscription.sub_start_date:
+            months_subscribed = (timezone.now().date() - subscription.sub_start_date.date()).days // 30
+            # 다음 자동 결제일 계산
+            next_payment_date = subscription.sub_start_date.date() + timedelta(days=(months_subscribed + 1) * 30)
+        else:
+            months_subscribed = 0
+            next_payment_date = None
+
+        # 잔여일수 계산
+        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date else 0
+
+        context = {
+            'user': request.user,
+            'sub_start_date': subscription.sub_start_date,
+            'months_subscribed': months_subscribed,
+            'next_payment_date': next_payment_date,
+            'left_days': left_days,
+        }
+    except Subscription.DoesNotExist:
+        context = {
+            'user': request.user,
+            'sub_start_date': None,
+            'months_subscribed': 0,
+            'next_payment_date': None,
+            'left_days': 0,
+        }
+
+    return render(request, 'user/pay_inform.html', context)
 
 class UserInformView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
