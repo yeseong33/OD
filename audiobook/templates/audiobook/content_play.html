@@ -47,6 +47,29 @@
             <!-- 여백 -->
             <div class="row mt-5"></div>
 
+            <!-- 톤 조정하기 -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-8 d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <div class="row w-100">
+                        <div class="col-3 d-flex align-items-center justify-content-center">
+                            <label for="toneRange" class="form-label fs-4 fw-bold">톤</label>
+                        </div>
+                        <div class="col-9 d-flex align-items-center justify-content-center">
+                            <input type="range" class="form-range" name="toneRange" id="toneRange" min="0" max="12">
+                        </div>
+                    </div>
+                </div>
+        
+                <div>
+                    <div class="col-10 d-flex justify-content-end">
+                        <div class="row">
+                            <button id="toneBtn" class="btn btn-outline-orange-400 btn-sm">조정하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- 재생 바 -->
             <div class="row justify-content-center"> 
                 <div class="col-8">
@@ -98,6 +121,34 @@
             }
         }
         return null;
+    }
+
+    // 조정하기 버튼 함수
+    function submitTone() {
+        let toneValue = document.getElementById('toneRange').value;
+        const bookId = {{ book.book_id }}; // Django 템플릿 변수
+        var tone = document.getElementById('toneRange').value;
+        var text = "{{book.book_description}}";
+        var formData = new FormData();
+        console.log(tone,text)
+        
+        formData.append('tone', tone);
+        formData.append('text', text);
+    
+        fetch('{% url 'audiobook:content_play' book_id=book.book_id %}', {
+            method: 'POST',
+            headers: {
+                //'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken('csrftoken')
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            // 여기서 응답 데이터를 처리합니다.
+        })
+        .catch(error => console.error('Error:', error));
     }
 
     // 오디오 관련 기능을 담당하는 함수
@@ -245,6 +296,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         setupAudioPlayer();
         setupLikeButton();
+        const toneButton = document.getElementById('toneBtn');
+        toneButton.addEventListener('click', submitTone);
 
         // 책 내용을 가져오는 코드
         fetch('\\media\\{{book.book_content_path}}')

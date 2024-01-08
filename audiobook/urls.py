@@ -31,5 +31,6 @@ urlpatterns = [
     path('voice/custom/complete/upload', views.voice_custom_upload_post,
          name='voice_custom_upload_post'),
     path('voice/custom/search/', views.Voice_Custom_Search.as_view(),
-         name='voice_custom_search')
+         name='voice_custom_search'),
+    path('voice/like/', views.VoiceLikeView.as_view(), name='voice_like')
 ]

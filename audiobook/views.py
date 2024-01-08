@@ -231,15 +231,26 @@ class ContentPlayHTML(APIView):
     
     def post(self, request, book_id):
         data = request.data
-        action = data.get('action')
         
-        selected_voice_id = request.COOKIES.get('selectedVoiceId')
+        if 'selectedVoiceId' in request.COOKIES:
+            # 선택된 쿠키가 존재하는 경우
+            selected_voice_id = request.COOKIES.get('selectedVoiceId')
+            print("came in")
+            print(f"selectedVoiceId 쿠키 값: {selected_voice_id}")
+        else:
+            # 선택된 쿠키가 존재하지 않는 경우
+            selected_voice_id = 1  # 또는 다른 기본값을 할당할 수 있습니다.
+            # 이에 따른 추가적인 처리를 수행할 수 있습니다.
+
         tone = data.get('tone', 0)
-        text = data.get('text')
+        text = "안녕하세요"
         voice = Voice.objects.get(
-                id=selected_voice_id)
-        voice_model = voice.voice_path
+                pk=selected_voice_id)
         voice_name = voice.voice_name
+        file_path = get_file_path()
+        file_path = "C:/S3_bucket/voice_rvcs/" + voice_name + ".pth"
+        print(file_path)
+        
         # SSH 클라이언트 생성
         client = paramiko.SSHClient()
         # 호스트 키 자동으로 수락
@@ -248,21 +259,15 @@ class ContentPlayHTML(APIView):
         client.connect(hostname=hostname, username=username,
                         key_filename=key_filename)
 
-        
         sftp = client.open_sftp()
         
         # 파일을 전송할 원격 경로
         remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
         # 파일 전송
-        sftp.put(voice_model, remote_file_path)
-
-        # 연결 종료
-        sftp.close()
+        sftp.put(file_path, remote_file_path)
         
         # 셸 세션 열기
-        shell = client.invoke_shell()
-        
         shell = client.invoke_shell()
 
         commands = [
@@ -270,6 +275,7 @@ class ContentPlayHTML(APIView):
             'cd project-main\n',
             f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
             'rm -rf audios/tts.mp3\n',
+            f'rm -rf assets/weights/{voice_name}.pth\n',
         ]
 
         for cmd in commands:
@@ -290,7 +296,7 @@ class ContentPlayHTML(APIView):
         sftp.close()
         client.close()
         
-        JsonResponse({'Good': '변환완료'}, status=200)
+        return JsonResponse({'Good': '변환완료'}, status=200)
         
 
 # 성우
@@ -301,21 +307,27 @@ class VoiceCustomHTML(APIView):
 
     def get(self, request, book_id):
         book = get_object_or_404(Book, pk=book_id)
-        user_voices = Voice.objects.filter(user=request.user)
-        public_voices = Voice.objects.filter(
-            voice_is_public=True).exclude(user=request.user)
-
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        
+        user_favorite_voice = user.user_favorite_voices
+        user_voices = Voice.objects.filter(user = user).order_by('voice_id')
+        public_voices = Voice.objects.filter(voice_is_public=True).exclude(user = user).order_by('voice_id')
+        
         search_term = request.GET.get('search_term')
         if search_term:
             user_voices = user_voices.filter(voice_name__icontains=search_term)
-            public_voices = public_voices.filter(voice_name__icontains=search_term)
+            public_voices = public_voices.filter(
+                voice_name__icontains=search_term)
 
         context = {
             'active_tab': 'voice_private',
             'user_voices': user_voices,
             'public_voices': public_voices,
+            'user_favorites' : user_favorite_voice,
             'book': book
         }
+        
         return Response(context, template_name=self.template_name)
 
 @method_decorator(login_required(login_url='user:login'), name='dispatch')
@@ -326,7 +338,8 @@ class VoiceCelebrityHTML(APIView):
     def get(self, request, book_id):
         book = get_object_or_404(Book, pk=book_id)
         user_favorite_voices = request.user.user_favorite_voices
-        user_favorite_voices = Voice.objects.filter(voice_id__in=user_favorite_voices)
+        user_favorite_voices = Voice.objects.filter(
+            voice_id__in=user_favorite_voices)
         top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
         context = {
             'active_tab': 'voice_popular',
@@ -697,6 +710,36 @@ def voice_custom_upload_post(request):
 @api_view(['GET'])
 def helloAPI(request):
     return Response("hello world!")
+
+
+class VoiceLikeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        voice_id = int(request.GET.get('voice_id'))  
+        voice = Voice.objects.get(voice_id = voice_id)
+        
+        if user.user_favorite_voices is None:
+            user.user_favorite_voices = [voice_id]
+            voice.voice_like += 1
+        else:
+            if voice_id in map(int, user.user_favorite_voices):
+                user.user_favorite_voices.remove(voice_id)
+                voice.voice_like -= 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
+            else:
+                user.user_favorite_voices.append(voice_id)
+                voice.voice_like += 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+                
+        user.save()
+        voice.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
 
 @api_view(["GET", "POST"])
 def voice_search(request):
