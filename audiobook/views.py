@@ -115,6 +115,7 @@ def main_search(request):
     serializer = BookSerializer(book_list, many=True)
     return render(request, 'audiobook/main_search.html', {'book_list': serializer.data})
 
+
 class CustomPaginationClass(PageNumberPagination):
     page_size = PAGE_SIZE
 
@@ -130,7 +131,7 @@ class BookListAPI(ListAPIView):
         ).order_by('-book_likes', 'book_id')
         
         return queryset
-    
+
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -546,6 +547,7 @@ class ContentHTML(APIView):
             'file_path': file_path,
             'user_book_history': user_book_history,
             'selected_voice': selected_voice,
+            'user': user,
         }
         return Response(context, template_name=self.template_name)
 
@@ -559,59 +561,6 @@ class ContentPlayHTML(APIView):
         try:
             book = Book.objects.get(pk=book_id)
             voice_name = request.GET.get("voice_name")
-
-            '''
-            if FILE_SAVE_POINT == 'local':
-                model_path = f'C:\\S3_bucket\\voice_rvcs\\{voice_name}.pth'
-            else:
-                model_path = 0
-
-            config = dotenv_values(".env")
-            hostname = config.get("RVC_IP")
-            username = config.get("RVC_USER")
-            key_filename = config.get("RVC_KEY")  # 개인 키 파일 경로
-
-            # SSH 클라이언트 생성
-            client = paramiko.SSHClient()
-            # 호스트 키 자동으로 수락
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            # SSH 연결 (키 기반 인증)
-            client.connect(hostname=hostname, username=username,
-                           key_filename=key_filename)
-
-            
-            try:
-                sftp = client.open_sftp()
-                
-                # 파일을 전송할 원격 경로
-                remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
-
-                # 파일 전송
-                sftp.put(model_path, remote_file_path)
-
-                # 연결 종료
-                sftp.close()
-            except:
-                return Response(status=405, template_name=self.template_name)
-
-            # 셸 세션 열기
-            shell = client.invoke_shell()
-
-            def receive_until_prompt(shell, prompt='your_prompt', timeout=30):
-                # prompt 문자열이 나타날 때까지 출력을 읽습니다.
-                # timeout은 출력이 끝나기를 최대 몇 초간 기다릴지를 정합니다.
-                buffer = ''
-                shell.settimeout(timeout)  # recv 메소드에 타임아웃을 설정합니다.
-                try:
-                    while not buffer.endswith(prompt):
-                        response = shell.recv(1024).decode('utf-8',errors='replace')
-                        buffer += response
-                except socket.timeout:
-                    print("No data received before timeout")
-                return buffer
-                
-            client.close()
-            '''
 
         except Book.DoesNotExist:
             print('book not exist.')
@@ -629,6 +578,12 @@ class ContentPlayHTML(APIView):
         print(user_favorite_books)
         return Response(context, template_name=self.template_name)
 
+    def post(self, request, book_id):
+        data = request.data
+        tone_range = data.get("toneRange")
+        print("tone:", tone_range)
+
+        return JsonResponse({"message": "성공적으로 처리되었습니다."})
 
 # 성우
 
@@ -639,20 +594,26 @@ class VoiceCustomHTML(APIView):
     template_name = 'audiobook/voice_custom.html'
 
     def get(self, request):
-        user_voices = Voice.objects.filter(user=request.user)
-        public_voices = Voice.objects.filter(
-            voice_is_public=True).exclude(user=request.user)
-
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        
+        user_favorite_voice = user.user_favorite_voices
+        user_voices = Voice.objects.filter(user = user).order_by('voice_id')
+        public_voices = Voice.objects.filter(voice_is_public=True).exclude(user = user).order_by('voice_id')
+        
         search_term = request.GET.get('search_term')
         if search_term:
             user_voices = user_voices.filter(voice_name__icontains=search_term)
-            public_voices = public_voices.filter(voice_name__icontains=search_term)
+            public_voices = public_voices.filter(
+                voice_name__icontains=search_term)
 
         context = {
             'active_tab': 'voice_private',
             'user_voices': user_voices,
-            'public_voices': public_voices
+            'public_voices': public_voices,
+            'user_favorites' : user_favorite_voice,
         }
+        
         return Response(context, template_name=self.template_name)
 
 
@@ -663,7 +624,8 @@ class VoiceCelebrityHTML(APIView):
 
     def get(self, request):
         user_favorite_voices = request.user.user_favorite_voices
-        user_favorite_voices = Voice.objects.filter(voice_id__in=user_favorite_voices)
+        user_favorite_voices = Voice.objects.filter(
+            voice_id__in=user_favorite_voices)
         top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
         context = {
             'active_tab': 'voice_popular',
@@ -818,6 +780,35 @@ def voice_custom_upload_post(request):
 @api_view(['GET'])
 def helloAPI(request):
     return Response("hello world!")
+
+
+class VoiceLikeView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+
+    def get(self, request):
+        user_inform = decode_jwt(request.COOKIES.get("jwt"))
+        user = User.objects.get(user_id=user_inform['user_id'])
+        voice_id = int(request.GET.get('voice_id'))  
+        voice = Voice.objects.get(voice_id = voice_id)
+        
+        if user.user_favorite_voices is None:
+            user.user_favorite_voices = [voice_id]
+            voice.voice_like += 1
+        else:
+            if voice_id in map(int, user.user_favorite_voices):
+                user.user_favorite_voices.remove(voice_id)
+                voice.voice_like -= 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
+            else:
+                user.user_favorite_voices.append(voice_id)
+                voice.voice_like += 1
+                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+                
+        user.save()
+        voice.save()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
 
 
 @api_view(["GET", "POST"])
