@@ -119,6 +119,14 @@
 {% block script %}
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
+
+    // 검색 버튼에 대한 이벤트 리스너 추가
+    document.getElementById('search-button').addEventListener('click', function() {
+        var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+        // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
+        window.location.href = `{% url 'community:book_share' %}?search_term=${searchTerm}`;
+    });
+    
     $(document).ready(function () {
         $('.like-icon').click(function () {
             const bookId = $(this).data('book-id');

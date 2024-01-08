@@ -191,7 +191,15 @@
         const likeIcon = document.getElementById("like-icon");
         const bookId = {{book.book_id}};
         var user_favorites = {{user_favorites}};
-        var book_likes = user_favorites.includes(bookId) ? -1 : 1;
+        if (user_favorites.includes(bookId)) {
+            book_likes = -1
+            const uniqueSet = new Set(user_favorites);
+            uniqueSet.delete(bookId);
+            user_favorites =  Array.from(uniqueSet);
+        } else {
+            book_likes = 1
+            user_favorites.push(bookId)
+        }
 
         likeIcon.addEventListener("click", function () {
             const csrfToken = getCSRFToken();
