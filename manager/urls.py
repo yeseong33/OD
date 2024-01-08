@@ -12,7 +12,7 @@ urlpatterns = [
     path('book/request/', views.BookRequestListView.as_view(), name='book_request'),
     path('book/register/<int:book_isbn>/',
          views.BookRegisterView.as_view(), name='book_register'),
-    path('book/register/complete/', views.BookRegisterCompleteView.as_view(),
+    path('api/book/register/complete/', views.BookRegisterAPIView.as_view(),
          name='book_register_complete'),
     path('book_delete/', views.book_delete, name='book_delete'),
 
@@ -28,7 +28,7 @@ urlpatterns = [
 
     # 수익 현황
     path('subscription/', views.show_subscription, name='subscription'),
-    path('api/subscription-count/', views.SubscriptionCountAPI.as_view(), name='api_subscription_count'), 
+    path('api/subscription/count/', views.SubscriptionCountAPI.as_view(), name='api_subscription_count'), 
     
     ## FAQ
     path('faq/', views.ManagerFAQHtml.as_view(), name='faq'),

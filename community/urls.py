@@ -32,8 +32,8 @@ urlpatterns = [
     # 신규 도서 신청
     # http://127.0.0.1:8000/community/books/search
     path('books/search/', views.BookSearchView.as_view(), name='book_search'),
-    path('books/search/<int:isbn>/',
-         views.BookCompleteView.as_view(), name='book_complete'),
+    path('api/books/search/<str:isbn>/',
+         views.BookRequestAPI.as_view(), name='book_complete'),
 
     # 1:1 문의
     path('books/inquiry/', views.InquiryPostHtml.as_view(), name='book_inquiry'),
@@ -42,4 +42,6 @@ urlpatterns = [
 
     # FAQ
     path('books/faq/', views.FAQHtml.as_view(), name='book_faq'),
+    
+    path('books/like/', views.BookLikeView.as_view(), name='book_like')
 ]

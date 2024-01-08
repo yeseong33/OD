@@ -1,6 +1,8 @@
+import os
 from django.db import models
+from config import settings
 from user.models import User
-import json
+from django.core.files.storage import FileSystemStorage
 
 
 class Voice(models.Model):
@@ -35,3 +37,12 @@ class Book(models.Model):
     book_isbn = models.CharField(max_length=255)
     book_view_count = models.JSONField(null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+# 임시로 사진을 저장하기 위한 모델
+
+
+class TemporaryFile(models.Model):
+    temp_voice_image_path = models.ImageField(
+        upload_to='voice_images/')
+    temp_voice_sample_path = models.FileField(
+        upload_to='voice_sample/')

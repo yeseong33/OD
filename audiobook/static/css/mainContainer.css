@@ -1,0 +1,48 @@
+
+/* 아이템 스타일 */
+.book-card {
+  flex: 0 0 auto; /* 아이템들이 줄어들지 않도록 설정 */
+  width: 200px;
+  margin: 0 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.book-card {
+height: 300px;
+}
+
+.book-card img {
+width: 100%; /* 이미지 너비를 카드 너비와 동일하게 설정 */
+height: 100%; /* 이미지 높이를 카드 높이와 동일하게 설정 */
+object-fit: cover; /* 이미지가 비율을 유지하면서 컨테이너를 채우도록 설정 */
+object-position: center; /* 이미지가 컨테이너의 중앙에 위치하도록 설정 */
+}
+
+.book-card:hover {
+transform: scale(1.08);
+}
+
+.book-info {
+  position: absolute; /* 절대 위치 지정 */
+  top: 50%; /* 상단에서 50% 위치 */
+  left: 50%; /* 좌측에서 50% 위치 */
+  transform: translate(-50%, -50%); /* 요소 중앙 정렬 */
+  text-align: center; /* 글자 중앙 정렬 */
+  opacity: 0; /* 기본 상태에서 보이지 않음 */
+  transition: opacity 0.3s; /* 부드러운 투명도 변환 */
+  pointer-events: none; /* 마우스 이벤트 무시 */
+}
+
+.book-card:hover .book-info {
+opacity: 1; /* 마우스 오버 시 정보 표시 */
+color: #FFF; /* 글자 색상 */
+}
+
+.book-card:hover .book-img {
+opacity: 0.5; /* 마우스 오버 시 이미지 투명도 변경 */
+filter: sepia(60%) brightness(20%);
+}
