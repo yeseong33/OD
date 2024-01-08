@@ -20,6 +20,8 @@ urlpatterns = [
     # 문의내역
 
     path('profile/', views.SubscribeView.as_view(), name='profile'),
+    path('profile/pay_inform/', views.pay_inform_view, name='pay_inform'),
+    path('profile/cancel-subscription/', views.cancel_subscription, name='cancel_subscription'),
     path('profile/inform/', views.UserInformView.as_view(), name='inform'),
     path('profile/likebooks/', views.UserLikeBooksView.as_view(), name='like_books'),
     path('profile/likevoices/',
@@ -28,5 +30,8 @@ urlpatterns = [
     path('profile/inquiry/', views.InquiryListView.as_view(), name='inquiry'),
     path('profile/inquiry/<int:inquiry_id>/',
          views.InquiryDetailView.as_view(), name='inquiry_detail'),
-    path('profile/delete/<int:user_id>/', views.UserDeleteView.as_view(), name = 'delete')
+    path('profile/delete/<int:user_id>/', views.UserDeleteView.as_view(), name = 'delete'),
+    
+    # 결제
+     path('subscribe/', views.SubscribeView.as_view(), name='subscribe'),
 ]
