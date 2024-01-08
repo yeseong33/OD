@@ -65,7 +65,13 @@
                                     font: {
                                         size: 17,
                                         weight: 'bold'
+                                    }, 
+                                    callback: function(value) {  // Y축의 눈금을 정수로 강제
+                                        if (value % 1 === 0) {
+                                            return value;
+                                        }
                                     }
+
                                 }
                             },
                             x: {

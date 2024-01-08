@@ -113,8 +113,9 @@ def main_search(request):
     query = request.GET.get('query', '')
     book_list = Book.objects.filter(
         Q(book_title__icontains=query) | Q(book_author__icontains=query))[:PAGE_SIZE]
-    # serializers = BookSerializer(book_list, many=True)
-    return render(request, 'audiobook/main_search.html', {'book_list': book_list})
+    serializer = BookSerializer(book_list, many=True)
+    return render(request, 'audiobook/main_search.html', {'book_list': serializer.data})
+
 
 
 class CustomPaginationClass(PageNumberPagination):
@@ -135,7 +136,7 @@ class BookListAPI(ListAPIView):
             print(book.book_image_path)
 
         return queryset
-
+    
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
