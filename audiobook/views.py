@@ -648,6 +648,11 @@ class VoiceCustomHTML(APIView):
         public_voices = Voice.objects.filter(
             voice_is_public=True).exclude(user=request.user)
 
+        search_term = request.GET.get('search_term')
+        if search_term:
+            user_voices = user_voices.filter(voice_name__icontains=search_term)
+            public_voices = public_voices.filter(voice_name__icontains=search_term)
+
         context = {
             'active_tab': 'voice_private',
             'user_voices': user_voices,
