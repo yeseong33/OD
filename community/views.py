@@ -657,4 +657,23 @@ class FAQDetail(APIView):
         faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class BookLikeView(APIView):
+    renderer_classes = [JSONRenderer]
     
+    def post(self,request):
+        data = request.data
+        user = User.objects.get(user_id = request.user.user_id)
+        book = Book.objects.get(book_id = int(data['book_id']))
+        if user.user_favorite_books == None:
+            user.user_favorite_books=[]
+        if book.book_id in user.user_favorite_books:
+            like_state=-1
+            user.user_favorite_books.pop(user.user_favorite_books.index(book.book_id))
+        else:
+            like_state=1
+            user.user_favorite_books.append(book.book_id)
+        book.book_likes+=like_state
+        book.save()
+        user.save()
+        return Response({'result': True, 'like_state': like_state})
+        

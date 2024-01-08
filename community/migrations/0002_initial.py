@@ -11,19 +11,25 @@ class Migration(migrations.Migration):
     dependencies = [
         ("audiobook", "0002_initial"),
         ("community", "0001_initial"),
+        ("audiobook", "0002_initial"),
+        ("community", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='comment',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="comment",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
-            model_name='inquiry',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="inquiry",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
             model_name="post",
@@ -31,8 +37,18 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE, to="audiobook.book"
             ),
+            model_name="post",
+            name="book",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="audiobook.book"
+            ),
         ),
         migrations.AddField(
+            model_name="post",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
             model_name="post",
             name="user",
             field=models.ForeignKey(
@@ -47,13 +63,17 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AddField(
-            model_name='userrequestbook',
-            name='request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='community.bookrequest'),
+            model_name="userrequestbook",
+            name="request",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="community.bookrequest"
+            ),
         ),
         migrations.AddField(
-            model_name='userrequestbook',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="userrequestbook",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]
