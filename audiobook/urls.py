@@ -21,7 +21,8 @@ urlpatterns = [
          views.ContentPlayHTML.as_view(), name='content_play'),
 
     # 성우
-    path('voice/custom/<int:book_id>', views.VoiceCustomHTML.as_view(), name='voice_custom'),
+    path('voice/custom/<int:book_id>',
+         views.VoiceCustomHTML.as_view(), name='voice_custom'),
     path('voice/celebrity/<int:book_id>', views.VoiceCelebrityHTML.as_view(),
          name='voice_celebrity'),
     path('voice/custom/upload/<int:book_id>', views.voice_custom_upload.as_view(),

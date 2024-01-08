@@ -51,30 +51,6 @@ load_dotenv()  # 환경 변수를 로드함
 
 
 # 토론방
-class BookShareContentList(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'community/book_share.html'
-
-    def get(self, request):
-        books = Book.objects.all()
-
-        # 페이지네이터 설정
-        paginator = Paginator(books, 10)  # 페이지당 10개의 아이템
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        # Serializer를 사용하여 Book 데이터를 JSON으로 변환
-        serializer = BookSerializer(page_obj, many=True)
-
-        context = {
-            'books': serializer.data,
-            'page_obj': page_obj,
-        }
-
-        return Response(context, template_name=self.template_name)
-
-
-# book
 class BookShareHtml(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'community/book_share.html'
@@ -89,12 +65,16 @@ class BookShareHtml(APIView):
         file_path = self.get_file_path()
         books = Book.objects.all().order_by('book_id')
         user = request.user
-        
+
         if isinstance(user, AnonymousUser):
             user_favorites = []
         else:
             user_favorites = user.user_favorite_books
-                
+            if user_favorites is None:
+                user_favorites = []  # None으로 처리되면 template에서 인식하지 못하므로, 빈 값으로 처리
+
+        print(user_favorites)
+
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
@@ -108,39 +88,41 @@ class BookShareHtml(APIView):
         context = {
             'file_path': file_path,
             'page_obj': page_obj,
-            'user_favorites' : user_favorites,
+            'user_favorites': user_favorites,
             'active_tab': 'book_share'
         }
 
         return Response(context, template_name=self.template_name)
-    
+
 
 class BookLikeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
-    def get(self, request):
+    def post(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
-        book_id = int(request.GET.get('book_id'))  
-        book = Book.objects.get(book_id = book_id)
+        book_id = int(request.data.get('book_id'))
+        book = Book.objects.get(book_id=book_id)
+
+        liked = False  # 사용자가 좋아요를 눌렀는지 여부
 
         if user.user_favorite_books is None:
             user.user_favorite_books = [book_id]
             book.book_likes += 1
+            liked = True
         else:
-            if book_id in map(int, user.user_favorite_books):
+            if book_id in user.user_favorite_books:
                 user.user_favorite_books.remove(book_id)
                 book.book_likes -= 1
             else:
                 user.user_favorite_books.append(book_id)
                 book.book_likes += 1
-                
+                liked = True
+
         user.save()
         book.save()
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'success': True})
 
+        return JsonResponse({'success': True, 'liked': liked, 'book_likes': book.book_likes})
 
 
 @method_decorator(login_required(login_url="user:login"), name='dispatch')
@@ -253,7 +235,8 @@ class BookDetail(APIView):
         context = {
             "month": current_month
         }
-        serializer = BookSerializer(book, context=context,data=request.data, partial=True)
+        serializer = BookSerializer(
+            book, context=context, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -413,18 +396,21 @@ class BookSearchView(APIView):
 
             if response.status_code == 200:
                 api_books = response.json()['items']
-                
+
                 # Book 테이블에 없는 책들만 필터링
-                existing_isbns = set(Book.objects.values_list('book_isbn', flat=True))
-                filtered_books = [book for book in api_books if book['isbn'] not in existing_isbns]
+                existing_isbns = set(
+                    Book.objects.values_list('book_isbn', flat=True))
+                filtered_books = [
+                    book for book in api_books if book['isbn'] not in existing_isbns]
                 context['books'] = filtered_books
-                
+
             else:
                 context['error'] = "An error occurred while searching for books."
             # print(context['books'])
         return Response(context)
 
 # 신규 도서 신청 완료 페이지
+
 
 class EmailThread(threading.Thread):  # threading 모듈을 사용하여 이메일 전송을 별도의 스레드에서 실행
     def __init__(self, email):
@@ -448,9 +434,11 @@ class BookRequestAPI(APIView):
             'active_tab': 'book_search'
         }
 
-        book_request, created = BookRequest.objects.get_or_create(request_isbn=isbn, defaults={'request_count': 0})
-        
-        existing_user_request = UserRequestBook.objects.filter(user_id=request.user.user_id, request=book_request).exists()
+        book_request, created = BookRequest.objects.get_or_create(
+            request_isbn=isbn, defaults={'request_count': 0})
+
+        existing_user_request = UserRequestBook.objects.filter(
+            user_id=request.user.user_id, request=book_request).exists()
         if existing_user_request:
             context['message'] = "이미 신청한 책입니다. 등록이 완료되면 메일로 알려드리겠습니다."
         else:
@@ -570,6 +558,7 @@ class FAQHtml(APIView):
         }
         return Response(context, template_name=self.template_name)
 
+
 class UserList(APIView):
     renderer_classes = [JSONRenderer]
 
@@ -613,7 +602,8 @@ class UserDetail(APIView):
         user = self.get_object(pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
 class FAQList(APIView):
     renderer_classes = [JSONRenderer]
 
@@ -656,5 +646,3 @@ class FAQDetail(APIView):
         faq = self.get_object(pk)
         faq.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    

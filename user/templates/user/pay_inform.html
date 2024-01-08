@@ -3,43 +3,24 @@
 
 {% block title %}O :D - 구독 정보{% endblock %}
 {% block style %}
-<!-- 여기에 필요한 추가 CSS를 넣을 수 있습니다 -->
-<style>
-    .info-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
-    }
-    .info-card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-
-    }
-    .info-title {
-        color: #007bff;
-    }
-    .info-content {
-        font-size: 1.1em;
-        line-height: 1.5;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="container text-center">
-    <div class="row justify-content-center align-items-center">
+<div class="container">
+    <div class="row">
         {% include 'user/sub_navbar.html' %}
-        <div class="col-lg-8 mx-auto">
-            <div class="card info-card">
-                <div class="card-header info-header">
-                    <h1 class="info-title">구독 정보</h1>
-                </div>
-                <div class="card-body">
-                    <h3 class="mb-4">{{ user.nickname }}님의 구독 정보입니다.</h3>
-                    <p class="info-content">시작일: {{ sub_start_date|date:"Y년 m월 d일" }}</p>
-                    <p class="info-content">구독 개월 수: {{ months_subscribed }}개월</p>
-                    <p class="info-content">잔여일수: {{ left_days }}일</p>
-                    <p class="info-content">다음 자동 결제일: {{ next_payment_date|date:"Y년 m월 d일" }}</p>
-                </div>
+
+        <div class="col-9" style="height: 60vh;">
+            <div class="row my-5">
+                <h1 class="menu-font mb-4">구독 정보</h1>
+                <h3>{{ user.nickname }}님의 구독 정보입니다.</h3>
             </div>
+            <div class="row">
+                <p class="text-start fs-5">시작일: {{ sub_start_date|date:"Y년 m월 d일" }}</p>
+                <p class="text-start fs-5">구독 개월 수: {{ months_subscribed }}개월</p>
+                <p class="text-start fs-5">잔여일수: {{ left_days }}일</p>
+                <p class="text-start fs-5">다음 자동 결제일: {{ next_payment_date|date:"Y년 m월 d일" }}</p>  
+            </div>    
         </div>
     </div>
 </div>

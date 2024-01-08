@@ -32,6 +32,7 @@ class Book(models.Model):
     book_publisher = models.CharField(max_length=255)
     book_publication_date = models.DateField()
     book_content_path = models.FileField(upload_to='book_contents/', null=True)
+    book_voice_path = models.FileField(upload_to='book_voices/', null=True)
     book_description = models.TextField()
     book_likes = models.IntegerField(default=0)
     book_isbn = models.CharField(max_length=255)
@@ -43,6 +44,8 @@ class Book(models.Model):
 
 class TemporaryFile(models.Model):
     temp_voice_image_path = models.ImageField(
-        upload_to='voice_images/')
+        upload_to='voice_images/', null=True)
     temp_voice_sample_path = models.FileField(
-        upload_to='voice_sample/')
+        upload_to='voice_sample/', null=True)
+    temp_voice_rvc_path = models.FileField(
+        upload_to='voice_rvc/', null=True)
