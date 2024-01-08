@@ -667,8 +667,13 @@ class VoiceCelebrityHTML(APIView):
     template_name = 'audiobook/voice_celebrity.html'
 
     def get(self, request):
+        user_favorite_voices = request.user.user_favorite_voices
+        user_favorite_voices = Voice.objects.filter(voice_id__in=user_favorite_voices)
+        top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
         context = {
-            'active_tab': 'voice_popular'
+            'active_tab': 'voice_popular',
+            'user_favorite_voices': user_favorite_voices,
+            'top_10_voices': top_10_voices,
         }
         return Response(context, template_name=self.template_name)
 
