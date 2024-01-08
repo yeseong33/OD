@@ -222,14 +222,24 @@ class SubscribeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        if not request.user.is_authenticated:  # User가 로그인 안 했을 시
+        if not request.user.is_authenticated:
             print("user가 로그인하지 않고 Subscribe 페이지 접속.")
             return redirect('user:login')
         
         user = request.user
         subscription, created = Subscription.objects.get_or_create(user=user)
 
-        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date else 0
+        # 구독 시작일로부터 현재까지의 개월 수를 계산합니다.
+        if subscription.sub_start_date:
+            months_subscribed = (timezone.now().date() - subscription.sub_start_date.date()).days // 30
+            # 다음 자동 결제일을 계산합니다.
+            next_payment_date = subscription.sub_start_date.date() + timedelta(days=(months_subscribed + 1) * 30)
+        else:
+            months_subscribed = 0
+            next_payment_date = None
+        
+        # 잔여일수를 계산합니다.
+        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date and subscription.sub_end_date > timezone.now() else 0
 
         if subscription.is_subscribed:
             # 구독중인 경우
@@ -241,7 +251,10 @@ class SubscribeView(APIView):
         context = {
             'user': user,
             'left_days': left_days,
-            'active_tab': 'user_subscription'
+            'active_tab': 'user_subscription',
+            'sub_start_date': subscription.sub_start_date,
+            'months_subscribed': months_subscribed,
+            'next_payment_date': next_payment_date,
         }
 
         return Response(context, template_name=template_name)
