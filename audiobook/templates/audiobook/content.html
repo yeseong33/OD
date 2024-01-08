@@ -28,12 +28,12 @@
         <!-- 성우 선택 -->
         <div class="col-6 d-flex flex-column align-items-center justify-content-center">
             <div class="row mb-4">
-                <a href="{% url 'audiobook:voice_custom' %}">
+                <a href="{% url 'audiobook:voice_custom' book.book_id%}">
                     <!-- 성우 이미지 표시 -->
                     {% if selected_voice %}
                         <img id="voice_img" src="{{ selected_voice.voice_image_path.url }}" alt="{{ selected_voice_name }}" class="img-fluid rounded">
                     {% else %}
-                        <img id="voice_img" src="/static/images/default_voice.jpg" alt="기본 성우" class="img-fluid rounded">
+                        <img id="voice_img" src="/static/images/IU.jpg" alt="기본 성우" class="img-fluid rounded">
                     {% endif %}
                 </a>                
             </div>
@@ -57,9 +57,16 @@
         </div>
     </div>
 
-    <audio id="audioPlayer" style="display: none">
-        <source src="{{ selected_voice.voice_sample_path.url }}" type="audio/mp3">
-    </audio>
+    {% if selected_voice %}
+        <audio id="audioPlayer" style="display: none">
+            <source src="{{ selected_voice.voice_sample_path.url }}" type="audio/mp3">
+        </audio>
+    {% else %}
+        <audio id="audioPlayer" style="display: none">
+            <source src="/static/sounds/IU.mp3" type="audio/mp3">
+        </audio>
+    {% endif %}
+
 {% endblock %}
 
 {% block script %}
