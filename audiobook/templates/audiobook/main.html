@@ -8,7 +8,6 @@
     <button class="scroll-left-button">‹</button>
     <div class="scrolling-container">
         {% for book in top_books %}
-<<<<<<< HEAD
         <div class="col book-col" style='height:380px; margin-top:20px;'>
           <div class="card h-90 text-end border-light mb-3" style='height:350px; width:230px'>
             <div class="card h-90 book-card">
@@ -28,15 +27,6 @@
                 </svg>
               </button>
             </div>
-=======
-        <div class="book-card">
-          <a href="{% url 'audiobook:content' book.book_id %}" >
-            <img class="book-img" src="{{ file_path }}{{ book.book_image_path }}" alt="{{ book.book_title }}">
-          </a>
-          <div class="book-info">
-            <h5>{{ book.book_title }}</h5>
-            <p>저자: {{ book.book_author }}</p>
->>>>>>> 6d04f77fecb4abf200ba9a59b212a24329ff93e8
           </div>
         </div>
         {% endfor %}
