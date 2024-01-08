@@ -127,14 +127,21 @@
     function submitTone() {
         let toneValue = document.getElementById('toneRange').value;
         const bookId = {{ book.book_id }}; // Django 템플릿 변수
+        var tone = document.getElementById('toneRange').value;
+        var text = "{{book.book_description}}";
+        var formData = new FormData();
+        console.log(tone,text)
+        
+        formData.append('tone', tone);
+        formData.append('text', text);
     
         fetch('{% url 'audiobook:content_play' book_id=book.book_id %}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                //'Content-Type': 'application/json',
                 'X-CSRFToken': getCSRFToken('csrftoken')
             },
-            body: JSON.stringify({ toneRange: toneValue })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {
