@@ -12,7 +12,6 @@ from user.models import Subscription
 from audiobook.models import Book
 from community.models import BookRequest, UserRequestBook, Inquiry
 from rest_framework import status
-from manager.serializers import InquirySerializer
 from manager.forms import InquiryResponseForm
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.views import APIView
