@@ -29,6 +29,7 @@ from audiobook.serializers import VoiceSerializer
 from community.serializers import BookSerializer, InquirySerializer
 from user.serializers import UserSerializer, SubscriptionSerializer
 from config.settings import AWS_S3_CUSTOM_DOMAIN, MEDIA_URL, FILE_SAVE_POINT, MEDIA_ROOT
+from django.conf import settings
 
 load_dotenv()
 
@@ -98,7 +99,7 @@ def kakao_callback(request):
     # access_token으로 유저 개인 정보 발급 받기
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {access_token}",
-                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+               "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
     response = requests.post(url, headers=headers)
     user_inform = response.json().get('kakao_account')
 
@@ -199,10 +200,10 @@ def google_callback(request):
 def get_jwt_token(user):
     print(f"create jwt 메소드 진입.")
     payload = {"user_id": user.user_id, "user_email": user.email,
-                "exp": datetime.utcnow() + timedelta(hours=24)}
+               "exp": datetime.utcnow() + timedelta(hours=24)}
     secret_key = os.getenv("JWT_SECRET_KEY")
     token = jwt.encode(payload, secret_key,
-                        algorithm=os.getenv("JWT_ALGORITHM"))
+                       algorithm=os.getenv("JWT_ALGORITHM"))
 
     print(f"JWT token 생성 완료 : {token}")
     decode_jwt(token)
@@ -216,32 +217,130 @@ def decode_jwt(token):
         "JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
     return user_inform
 
-
+# 결제
 class SubscribeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        if request.COOKIES.get("jwt") == None:  # User가 로그인 안했을시.
-            print(f"user가 로그인하지 않고 Subscribe 페이지 접속.")
+        if not request.user.is_authenticated:
+            print("user가 로그인하지 않고 Subscribe 페이지 접속.")
             return redirect('user:login')
+        
+        user = request.user
+        subscription, created = Subscription.objects.get_or_create(user=user)
+
+        # 구독 시작일로부터 현재까지의 개월 수를 계산합니다.
+        if subscription.sub_start_date:
+            months_subscribed = (timezone.now().date() - subscription.sub_start_date.date()).days // 30
+            # 다음 자동 결제일을 계산합니다.
+            next_payment_date = subscription.sub_start_date.date() + timedelta(days=(months_subscribed + 1) * 30)
         else:
-            user_inform = decode_jwt(request.COOKIES.get("jwt"))
-            user = User.objects.get(user_id=user_inform['user_id'])
-            subscribe = Subscription.objects.get(user_id=user.user_id)
+            months_subscribed = 0
+            next_payment_date = None
+        
+        # 잔여일수를 계산합니다.
+        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date and subscription.sub_end_date > timezone.now() else 0
 
-            if subscribe.is_subscribed:  # 구독 했을 경우.
-                # 남은 요일 계산.
-                left_days = (subscribe.sub_end_date - timezone.now()).days
-                context = {
-                    'user': user,
-                    'left_days': left_days,
-                    'active_tab': 'user_subscription',
-                }
-                return Response(context, template_name='user/pay_inform.html')
-            else:  # 구독하지 않은 경우.
-                context = {'active_tab': 'user_subscription', }
-                return Response(context, template_name='user/non_pay_inform.html')
+        if subscription.is_subscribed:
+            # 구독중인 경우
+            template_name = 'user/pay_inform.html'
+        else:
+            # 구독중이지 않은 경우
+            template_name = "user/non_pay_inform.html"
 
+        context = {
+            'user': user,
+            'left_days': left_days,
+            'active_tab': 'user_subscription',
+            'sub_start_date': subscription.sub_start_date,
+            'months_subscribed': months_subscribed,
+            'next_payment_date': next_payment_date,
+        }
+
+        return Response(context, template_name=template_name)
+        
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+        
+        user = request.user
+        subscription, created = Subscription.objects.get_or_create(user=user)
+        
+        # 구독이 새롭게 생성되었거나 아직 구독되지 않았다면,
+        if created or not subscription.is_subscribed:
+            # 최초 구독인 경우, 구독 시작일을 현재로 설정
+            if created or subscription.sub_start_date is None:
+                subscription.sub_start_date = timezone.now()
+            
+            # 구독을 활성화하고 상태를 'success'로 변경
+            subscription.is_subscribed = True
+            subscription.sub_payment_status = 'success'
+            
+            # 구독 종료일이 이미 설정되어 있지 않거나 과거일 경우, 현재부터 한달 후로 갱신
+            if not subscription.sub_end_date or subscription.sub_end_date < timezone.now():
+                subscription.sub_end_date = timezone.now() + timedelta(days=30)
+            
+            subscription.save()  # 변경사항을 저장
+            
+            return redirect('user:pay_inform')
+        else:
+            # 이미 구독 중인 경우, 구독 종료일만 갱신
+            if subscription.sub_end_date and subscription.sub_end_date > timezone.now():
+                # 기존 구독의 종료일이 현재보다 미래인 경우에만 갱신
+                subscription.sub_end_date += timedelta(days=30)
+                subscription.save()
+
+            return redirect('user:pay_inform')
+def cancel_subscription(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인이 필요합니다.'}, status=401)
+    
+    user = request.user
+    try:
+        subscription = Subscription.objects.get(user=user, is_subscribed=True)
+        subscription.is_subscribed = False
+        subscription.sub_payment_status = 'pending'  # 결제 상태를 'cancelled'로 변경
+        subscription.save()
+        return JsonResponse({'success': '구독이 취소되었습니다.'})
+    except Subscription.DoesNotExist:
+        return JsonResponse({'error': '구독 정보가 없습니다.'}, status=404)
+    
+def pay_inform_view(request):
+    if not request.user.is_authenticated:
+        return redirect('user:login')
+
+    try:
+        subscription = Subscription.objects.get(user=request.user)
+        
+        # 구독 시작일로부터 현재까지의 개월 수 계산
+        if subscription.sub_start_date:
+            months_subscribed = (timezone.now().date() - subscription.sub_start_date.date()).days // 30
+            # 다음 자동 결제일 계산
+            next_payment_date = subscription.sub_start_date.date() + timedelta(days=(months_subscribed + 1) * 30)
+        else:
+            months_subscribed = 0
+            next_payment_date = None
+
+        # 잔여일수 계산
+        left_days = (subscription.sub_end_date - timezone.now()).days if subscription.sub_end_date else 0
+
+        context = {
+            'user': request.user,
+            'sub_start_date': subscription.sub_start_date,
+            'months_subscribed': months_subscribed,
+            'next_payment_date': next_payment_date,
+            'left_days': left_days,
+        }
+    except Subscription.DoesNotExist:
+        context = {
+            'user': request.user,
+            'sub_start_date': None,
+            'months_subscribed': 0,
+            'next_payment_date': None,
+            'left_days': 0,
+        }
+
+    return render(request, 'user/pay_inform.html', context)
 
 class UserInformView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -339,7 +438,7 @@ class UserLikeVoicesView(APIView):
 
         if voice_id_list == None:
             context = {'voices': None,
-                        'active_tab': 'user_like'}
+                       'active_tab': 'user_like'}
         else:
             order_by = request.GET.get('orderBy', 'latest')
             voice_list = Voice.objects.filter(pk__in=voice_id_list)
@@ -351,7 +450,7 @@ class UserLikeVoicesView(APIView):
 
             serializer = VoiceSerializer(voice_list, many=True)
             context = {'voices': serializer.data,
-                        'active_tab': 'user_like'}
+                       'active_tab': 'user_like'}
 
         # Ajax 요청일경우.
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -412,12 +511,12 @@ class InquiryListView(APIView):
         else:
             serializer = InquirySerializer(inquiry_list, many=True)
             context = {'inquiries': serializer.data,
-                        'active_tab': 'user_faq'}
+                       'active_tab': 'user_faq'}
 
         return render(request, self.template_name, context)
 
 
-class InquiryDetailView(APIView): # 세부 1:1 문의 내역 보는 view
+class InquiryDetailView(APIView):  # 세부 1:1 문의 내역 보는 view
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'user/inquiry_detail.html'
 
@@ -425,22 +524,25 @@ class InquiryDetailView(APIView): # 세부 1:1 문의 내역 보는 view
         inquiry = Inquiry.objects.get(inquiry_id=inquiry_id)
         serializer = InquirySerializer(inquiry)
         context = {'inquiry': serializer.data,
-                    'active_tab': 'user_faq'}
+                   'active_tab': 'user_faq'}
         return render(request, self.template_name, context)
 
-class UserDeleteView(APIView): # 회원탈퇴 함수.
+
+class UserDeleteView(APIView):  # 회원탈퇴 함수.
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'audiobook/index.html' # 탈퇴하면 index.html로 이동.
-    
-    def get (self, request, user_id):
-        
-        user = User.objects.get(user_id = user_id)
-        os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path))) #유저 이미지 삭제.
+    template_name = 'audiobook/index.html'  # 탈퇴하면 index.html로 이동.
+
+    def get(self, request, user_id):
+
+        user = User.objects.get(user_id=user_id)
+        # 유저 이미지 삭제.
+        os.remove(os.path.join(MEDIA_ROOT, str(user.user_profile_path)))
         user.delete()  # 유저 테이블 삭제.
         response = redirect('audiobook:index')
-        response.delete_cookie('jwt') # 유저 쿠키 삭제.
+        response.delete_cookie('jwt')  # 유저 쿠키 삭제.
         messages.success(request, '계정이 삭제되었습니다.')
-        return(response)
+        return (response)
+
 
 def get_file_path(self):
     if FILE_SAVE_POINT == 'local':

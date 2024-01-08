@@ -123,8 +123,8 @@
             </div>
             <div class="modal-body">
                 <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                         role="progressbar" style="width: 100%"></div>
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -142,7 +142,25 @@
     });
     
     function showLoadingModal() {
-        loadingModal.show(); // 모달 표시
+        loadingModal.show(); // Show modal
+        startProgressBar(25000); // Start progress bar for 25 seconds
+    }
+
+    // Function to start and update the progress bar
+    function startProgressBar(duration) {
+        const progressBar = document.getElementById('progressBar');
+        let currentProgress = 0;
+        const interval = duration / 100;
+
+        const progressInterval = setInterval(() => {
+            currentProgress++;
+            progressBar.style.width = currentProgress + '%';
+            progressBar.setAttribute('aria-valuenow', currentProgress);
+
+            if (currentProgress >= 100) {
+                clearInterval(progressInterval);
+            }
+        }, interval);
     }
     
     function hideLoadingModal() {
@@ -278,6 +296,7 @@
             })
         })
         .then(response => {
+            hideLoadingModal();
             response.json();
         })
         .then(data => {
@@ -296,11 +315,13 @@
     });
 
     function getCurrentSelectedImageNumber() {
-        const selectedButton = document.querySelector('.cover-selection .image-button.clicked');
-        if (!selectedButton) {
-            return null;
+        const coverSelectionInputs = document.querySelectorAll('.cover-selection input[type="radio"]');
+        for (let i = 0; i < coverSelectionInputs.length; i++) {
+            if (coverSelectionInputs[i].checked) {
+                return i;
+            }
         }
-        return Array.from(document.querySelectorAll('.cover-selection .image-button')).indexOf(selectedButton);
+        return null;
     }
 
     // '표지 변경하기' 버튼 클릭 이벤트 핸들러
@@ -327,7 +348,7 @@
         .then(response => response.json())
         .then(data => {
             alert('변경 성공!');
-            window.location.href = '../cover_complete';
+            window.location.href = '../view';
             
         })
         .catch(error => {

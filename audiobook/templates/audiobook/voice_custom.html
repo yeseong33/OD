@@ -4,67 +4,16 @@
 {% block title %}O :D - 성우 선택{% endblock %}
 {% block style %}
 <style>
-    .content-item {
-        width: 120px; /* 가로 크기 */
-        height: 120px; /* 세로 크기 */
-        padding: 0px;
-        border: 1px solid #ccc;
+    .card-custom {
+        height: 200px;
+        width: 120px;
     }
 
-    .content-item img {
-        width: 100%; /* 이미지를 부모 요소의 100% 크기로 설정 */
-        height: 100%; /* 가로 비율 유지 */
-        display: block; /* 인라인 요소의 기본 여백 제거 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
+    .card-img-top {
+        height: 200px; 
+        object-fit: contain; 
     }
 
-    .content-item img:hover {
-        z-index: 1;
-        transform: scale(1.5); /* 확대 비율 */
-    }
-
-    .custom-mt {
-        margin-top: 120px;
-    }
-
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #fff;
-        color: #A4A4A4;
-        padding: 1px;
-        transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
-    }
-    
-    .custom-focus {
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #F2E7C4;
-        color: #000;
-        padding: 1px;
-    }
-
-    .category-title {
-      font-size: 20px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    .center-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .center-icon svg {
-        width: 60px; /* 아이콘의 너비 */
-        height: 60px; /* 아이콘의 높이 */
-        transition: transform 0.3s ease-in-out; /* 호버 트랜지션 효과 */
-    }
-
-    .center-icon:hover svg {
-        transform: scale(1.2); /* 호버 시 크기 조절 */
-    }
 </style>
 {% endblock %}
 {% block content %}
@@ -79,63 +28,55 @@
         <div class="col-6">
             <div class="input-group gap-4">
                 <div class="col">
-                    <input type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
+                    <input id="search-input" type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
                 </div>
                 <div class="input-group-append">
-                    <button class="btn btn-outline-orange-400" type="button">검색</button>
+                    <button id="search-button" class="btn btn-outline-orange-400" type="button">검색</button>
+                </div>
+            </div>  
+        </div>
+    </div>
+</div>
+
+<!-- 서브 네비게이션 바 -->
+{% include 'audiobook/voice_sub_navbar.html' %}
+
+
+<div>
+    <h2 class="fw-bold mt-4 mb-3">내 음성</h2>
+    <div class="row justify-content-start">
+        {% for voice in user_voices %}
+        <div class="col-2 mb-3">
+            <div id="voiceCard{{ voice.voice_id }}" class="card card-custom" style="cursor:pointer;">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- 음성 추가하기 -->
+        <div class="col-2 mb-3">
+            <div class="card card-custom">
+                <div class="card-body d-flex justify-content-center align-items-center" style="height: 200px;">
+                    <a href="{% url 'audiobook:voice_custom_upload' %}" class="text-center">
+                        <svg class="bi bi-plus-circle" fill="currentColor" width="48" height="48" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row justify-content-evenly custom-mt">
-    <div id="custom-title" class="col-md-3 nav-link title" data-section="custom-voice">
-        <p class="text-center fs-4">개인</p>
-    </div>
-    <div id='celebrity-title' class="col-md-3 nav-link title" data-section="celebrity-voice">
-        <p class="text-center fs-4">인기</p>
-    </div>
-</div>
-
-{% comment %} 첫번째 {% endcomment %}
-<div id='custom-content' style="display: none;">
-    <div class="category-title">내 음성</div>
-    <div class="row gap-3 justify-content-start" id="my_voice">
-        {% for voice_name in voice_names1 %}
-            <div class="col-md-1 content-item">
-                <img id="{{ voice_name }}" src="/media/voice_images/{{ voice_name }}.jpg" onclick="goToVoicePage(this.id)">
-                <audio id="audio_{{ voice_name }}" src="/media/voice_sample/{{ voice_name }}.mp3" preload="none"></audio>
-                <button onclick="playAudio('{{ voice_name }}')">재생</button>
+    <h2 class="fw-bold mt-4 mb-3">다른 사람 음성</h2>
+    <div class="row justify-content-start">
+        {% for voice in public_voices %}
+        <div class="col-2 mb-3">
+            <div class="card card-custom">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
             </div>
+        </div>
         {% endfor %}
-        <div class="col-md-1 content-item center-icon">
-            <a href="{% url 'audiobook:voice_custom_upload' %}?book_id={{ book_id }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                </svg>
-            </a>
-        </div>
-    </div>
-
-    <div class="category-title">다른 사람 음성</div>
-    <div class="row gap-3 justify-content-start">
-        <div class="col-md-1 content-item">
-            <img src="/static/images/go.jpg" class="img" alt="고슴">
-        </div>
-        <div class="col-md-1 content-item">
-            <img src="/static/images/jin.png" class="img" alt="고슴">
-        </div>
-        <div class="col-md-1 content-item">
-            <img src="/static/images/young.png" class="img" alt="고슴">
-        </div>
-        <div class="col-md-1 content-item">
-            <img src="/static/images/wo.jpg" class="img" alt="고슴">
-        </div>
-        <div class="col-md-1 content-item">
-            <img src="/static/images/oh.png" class="img" alt="고슴">
-        </div>
     </div>
 </div>
 
@@ -145,59 +86,26 @@
 {% endblock %}
 {% block script %}
 <script>
-    function playAudio(voice_name) {
-        var audio = document.getElementById('audio_' + voice_name);
-        if (audio) {
-            audio.play();
-        }
-    }
-
-    function goToVoicePage(voiceName) {
-        // window.location.href를 설정하기 전에 URL을 조립합니다.
-        var baseUrl = "{% url 'audiobook:content' book_id=book_id %}";
-        // voiceName 변수를 쿼리 파라미터에 추가합니다.
-        window.location.href = baseUrl + "?voice_name=" + voiceName;
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
-        // 초기 상태 설정
-        var isCustom = true; // 처음에는 개인 섹션을 보여줍니다.
-
-        // 개인, 인기 섹션 요소 가져오기
-        var customTitle = document.getElementById("custom-title");
-        var celebrityTitle = document.getElementById("celebrity-title");
-
-        // 개인 섹션을 초기 선택으로 설정
-        customTitle.classList.add("custom-focus");
-       
-        // 초기 상태에 맞게 컨텐츠 로드
-        var initialSectionId = isCustom ? 'custom-content':'celebrity-content';
-        document.getElementById(initialSectionId).style.display = 'block';
-
-        // 이벤트 리스너 등록
-        customTitle.addEventListener("click", function () {
-            isCustom = true; // "개인" 섹션 클릭
-            updateContent();
-            customTitle.classList.add("custom-focus");
-            celebrityTitle.classList.remove("custom-focus");
+        {% for voice in user_voices %}
+        var card = document.getElementById("voiceCard{{ voice.voice_id }}");
+        card.addEventListener("click", function() {
+            selectVoice('{{ voice.voice_id }}', '{{ voice.voice_name }}');
         });
-
-        celebrityTitle.addEventListener("click", function () {
-            isCustom = false; // "인기" 섹션 클릭
-            updateContent();
-            customTitle.classList.remove("custom-focus");
-            celebrityTitle.classList.add("custom-focus");
-        });
-
-        function updateContent() {
-            // 모든 섹션 숨기기
-            document.getElementById('custom-content').style.display = 'none';
-            document.getElementById('celebrity-content').style.display = 'none';
-
-            // 선택한 섹션 보여주기
-            var targetSectionId = isCustom ? 'custom-content':'celebrity-content';
-            document.getElementById(targetSectionId).style.display = 'block';
+        {% endfor %}
+    
+        // 기존의 selectVoice 함수
+        function selectVoice(voiceId, voiceName) {
+            document.cookie = "selectedVoiceId=" + voiceId + ";path=/";
+            document.cookie = "selectedVoiceName=" + voiceName + ";path=/";
         }
+
+        // 검색 버튼에 대한 이벤트 리스너 추가
+        document.getElementById('search-button').addEventListener('click', function() {
+            var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+            // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
+            window.location.href = `{% url 'audiobook:voice_custom' %}?search_term=${searchTerm}`;
+        });
     });
 </script>
 {% endblock %}

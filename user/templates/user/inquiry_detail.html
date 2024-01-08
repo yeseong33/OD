@@ -11,27 +11,30 @@
         {% include 'user/sub_navbar.html' %}
 
         <div class="col-9">
-            <div class="row-10 mb-20">
-                <h1>1:1 문의 내역</h1>
+            <div class="row my-5">
+                <h1 class="menu-font">1:1 문의 내역 - 상세</h1>
             </div>
-            <div class = "row">
-                <div class = "col-2">분류</div>
-                <div class = "col-10">{{inquiry.inquiry_category}}</div>
-            </div>
-            <div class = "row">
-                <div class = "col-2">제목</div>
-                <div class = "col-10">{{inquiry.inquiry_title}}</div>
-            </div>
-            <div class = "row">
-                <div class = "col-2">내용</div>
-                <div class = "col-10">{{inquiry.inquiry_content}}</div>
-            </div>
-            {% if inquiry.inquiry_is_answered %}
-            <div class = "row">
-                <div class = "col-2">답변</div>
-                <div class = "col-10">{{inquiry.inquiry_response}}</div>
-            </div>
-            {% endif %}
+            
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">분류:</span>
+                    <span>{{ inquiry.inquiry_category }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">제목:</span>
+                    <span>{{ inquiry.inquiry_title }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">내용:</span>
+                    <span>{{ inquiry.inquiry_content }}</span>
+                </li>
+                {% if inquiry.inquiry_is_answered %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">답변:</span>
+                        <span>{{ inquiry.inquiry_response }}</span>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
 
     </div>

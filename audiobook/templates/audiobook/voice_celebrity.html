@@ -3,6 +3,18 @@
 
 {% block title %}O :D - 성우 선택{% endblock %}
 {% block style %}
+<style>
+    .card-custom {
+        height: 200px;
+        width: 120px;
+    }
+
+    .card-img-top {
+        height: 200px; 
+        object-fit: contain; 
+    }
+
+</style>
 {% endblock %}
 {% block content %}
 
@@ -16,10 +28,10 @@
         <div class="col-6">
             <div class="input-group gap-4">
                 <div class="col">
-                    <input type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
+                    <input id="search-input" type="text" class="form-control rounded-start rounded-end" placeholder="듣고 싶은 목소리를 검색해보세요" aria-label="음성 입력" aria-describedby="basic-addon2">
                 </div>
                 <div class="input-group-append">
-                    <button class="btn btn-outline-orange-400" type="button">검색</button>
+                    <button id="search-button" class="btn btn-outline-orange-400" type="button">검색</button>
                 </div>
             </div>
         </div>
@@ -32,19 +44,23 @@
 <!-- 개인 음성 -->
 <div>
     <h2 class="fw-bold mt-4 mb-3">내 좋아요</h2>
-    <div class="row justify-content-center">
-        {% for image in custom_images %}
-        <div class="col-md-auto mb-3">
-            <img src="{{ image.url }}" class="img-fluid rounded" alt="{{ image.alt }}" style="max-width: 100px;">
+    <div class="row justify-content-start">
+        {% for voice in user_favorite_voices %}
+        <div class="col-2 mb-3">
+            <div id="voiceCard{{ voice.voice_id }}" class="card card-custom" style="cursor:pointer;">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
+            </div>
         </div>
         {% endfor %}
     </div>
 
     <h2 class="fw-bold mt-4 mb-3">Top 10</h2>
-    <div class="row justify-content-center">
-        {% for image in custom_images %}
-        <div class="col-md-auto mb-3">
-            <img src="{{ image.url }}" class="img-fluid rounded" alt="{{ image.alt }}" style="max-width: 100px;">
+    <div class="row justify-content-start">
+        {% for voice in top_10_voices %}
+        <div class="col-2 mb-3">
+            <div class="card card-custom">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -55,4 +71,16 @@
 
 {% endblock %}
 {% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // 검색 버튼에 대한 이벤트 리스너 추가
+        document.getElementById('search-button').addEventListener('click', function() {
+            var searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+            // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
+            window.location.href = `{% url 'audiobook:voice_celebrity' %}?search_term=${searchTerm}`;
+        });
+
+    });
+</script>
 {% endblock %}
