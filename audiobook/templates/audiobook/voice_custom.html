@@ -70,8 +70,6 @@
 <!-- 서브 네비게이션 바 -->
 {% include 'audiobook/voice_sub_navbar.html' %}
 
-
-<div>
     <div class="row justify-content-start">
         {% for voice in user_voices %}
         <div class="col">
@@ -101,7 +99,6 @@
         </div>
         {% endfor %}
 
-
         <!-- 음성 추가하기 -->
         <div class="col-2 mb-3">
             <div class="card card-custom">
@@ -115,7 +112,8 @@
                 </div>
             </div>
         </div>
-
+    </div>
+ 
     <h2 class="fw-bold mt-4 mb-3">다른 사람 음성</h2>
     <div class="row justify-content-start">
         {% for voice in public_voices %}
@@ -146,7 +144,6 @@
             </div>
         {% endfor %}
     </div>
-</div>
 
 <!-- 여백 -->
 
