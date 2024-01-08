@@ -124,16 +124,12 @@ class BookLikeView(APIView):
         book_id = int(request.GET.get('book_id'))  
         book = Book.objects.get(book_id = book_id)
 
-        if user.user_favorite_books is None:
-            user.user_favorite_books = [book_id]
-            book.book_likes += 1
+        if book_id in map(int, user.user_favorite_books):
+            user.user_favorite_books.remove(book_id)
+            book.book_likes -= 1
         else:
-            if book_id in map(int, user.user_favorite_books):
-                user.user_favorite_books.remove(book_id)
-                book.book_likes -= 1
-            else:
-                user.user_favorite_books.append(book_id)
-                book.book_likes += 1
+            user.user_favorite_books.append(book_id)
+            book.book_likes += 1
                 
         user.save()
         book.save()

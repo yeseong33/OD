@@ -5,7 +5,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'nickname', 'oauth_provider',
-                    'user_profile_path', 'password', 'user_favorite_books', 'user_book_history', 'user_id','username']
+                    'user_profile_path', 'password', 'user_favorite_books', 'user_book_history', 'user_id','username', 'user_favorite_voices']
 
         extra_kwargs = {
             'password': {'write_only': True},
@@ -15,7 +15,9 @@ class UserSerializer(serializers.ModelSerializer):
         user = super(UserSerializer, self).create(validated_data)
         if password is not None:
             user.set_password(password)
-            
+        user.user_favorite_books = []
+        user.user_book_history = []
+        user.user_favorite_voices = []
         user.save()
         return user
 

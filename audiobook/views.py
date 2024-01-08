@@ -87,11 +87,9 @@ class MainView(APIView):
         if isinstance(request.user, AnonymousUser):
             user_history_book = []
         else:
-            user = request.user
-            if request.user.user_book_history is not None:
-                for book_id in request.user.user_book_history:
-                    book = get_object_or_404(Book, book_id=book_id)
-                    user_history_book.append(book)
+            for book_id in request.user.user_book_history:
+                book = get_object_or_404(Book, book_id=book_id)
+                user_history_book.append(book)
 
         # 이달의 TOP 10 음성
         top_voices = Voice.objects.all().order_by('-voice_like')[:10]
@@ -104,7 +102,6 @@ class MainView(APIView):
             'top_books': top_books,
             'user_history_book': user_history_book,
             'top_voices': top_voices,
-            'user': user,
         }
 
         return Response(context, template_name=self.template_name)
@@ -536,8 +533,7 @@ class ContentHTML(APIView):
                 print("Selected voice does not exist.")
 
         if request.user.is_authenticated:
-            tmp = request.user.user_book_history
-            user_book_history = [] if tmp is None else tmp
+            user_book_history = request.user.user_book_history
             user = request.user
         else:
             user = {
@@ -628,9 +624,6 @@ class VoiceCelebrityHTML(APIView):
 
     def get(self, request):
         user_favorite_voices = request.user.user_favorite_voices
-        
-        if user_favorite_voices is None:
-            user_favorite_voices = []
         
         user_favorite_voices = Voice.objects.filter(
             voice_id__in=user_favorite_voices)
@@ -804,18 +797,14 @@ class VoiceLikeView(APIView):
         voice_id = int(request.GET.get('voice_id'))  
         voice = Voice.objects.get(voice_id = voice_id)
         
-        if user.user_favorite_voices is None:
-            user.user_favorite_voices = [voice_id]
-            voice.voice_like += 1
+        if voice_id in map(int, user.user_favorite_voices):
+            user.user_favorite_voices.remove(voice_id)
+            voice.voice_like -= 1
+            print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
         else:
-            if voice_id in map(int, user.user_favorite_voices):
-                user.user_favorite_voices.remove(voice_id)
-                voice.voice_like -= 1
-                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
-            else:
-                user.user_favorite_voices.append(voice_id)
-                voice.voice_like += 1
-                print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+            user.user_favorite_voices.append(voice_id)
+            voice.voice_like += 1
+            print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
                 
         user.save()
         voice.save()
