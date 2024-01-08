@@ -551,6 +551,7 @@ class ContentHTML(APIView):
             'file_path': file_path,
             'user_book_history': user_book_history,
             'selected_voice': selected_voice,
+            'user': user,
         }
         return Response(context, template_name=self.template_name)
 
