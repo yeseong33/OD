@@ -1,320 +1,246 @@
 {% extends 'manager/template.html' %}
 {% load static %}
+{% block style %}
+<style>
+</style>
+{% endblock %}
+
 
 {% block content %}
-<style>
-    .search-bar-container {
-        position: absolute;
-        top: 80px;
-        right: 95px;
-        width: 230px; /* 검색바의 너비 */
-        height: 40px;
-        display: flex;
-        align-items: center;
-        background-color: #fff;
-        border-radius: 20px;
-        padding: 5px 1px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
+<div class="row my-5">
+    <h1 class="menu-font">책 수요 변화</h1>
+</div>
 
-    .search-bar-container input[type="text"] {
-        flex-grow: 1;
-        border: none;
-        padding: 5px 10px;
-        margin-right: 5px;
-        border-radius: 15px;
-        outline: none;
-        font-size: 12px;
-    }
-
-    .search-bar-container button {
-        border: none;
-        background-color: #F0CB85;
-        color: white;
-        padding: 6px 12px;
-        border-radius: 15px;
-        cursor: pointer;
-        width: 40px;
-        height: 30px;
-        font-size: 12px;
-    }
-
-    .search-bar-container button:hover {
-        background-color: #FFA01E;
-    }
-
-    .search-results {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        position: absolute;
-        top: 120px; /* 검색바의 높이와 위치에 따라 조절 */
-        right: 95px;
-        width: 230px; /* 검색바의 너비와 일치 */
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 1000; /* 다른 요소들 위에 표시 */
-    }
-
-    .search-results li {
-        padding: 8px 12px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .search-results li:hover {
-        background-color: #f0f0f0;
-    }
-    /* ... 기존 CSS 스타일 ... */
-    .cover-selection,
-    .cover-selection + .button-group {
-        display: none; /* 초기 상태를 숨김으로 설정합니다. */
-    }
-    .cover-selection .button-group {
-        display: flex; /* flex 레이아웃을 사용합니다 */
-        justify-content: center; /* 버튼들을 가운데 정렬합니다 */
-        flex-wrap: nowrap; /* 한 줄에 모든 항목을 유지합니다 */
-    }
-    .cover-creation-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center; /* 모든 내용을 가운데 정렬합니다. */
-        margin: 10px;
-        padding: 60px;
-        background-color: #FFFFF
-        height: 600px;
-    }
-    .button-group .cover-button {
-        padding: 5px 10px;
-        border: none;
-        border-radius: 25px; /* 버튼을 둥글게 만듭니다. */
-        margin: 5px; /* 각 버튼 사이의 간격을 조절합니다. */
-        background-color: #F0CB85;
-        color: black;
-        font-size: 15px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        width: 80px; /* 버튼의 너비를 고정합니다. */
-        height: 48px; /* 버튼의 높이를 고정합니다. */
-        text-align: center; /* 텍스트를 가운데 정렬합니다. */
-        line-height: 40px; /* 텍스트를 수직 중앙에 배치합니다. */
-    }
-    
-    .button-group .cover-button2 {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 25px; /* 버튼을 둥글게 만듭니다. */
-        margin: 5px; /* 각 버튼 사이의 간격을 조절합니다. */
-        background-color: #FFA01E;
-        color: black;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-    .button-group .cover-button:hover,
-    .button-group .cover-button.clicked {
-        background-color: #FFA01E;
-    }
-    .button-group .image-button:hover,
-    .button-group .image-button.clicked {
-        background-color: #FFA01E;
-    }
-    
-    h2 {
-        margin-bottom: 15px;
-        color: #333;
-        font-family: 'Arial', sans-serif;
-        font-weight: bold; /* 글꼴을 굵게 만듭니다. */
-        font-size: 24px; /* 원하는 글꼴 크기로 조절합니다. */
-    }
-    .button-group .image-button {
-        border: 1px solid orange; /* 테두리 스타일 및 색상을 주황색으로 지정합니다. */
-        margin: 5px;
-        color: white;
-        font-size: 16px;
-        cursor: pointer; 
-    }
-
-    .layout-container {
-        display: flex;
-        justify-content: space-between; /* This separates the two sections */
-        width: 100%;
-    }
-    
-    /* This will be your left section for the local image */
-    .local-image-section {
-        flex-basis: 500px; /* 고정된 너비 값으로 설정 */
-        max-width: 600px; /* 최대 너비 설정 */
-        min-width: 600px; /* 최소 너비 설정 */
-        display: flex;
-        justify-content: left;
-        align-items: left; /* This centers the content */
-    }
-    
-    /* Assuming your right section is already implemented */
-    .cover-creation-section {
-        flex-basis: 700px; /* Takes up the other half */
-        /* Your existing styles */
-    }
-    
-    /* You might need to adjust your image styles for responsiveness */
-    img {
-        max-width: 100%;
-        
-    }
-    
-    .loading-indicator {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000; /* 화면의 다른 요소들 위에 표시되도록 z-index 설정 */
-    }
-
-</style>
-
+<!-- 로딩 이미지 -->
 <div id="loadingIndicator" class="loading-indicator" style="display: none;">
     <img src="{% static 'images/loading.gif' %}" alt="Loading..." />
 </div>
 
 
-<div class="cover-creation-section">
-    <div class="layout-container">
-        <div class="local-image-section">
-            <!-- Place your image tag here -->
-            <img id="graphImage" src="{% static 'images/ready.gif' %}" alt="Ready Image" style ="height:500px";>
+<div class="container">
+    <div class="row">
+        <!-- 그래프 이미지 -->
+        <div class="col-6">            
+            <div id="graphImageWrapper" class="local-image-section">
+                <!-- Place your image tag here -->
+                <img id="graphImage" class="img-fluid" src="{% static 'images/ready.gif' %}" alt="Ready Image" style ="height:500px";>
+            </div>
         </div>
         
-        <!-- Your existing cover-creation-section -->
-        <div class="cover-creation-section">
-            <div class="search-bar-container">
-                <input type="text" placeholder="검색...">
-                <button>📙</button>
-                <ul id="searchResults" class="search-results" style="display: none;">
-                    <!-- 검색 결과가 여기에 나타납니다 -->
-                </ul>
-            </div>
-            <h2>표지 변경 옵션</h2>
-
-            <!-- 버튼 그룹 1 -->
-            <div class="button-group">
-                <button id="StyleBtn" class="cover-button">#디즈니</button>
-                <button id="StyleBtn" class="cover-button">#지브리</button>
-                <button id="StyleBtn" class="cover-button"># 마블  </button>
-            </div>
-
-            <!-- 버튼 그룹 2 -->
-            <div class="button-group">
-                <button id="StyleBtn" class="cover-button"># 카툰  </button>
-                <button id="StyleBtn" class="cover-button">#컬러풀</button>
-                <button id="StyleBtn" class="cover-button">#드로잉</button>
-            </div>
-
-            <div class="button-group">
-                <button id="createCoverBtn" class="cover-button2">표지 생성하기</button>
-            </div>
-
-            
-            <!-- Cover Selection Area -->
-            <div class="cover-selection">
-                <div class="button-group">
-                <!-- 이미지 버튼 1 -->
-                    <button class="image-button" onclick="selectImage(0)">
-                        <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" style="width: 200px; height: 200px;">
-                    </button>
-                    <!-- 이미지 버튼 2 -->
-                    <button class="image-button" onclick="selectImage(1)">
-                        <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" style="width: 200px; height: 200px;">
-                    </button>
-                    <!-- 이미지 버튼 3 -->
-                    <button class="image-button" onclick="selectImage(2)">
-                        <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" style="width: 200px; height: 200px;">
-                    </button>
+        <div class="col-6">
+            <div class="row">
+                <!-- 표지 변경할 도서 검색 -->
+                <h2 class="fw-bold mb-3">도서 검색</h2>
+                <div class="mb-5">
+                    <div class="row g-2 align-items-center">
+                        <!-- 검색창 열 -->
+                        <div class="col">
+                            <input id="bookSearchInput" type="text" class="form-control" placeholder="도서를 검색해보세요.">
+                        </div>
+                        <!-- 버튼 열 -->
+                        <div class="col-auto">
+                            <button id="bookSearchBtn" class="btn btn-outline-orange-400">검색</button>
+                        </div>
+                    </div>
+                    <ul id="searchResults" class="search-results mt-2" style="display: none;">
+                        <!-- 검색 결과가 여기에 나타납니다 -->
+                    </ul>
                 </div>
-            </div>
 
-            <div class="button-group">
-                <button id="selectCoverBtn" class="cover-button2">표지 변경하기</button>
-            </div>
+                <!-- 표지 스타일 -->
+                <h2 class="fw-bold">표지 스타일</h2>
+                <div class="button-group d-flex justify-content-center mb-3">
+                    <!-- 라디오 버튼에 동일한 name 속성 추가 -->
+                    <input type="radio" class="btn-check" name="style" id="style-disney" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-disney">디즈니</label>
+                
+                    <input type="radio" class="btn-check" name="style" id="style-ghibli" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-ghibli">지브리</label>
+                
+                    <input type="radio" class="btn-check" name="style" id="style-marvel" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-marvel">마블</label>
                 </div>
+                <div class="button-group d-flex justify-content-center mb-3">
+                    <input type="radio" class="btn-check" name="style" id="style-cartoon" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-cartoon">카툰</label>
+                
+                    <input type="radio" class="btn-check" name="style" id="style-colorful" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-colorful">컬러풀</label>
+                
+                    <input type="radio" class="btn-check" name="style" id="style-drawing" autocomplete="off">
+                    <label class="btn btn-outline-orange-400 mx-1" for="style-drawing">드로잉</label>
+                </div>
+                <div class="button-group d-flex justify-content-center mb-3">
+                    <button id="createCoverBtn" class="btn btn-orange-400">표지 생성하기</button>
+                </div>
+                
+                <!-- 표지 선택하기 -->
+                <h2 class="fw-bold">표지 선택하기</h2>
+                <div class="cover-selection mb-3">
+                    <div class="row">
+                        <!-- 이미지 0 -->
+                        <div class="col">
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover0" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover0">
+                                <img src="{% static 'images/Redraw_image_0.png' %}" alt="Image0" class="img-fluid rounded">
+                            </label>
+                        </div>
+                        <!-- 이미지 1 -->
+                        <div class="col">
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover1" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover1">
+                                <img src="{% static 'images/Redraw_image_1.png' %}" alt="Image1" class="img-fluid rounded">
+                            </label>
+                        </div>
+                        <!-- 이미지 2 -->
+                        <div class="col">
+                            <input type="radio" class="btn-check" name="coverSelection" id="cover2" autocomplete="off" hidden>
+                            <label class="btn btn-outline-orange-400 w-100" for="cover2">
+                                <img src="{% static 'images/Redraw_image_2.png' %}" alt="Image2" class="img-fluid rounded">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 표지 변경하기 -->
+                <div class="d-flex justify-content-center">
+                    <button id="selectCoverBtn" class="btn btn-orange-400">표지 변경하기</button>
+                </div>  
             </div>
-    <!-- Cover Creation Area -->
         </div>
     </div>
 </div>
 
+<!-- 여백 -->
+<div class="row my-5"></div>
+
+<!-- 로딩 모달 -->
+<div class="modal" tabindex="-1" id="loadingModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">표지 생성 중</h5>
+            </div>
+            <div class="modal-body">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
 {% block script %}
 <script type="text/javascript">
-    // local-image-section의 이미지를 재로드하는 함수
-    function reloadLocalImage() {
-        var localImage = document.querySelector('.local-image-section img');
-        localImage.src = "{% static 'images/graph.png' %}?t=" + new Date().getTime();
-    }
-
-    function showLoadingIndicator() {
-        document.getElementById('loadingIndicator').style.display = 'block';
+    // 모달 제어
+    var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+        keyboard: false,
+        backdrop: 'static'
+    });
+    
+    function showLoadingModal() {
+        loadingModal.show(); // 모달 표시
     }
     
-    function hideLoadingIndicator() {
-        document.getElementById('loadingIndicator').style.display = 'none';
+    function hideLoadingModal() {
+        loadingModal.hide(); // 모달 숨김
     }
 
-    function toggleButtonClass(button) {
-        if (button.classList.contains('clicked')) {
-            button.classList.remove('clicked'); // 이미 clicked 클래스가 있다면 제거
-        } else {
-            // 다른 모든 버튼의 clicked 클래스를 제거합니다.
-            const allButtons = document.querySelectorAll('.cover-button');
-            allButtons.forEach(function(btn) {
-                btn.classList.remove('clicked');
-            });
-            button.classList.add('clicked'); // clicked 클래스를 추가
-        }
-    }
-
-    const styleButtons = document.querySelectorAll('.button-group .cover-button');
-    styleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-        // 다른 모든 스타일 버튼의 'clicked' 클래스를 제거합니다.
-            styleButtons.forEach(btn => {
-                btn.classList.remove('clicked');
-        });
-        // 현재 클릭된 버튼에 'clicked' 클래스를 추가합니다.
-        button.classList.add('clicked');
-    });
-});
+    // 도서 검색 자동완성
+    document.querySelector('#bookSearchInput').addEventListener('input', function() {
+        const searchText = this.value;
     
-    const imageButtons = document.querySelectorAll('.cover-selection .image-button');
-    imageButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // 다른 모든 이미지 버튼의 'clicked' 클래스를 제거합니다.
-            imageButtons.forEach(btn => {
-                btn.classList.remove('clicked');
+        fetch('', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                request_type: 'search',
+                search_query: searchText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';  // 이전 검색 결과를 지웁니다
+            searchResults.style.display = 'block';  // 목록을 표시합니다
+            searchResults.classList.add('list-group'); // Bootstrap 리스트 그룹 클래스 추가
+    
+            data.books.forEach(book => {
+                const listItem = document.createElement('li');
+                listItem.textContent = book.title;
+                listItem.classList.add('list-group-item'); // Bootstrap 리스트 아이템 클래스 추가
+                listItem.style.cursor = 'pointer';
+                searchResults.appendChild(listItem);
             });
-            // 현재 클릭된 버튼에 'clicked' 클래스를 추가합니다.
-            button.classList.add('clicked');
+    
+            if (data.books.length === 0) {
+                const emptyItem = document.createElement('li');
+                emptyItem.textContent = '검색 결과가 없습니다.';
+                emptyItem.classList.add('list-group-item');
+                searchResults.appendChild(emptyItem);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
     });
 
-    // 표지 생성 버튼에 대한 클릭 이벤트 핸들러를 추가합니다.
-    const createCoverBtn = document.getElementById('createCoverBtn');
-    createCoverBtn.addEventListener('click', function() {
-        // 클릭된 버튼에 'clicked' 클래스를 토글합니다.
-        createCoverBtn.classList.toggle('clicked');
+    function setupSearchResultClickListener() {
+        const searchResults = document.getElementById('searchResults');
+        searchResults.addEventListener('click', function(event) {
+            const clickedItem = event.target;
+            if (clickedItem.tagName === 'LI') {
+                const searchBar = document.querySelector('#bookSearchInput');
+                searchBar.value = clickedItem.textContent.trim();
+            }
+        });
+    }
+    
+    // 페이지 로드 시 검색 결과 클릭 이벤트 리스너
+    document.addEventListener('DOMContentLoaded', function() {
+        setupSearchResultClickListener();
     });
 
-    // 표지 변경 버튼에 대한 클릭 이벤트 핸들러를 추가합니다.
-    const selectCoverBtn = document.getElementById('selectCoverBtn');
-    selectCoverBtn.addEventListener('click', function() {
-        // 클릭된 버튼에 'clicked' 클래스를 토글합니다.
-        selectCoverBtn.classList.toggle('clicked');
+    // 도서 검색 후 이미지 생성
+    document.querySelector('#bookSearchBtn').addEventListener('click', function() {
+        const searchText = document.querySelector('#bookSearchInput').value;
+        const searchResults = document.getElementById('searchResults');
+        searchResults.style.display = 'none';
+        // AJAX 요청 전 이미지를 ready.png로 변경
+        document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
+    
+        fetch('', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                request_type: 'create_graph',
+                search_text: searchText
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('검색 결과:', data);
+            // 검색 완료 후 이미지를 graph.png로 변경합니다.
+            document.getElementById('graphImage').src = "{% static 'images/graph.png' %}";
+            // 여기에 검색 결과를 처리하는 추가 로직을 구현할 수 있습니다.
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // 오류 발생 시 이미지를 다시 ready.png로 변경할 수 있습니다.
+            alert('책 제목을 다시 입력해주세요');
+            document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
+        });
     });
+   
+    
     // CSRF 토큰을 가져오는 함수
     function getCookie(name) {
         let cookieValue = null;
@@ -330,34 +256,31 @@
         }
         return cookieValue;
     }
-
-    // 표지 생성하기 버튼 클릭 이벤트 핸들러
+    
+    // 표지 생성하기 버튼 클릭 이벤트
     document.getElementById('createCoverBtn').addEventListener('click', function() {
-        showLoadingIndicator();
+        showLoadingModal(); // 진행 바 표시
+
         const selectedStyleButton = document.querySelector('.button-group .cover-button.clicked');
         let selectedStyle = '';
         if (selectedStyleButton) {
-            selectedStyle = selectedStyleButton.textContent.trim(); // 버튼의 텍스트를 추출합니다.
+            selectedStyle = selectedStyleButton.textContent.trim(); // 버튼의 텍스트
         }
-        fetch('', {  // '/create_cover/'는 장고 urlconf에 정의된 경로에 맞게 수정해야 합니다.
+        fetch('', {  
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // CSRF 토큰을 요청 헤더에 추가합니다.
+                'X-CSRFToken': getCookie('csrftoken'),  // CSRF 토큰
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                // 여기에 서버에 보낼 데이터를 추가할 수 있습니다.
                 request_type: 'create_cover',
                 style: selectedStyle, //디즈니 or 마블.. 그림체 전송
             })
         })
         .then(response => {
-            hideLoadingIndicator();
             response.json();
         })
         .then(data => {
-            document.querySelector('.cover-selection').style.display = 'block';
-            document.querySelector('.cover-selection + .button-group').style.display = 'block';
             const newTimestamp = new Date().getTime();
             const imageElements = document.querySelectorAll('.cover-selection img');
             imageElements.forEach((img, index) => {
@@ -372,7 +295,13 @@
         });
     });
 
-
+    function getCurrentSelectedImageNumber() {
+        const selectedButton = document.querySelector('.cover-selection .image-button.clicked');
+        if (!selectedButton) {
+            return null;
+        }
+        return Array.from(document.querySelectorAll('.cover-selection .image-button')).indexOf(selectedButton);
+    }
 
     // '표지 변경하기' 버튼 클릭 이벤트 핸들러
     document.getElementById('selectCoverBtn').addEventListener('click', function() {
@@ -405,109 +334,7 @@
             console.error('Error:', error);
             alert('변경 실패');
         });
-    });
+    });     
     
-
-    function selectImage(imageNumber) {
-        const imageButtons = document.querySelectorAll('.cover-selection .image-button');
-        imageButtons.forEach(button => {
-            button.classList.remove('clicked'); // 다른 모든 버튼의 'clicked' 클래스 제거
-        });
-    
-        const selectedButton = document.querySelector(`.cover-selection .image-button:nth-child(${imageNumber})`);
-        selectedButton.classList.add('clicked'); // 선택된 버튼에 'clicked' 클래스 추가
-    }
-    function getCurrentSelectedImageNumber() {
-        const selectedButton = document.querySelector('.cover-selection .image-button.clicked');
-        if (!selectedButton) {
-            return null;
-        }
-        return Array.from(document.querySelectorAll('.cover-selection .image-button')).indexOf(selectedButton);
-    }
-    
-    
-    
-    // 검색 처리 로직 
-    document.querySelector('.search-bar-container button').addEventListener('click', function() {
-        const searchText = document.querySelector('.search-bar-container input[type="text"]').value;
-        const searchResults = document.getElementById('searchResults');
-        searchResults.style.display = 'none';
-        // AJAX 요청 전 이미지를 ready.png로 변경합니다.
-        document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
-    
-        fetch('', { // Django 뷰 경로로 수정하세요
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                request_type: 'create_graph',
-                search_text: searchText
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('검색 결과:', data);
-            // 검색 완료 후 이미지를 graph.png로 변경합니다.
-            document.getElementById('graphImage').src = "{% static 'images/graph.png' %}";
-            // 여기에 검색 결과를 처리하는 추가 로직을 구현할 수 있습니다.
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // 오류 발생 시 이미지를 다시 ready.png로 변경할 수 있습니다.
-            alert('책 제목을 다시 입력해주세요');
-            document.getElementById('graphImage').src = "{% static 'images/ready.gif' %}";
-        });
-    });
-    document.querySelector('.search-bar-container input[type="text"]').addEventListener('input', function() {
-        const searchText = this.value;
-    
-        fetch('', {  // 적절한 URL로 변경하세요
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                request_type: 'search',
-                search_query: searchText })
-        })
-        .then(response => response.json())
-        .then(data => {
-            const searchResults = document.getElementById('searchResults');
-            searchResults.innerHTML = '';  // 이전 검색 결과를 지웁니다
-            searchResults.style.display = 'block';  // 목록을 표시합니다
-    
-            data.books.forEach(book => {
-                const listItem = document.createElement('li');
-                listItem.textContent = book.title;
-                searchResults.appendChild(listItem);
-            });
-    
-            if (data.books.length === 0) {
-                searchResults.innerHTML = '<li>검색 결과가 없습니다.</li>';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
-    function setupSearchResultClickListener() {
-        const searchResults = document.getElementById('searchResults');
-        searchResults.addEventListener('click', function(event) {
-            const clickedItem = event.target;
-            if (clickedItem.tagName === 'LI') {
-                const searchBar = document.querySelector('.search-bar-container input[type="text"]');
-                searchBar.value = clickedItem.textContent.trim();
-            }
-        });
-    }
-    
-    // 페이지 로드 시 검색 결과 클릭 이벤트 리스너를 설정합니다.
-    document.addEventListener('DOMContentLoaded', function() {
-        setupSearchResultClickListener();
-    });
-
 </script>
 {% endblock %}

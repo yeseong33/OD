@@ -92,26 +92,44 @@
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-    <!-- 여백 -->
-    <div class="row my-5"></div>
-{% endblock %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // 클릭 활성화
+            document.getElementById('duplicate-check-btn').addEventListener('click', checkDuplicate);
 
-{% block script %}
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        
-        // 클릭 활성화
-        document.getElementById('duplicate-check-btn').addEventListener('click', checkDuplicate);
-        
-        // 중복 확인 버튼
-        function checkDuplicate() {
-            // voice_name 데이터를 localStorage에 저장
-            var voiceName = document.getElementById('voice_name').value;
-            console.log("실행됨", voiceName)
-            localStorage.setItem('voice_name', voiceName);
-        }
+            var dup_check = 0
+            // 중복 확인 버튼
+            function checkDuplicate() {
+                // voice_name 데이터를 localStorage에 저장
+                var voiceName = document.getElementById('voice_name').value;
+                console.log("실행됨", voiceName)
+                localStorage.setItem('voice_name', voiceName);
+
+                fetch('{% url "audiobook:voice_custom_search" %}' + '?voice_name=' + voiceName, { 
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'), // CSRF 토큰 추가
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 서버 응답 처리
+                    console.log('서버 응답:', data);
+                    if (data['check'] == 'False'){
+                        alert("없는 모델명입니다!");
+                        dup_check = 1
+                    }
+                    else{
+                        alert("있는 모델명입니다!");
+                    }
+                })
+                .catch(error => {
+                    console.error('에러 발생:', error);
+                });
+            }
 
         // modal-btn 클릭 시 다음 페이지로 이동
         document.getElementById('modal-btn').addEventListener('click', function() {
@@ -149,31 +167,54 @@
         });
         //
 
-        //목소리 생성하기 버튼
-        document.getElementById("voice-create-btn").addEventListener("click", function() {
-            var voice_file = document.getElementById('voice_file').files[0];  // 파일 데이터
-            var voice_name = document.getElementById('voice_name').value;  // 텍스트 데이터
-            document.getElementById('loadingIndicator').style.display = 'block';
-        
-            var formData = new FormData();
-            formData.append('voice_file', voice_file);
-            formData.append('voice_name', voice_name);
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
-        
-            var request = new XMLHttpRequest();
-            request.open("POST", "/rvc_train/");  // views.py에 정의된 url
-            request.send(formData);
-        
-            request.onload = function() {
-                if (request.status == 200) {
-                    console.log(request.response);  // 성공 시 응답 출력
-                    window.location.href = "{% url 'audiobook:voice_custom_complete' %}";
-                    document.getElementById('loadingIndicator').style.display = 'none';
-                } else {
-                    console.log(Error(request.statusText));  // 실패 시 에러 출력
+            //목소리 생성하기 버튼
+            document.getElementById("voice-create-btn").addEventListener("click", function() {
+                if (dup_check == 1){
+                    var voice_file = document.getElementById('voice_file').files[0];  // 파일 데이터
+                    var voice_name = document.getElementById('voice_name').value;  // 텍스트 데이터
+                    document.getElementById('loadingIndicator').style.display = 'block';
+                
+                    var formData = new FormData();
+                    formData.append('voice_file', voice_file);
+                    formData.append('voice_name', voice_name);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');  // CSRF 토큰 추가
+                
+                    var request = new XMLHttpRequest();
+                    request.open("POST", "/rvc_train/");  // views.py에 정의된 url
+                    request.send(formData);
+                
+                    request.onload = function() {
+                        if (request.status == 200) {
+                            console.log(request.response);  // 성공 시 응답 출력
+                            window.location.href = "{% url 'audiobook:voice_custom_complete' %}" + "?book_id={{ book_id }}";
+                            document.getElementById('loadingIndicator').style.display = 'none';
+                        } else {
+                            console.log(Error(request.statusText));  // 실패 시 에러 출력
+                        }
+                    }
                 }
+                else{
+                    alert("중복체크를 하세요!")
+                }
+            });
+
+            // CSRF 토큰을 쿠키에서 가져오는 함수
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = cookies[i].trim();
+                        // 쿠키 이름으로 시작하는 경우
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
             }
         });
-    });
-</script>
+
+    </script>
 {% endblock %}

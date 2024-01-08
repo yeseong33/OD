@@ -1,69 +1,55 @@
-from django.core.files import File
-from config.context_processors import get_file_path
 from config.settings import FILE_SAVE_POINT
-from botocore.exceptions import NoCredentialsError
-import boto3
-import matplotlib.font_manager as fm
-from django.contrib import messages
-import json
-import os
-from django.urls import reverse
-import requests
-import datetime
-import time
-import concurrent.futures
-import matplotlib.pyplot as plt
-import numpy as np
-import shutil
-# 표준 라이브러리
-from manager.forms import InquiryResponseForm
+from config.context_processors import get_file_path
+from .serializers import FAQSerializer
+from .models import FAQ
+from audiobook.models import Book
+from user.models import Subscription
+from community.serializers import BookSerializer
+from community.models import BookRequest, UserRequestBook, Inquiry
 from community.views import send_async_mail
 from community.serializers import InquirySerializer
 from user.models import Subscription
 from audiobook.models import Book
 from community.models import BookRequest, UserRequestBook, Inquiry
 from rest_framework import status
+from manager.serializers import InquirySerializer
+from manager.forms import InquiryResponseForm
 from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from dateutil.relativedelta import relativedelta
-from django.core.cache import cache
-from django.core.files.base import ContentFile
-from django.core.paginator import Paginator
-from django.shortcuts import redirect, render, get_object_or_404
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from rest_framework.response import Response
+from rest_framework import status
 from django.utils import timezone
-from django.template.loader import render_to_string
-from django.shortcuts import redirect, render, get_object_or_404
+from django.utils.html import strip_tags
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.shortcuts import redirect, render, get_object_or_404
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.files.base import ContentFile
-from django.core.cache import cache
+from django.urls import reverse
+from django.contrib import messages
+from django.core.files import File
 from dotenv import load_dotenv
-import concurrent.futures
 from dateutil.relativedelta import relativedelta
+from botocore.exceptions import NoCredentialsError
+import boto3
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
-import json
 import os
-import shutil
+import json
 import time
 import datetime
 from datetime import datetime as dt
-from django.contrib.auth.decorators import user_passes_test
-from django.utils.decorators import method_decorator
-from community.serializers import BookSerializer
-from .models import FAQ
-from .serializers import FAQSerializer
+import concurrent.futures
+from django.template.loader import render_to_string
 
-# 외부 라이브러리
 import numpy as np
 import requests
 import matplotlib
-matplotlib.use('Agg')
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # 쓰레드 메모리 누수 방지
 
 
 load_dotenv()  # 환경 변수를 로드함
@@ -113,25 +99,23 @@ def book_view(request):
 
                 # book_view_count 데이터 확인
                 if book.book_view_count:
-                    # JSON 문자열을 파이썬 딕셔너리로 변환
-                    monthly_views = json.loads(book.book_view_count)
+                    monthly_views = book.book_view_count
                 else:
                     # 임시 수요 데이터 입력
                     monthly_views = {
-                        '1': 60,
-                        '2': 60,
-                        '3': 60,
-                        '4': 60,
-                        '5': 60,
-                        '6': 10,
-                        '7': 10,
-                        '8': 10,
-                        '9': 60,
-                        '10': 10,
-                        '11': 50,
-                        '12': 10
+                        '1': 10,
+                        '2': 20,
+                        '3': 30,
+                        '4': 40,
+                        '5': 50,
+                        '6': 60,
+                        '7': 70,
+                        '8': 80,
+                        '9': 90,
+                        '10': 100,
+                        '11': 110,
+                        '12': 120
                     }
-                    book.book_view_count = json.dumps(monthly_views)
                     book.save()
 
             except Book.DoesNotExist:
@@ -196,7 +180,7 @@ def book_view(request):
                 }
                 data = {
                     "model": "dall-e-3",
-                    "prompt": f"Book title: '{book_title}', Content: {book_description}. Please redraw the image in the style of {selected_style}.",
+                    "prompt": f"A vibrant and detailed illustration representing the story of [{book_title}]. The image should capture key elements of the story: [{book_description}]. The style should be [{selected_style}], focusing on the atmosphere and mood of the story rather than the physical appearance of a book.",
                     "n": 1,
                     "size": "1024x1024"
                 }
@@ -289,7 +273,7 @@ def book_view(request):
 
 @specific_user_required
 def cover_complete(request):
-    return render(request, 'manager/book_complete.html')
+    return render(request, 'manager/book_cover.html')
 
 
 # 도서 신청 확인
