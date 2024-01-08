@@ -278,6 +278,7 @@
             })
         })
         .then(response => {
+            hideLoadingModal();
             response.json();
         })
         .then(data => {
@@ -296,11 +297,13 @@
     });
 
     function getCurrentSelectedImageNumber() {
-        const selectedButton = document.querySelector('.cover-selection .image-button.clicked');
-        if (!selectedButton) {
-            return null;
+        const coverSelectionInputs = document.querySelectorAll('.cover-selection input[type="radio"]');
+        for (let i = 0; i < coverSelectionInputs.length; i++) {
+            if (coverSelectionInputs[i].checked) {
+                return i;
+            }
         }
-        return Array.from(document.querySelectorAll('.cover-selection .image-button')).indexOf(selectedButton);
+        return null;
     }
 
     // '표지 변경하기' 버튼 클릭 이벤트 핸들러
@@ -327,7 +330,7 @@
         .then(response => response.json())
         .then(data => {
             alert('변경 성공!');
-            window.location.href = '../cover_complete';
+            window.location.href = '../view';
             
         })
         .catch(error => {
