@@ -123,8 +123,8 @@
             </div>
             <div class="modal-body">
                 <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                         role="progressbar" style="width: 100%"></div>
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -142,7 +142,25 @@
     });
     
     function showLoadingModal() {
-        loadingModal.show(); // 모달 표시
+        loadingModal.show(); // Show modal
+        startProgressBar(25000); // Start progress bar for 25 seconds
+    }
+
+    // Function to start and update the progress bar
+    function startProgressBar(duration) {
+        const progressBar = document.getElementById('progressBar');
+        let currentProgress = 0;
+        const interval = duration / 100;
+
+        const progressInterval = setInterval(() => {
+            currentProgress++;
+            progressBar.style.width = currentProgress + '%';
+            progressBar.setAttribute('aria-valuenow', currentProgress);
+
+            if (currentProgress >= 100) {
+                clearInterval(progressInterval);
+            }
+        }, interval);
     }
     
     function hideLoadingModal() {
