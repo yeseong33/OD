@@ -6,6 +6,7 @@
 {% block style %}
 <style>
     #voice_img {
+        max-height: 300px;
         object-fit: cover; 
         cursor:pointer;
     }
@@ -27,13 +28,20 @@
         <!-- 성우 선택 -->
         <div class="col-6 d-flex flex-column align-items-center justify-content-center">
             <div class="row mb-4">
-                <img id="voice_img" src="/static/images/chz.jpg" alt="성우 사진" class="img-fluid rounded">
+                <a href="{% url 'audiobook:voice_custom' %}">
+                    <!-- 성우 이미지 표시 -->
+                    {% if selected_voice %}
+                        <img id="voice_img" src="{{ selected_voice.voice_image_path.url }}" alt="{{ selected_voice_name }}" class="img-fluid rounded">
+                    {% else %}
+                        <img id="voice_img" src="/static/images/default_voice.jpg" alt="기본 성우" class="img-fluid rounded">
+                    {% endif %}
+                </a>                
             </div>
             <div class="row">
                 <div class="col-auto d-flex justify-content-center">
                     <span class="fs-3 fw-bold mx-1">현재 선택 성우</span>
                     <span id="sampleBtn" class="d-inline-flex align-items-center" style="cursor:pointer;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#FD7E14"  class="bi bi-play" viewBox="0 0 16 16">
+                        <svg id="playPauseIcon" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#FD7E14"  class="bi bi-play" viewBox="0 0 16 16">
                             <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
                         </svg>
                     </span>  
@@ -46,22 +54,24 @@
     <div class="row d-flex align-items-center justify-content-center my-5">
         <div id="listen" class="col-auto d-flex align-items-center" style="cursor:pointer;">
             <button class="btn btn-orange-400 btn-lg">청취하기</button>
+        </div>
     </div>
 
     <audio id="audioPlayer" style="display: none">
-        <source src="/static/sounds/dog_bark.mp3" type="audio/mp3">
+        <source src="{{ selected_voice.voice_sample_path.url }}" type="audio/mp3">
     </audio>
 {% endblock %}
 
 {% block script %}
-    <script>
-        var isPlaying = false; // 소리가 현재 재생 중인지 여부를 나타내는 변수
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
         const user_book_history = {{user_book_history}}
         const bookId = {{book.book_id}}
         if (!user_book_history.includes(bookId)) {
             user_book_history.push(bookId)
         }
-        
+
         document.getElementById('listen').addEventListener('click', function() {
             // 쿠키에서 CSRF 토큰을 가져오는 함수
             function getCSRFToken() {
@@ -116,27 +126,32 @@
 
         }); 
 
-        document.getElementById('voice_img').addEventListener('click', function() {
-            window.location.href = "{% url 'audiobook:voice_custom' book_id=book.book_id %}"
-        }); 
+        var isPlaying = false; // 소리가 현재 재생 중인지 여부를 나타내는 변수
 
-        var imageElement = document.getElementById('voice_img');
-        imageElement.src = '\\media\\voice_images\\{{voice_name}}.jpg';
-        var audio;
-        audio = new Audio('\\media\\voice_sample\\{{voice_name}}.mp3');
-        console.log(audio)
+        // 오디오 재생 및 일시정지 
+        document.getElementById('sampleBtn').addEventListener('click', function() {
+            playSample();
+        });
+        
+        // 오디오 재생
+        function playSample() {
+            var audioPlayer = document.getElementById('audioPlayer');
+            var playPauseIcon = document.getElementById('playPauseIcon');
 
-        function playMusic() {
-            // 오디오 재생 전에 로드 상태를 확인합니다.
-            if (audio.readyState >= 2) {
-              audio.play();
+            if (!isPlaying) {
+                audioPlayer.play();
+                isPlaying = true;
+                playPauseIcon.innerHTML = `<path d="M5.5 3.5h-1v8h1v-8zm5 0h-1v8h1v-8z"/>`; // 일시정지 아이콘으로 변경
             } else {
-              // 오디오가 로드되지 않았다면, 로드를 시도합니다.
-              audio.load();
-              audio.play();
-              console.log("came in")
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                isPlaying = false;
+                playPauseIcon.innerHTML = `<path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>`; // 재생 아이콘으로 변경
             }
-          }
+        }
 
-    </script>
+    });
+
+
+</script>
 {% endblock %}
