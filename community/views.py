@@ -85,7 +85,7 @@ class BookShareHtml(APIView):
 
     def get(self, request):
         file_path = self.get_file_path()
-        books = Book.objects.all()
+        books = Book.objects.all().order_by('book_id')
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
         user_favorites = user.user_favorite_books # 유저가 좋아요 누른 책 조회.
@@ -116,19 +116,23 @@ class BookLikeView(APIView):
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
-        book_id = int(request.GET.get('book_id'))  # Convert to string if needed
+        book_id = int(request.GET.get('book_id'))  
+        book = Book.objects.get(book_id = book_id)
 
-        # Check if user_favorite_books is None and initialize it as an empty list
         if user.user_favorite_books is None:
             user.user_favorite_books = [book_id]
+            book.book_likes += 1
         else:
             if book_id in map(int, user.user_favorite_books):
                 user.user_favorite_books.remove(book_id)
+                book.book_likes -= 1
             else:
                 user.user_favorite_books.append(book_id)
-
+                book.book_likes += 1
+                
         user.save()
-
+        book.save()
+        
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
 

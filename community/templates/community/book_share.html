@@ -26,6 +26,10 @@
         border: none;
         outline: none;
         background-color: transparent;
+        transition: transform 0.3s ease-in-out;
+    }
+    .like-icon:hover {
+        transform: scale(1.3); 
     }
 
 </style>
@@ -50,14 +54,16 @@
         {% for book in page_obj %}
         <div class="col">
             <div class="card h-100 text-end">
-                <div class="card h-90" style='height: 90%;'>
-                    <img src="{{ file_path }}{{ book.book_image_path }}" class="card-img" alt="{{ book.book_image_path }}" style='height: 100%;'>
-                    <div class="card-img-overlay text-bg-secondary">
-                        <h5 class="card-title">{{ book.book_title }}</h5>
-                        <p class="card-author">{{ book.book_author }}</p>
-                        <p class="card-publisher">{{ book.book_publisher }}</p>
+                <a href="{% url 'community:book_share_content' book.book_id %}">
+                    <div class="card h-90" style='height: 90%;'>
+                            <img src="{{ file_path }}{{ book.book_image_path }}" class="card-img" alt="{{ book.book_image_path }}" style='height: 250px;'>
+                        <div class="card-img-overlay text-bg-secondary">
+                            <h5 class="card-title">{{ book.book_title }}</h5>
+                            <p class="card-author">{{ book.book_author }}</p>
+                            <p class="card-publisher">{{ book.book_publisher }}</p>
+                        </div>
                     </div>
-                </div>
+                </a> 
                 <div class="card-footer bg-transparent">
                     {% if  book.book_id not in user_favorites %}
                         <button class = "like-icon"  data-book-id="{{ book.book_id }}" >
@@ -126,7 +132,7 @@
                 success: function (data) {
                     // Update user_favorites or handle the response accordingly
                     if (data.success) {
-                        console.log(bookId)
+                        location.reload();
                     } else {
                         console.error('Failed to update user_favorites');
                     }
