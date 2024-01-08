@@ -126,7 +126,7 @@
                 success: function (data) {
                     // Update user_favorites or handle the response accordingly
                     if (data.success) {
-                        console.log(bookId)
+                        location.reload();
                     } else {
                         console.error('Failed to update user_favorites');
                     }
