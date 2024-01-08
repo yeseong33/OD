@@ -14,7 +14,7 @@
               <a href="{% url 'audiobook:content' book.book_id %}?voice_name=IU" >
                 <img src="{{ file_path }}{{ book.book_image_path }}" class="book-img" target="_blank" alt="{{ book.book_image_path }}" style='height: 100%;'>
               </a>
-              <div class="book-info text-bg-secondary" style='height:95%; width:95%;'>
+              <div class="book-info text-bg-secondary" style='height:100%; width:100%;'>
                 <h5 class="card-title">{{ book.book_title }}</h5>
                 <p class="card-author">{{ book.book_author }}</p>
                 <p class="card-publisher">{{ book.book_publisher }}</p>
@@ -45,7 +45,7 @@
                 <a href="{% url 'audiobook:content' book.book_id %}?voice_name=IU" target="_blank">
                   <img src="{{ file_path }}{{ book.book_image_path }}" class="book-img" target="_blank" alt="{{ book.book_image_path }}" style='height: 100%;'>
                 </a>
-                <div class="book-info text-bg-secondary" style='height:95%; width:95%;'>
+                <div class="book-info text-bg-secondary" style='height:100%; width:100%;'>
                   <h5 class="card-title">{{ book.book_title }}</h5>
                   <p class="card-author">{{ book.book_author }}</p>
                   <p class="card-publisher">{{ book.book_publisher }}</p>
@@ -73,7 +73,7 @@
           <div class="card h-90 text-end border-light mb-3" style='height:350px; width:230px'>
             <div class="card h-90 book-card">
               <img src="{{ voice.voice_image_path.url }}" class="book-img" target="_blank" alt="{{ voice.voice_image_path }}" style='height: 100%;'>
-              <div class="book-info text-bg-secondary" style='height:95%; width:95%;'>
+              <div class="book-info text-bg-secondary" style='height:100%; width:100%;'>
                 <h5 class="card-title">{{ voice.voice_name }}</h5>
                 <p class="card-author">{{ book.voice_created_date }}</p>
               </div>
