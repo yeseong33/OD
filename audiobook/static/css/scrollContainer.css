@@ -61,13 +61,6 @@ font-weight: 700;
 height: 300px;
 }
 
-.voice-card {
-height: 200px;
-display: flex; /* Flexbox를 사용하여 아이템들을 유연하게 배치 */
-align-items: center; /* 수직 방향으로 중앙 정렬 */
-justify-content: center; /* 수평 방향으로 중앙 정렬 */
-}
-
 .book-card img, .voice-card img {
 width: 100%; /* 이미지 너비를 카드 너비와 동일하게 설정 */
 height: 100%; /* 이미지 높이를 카드 높이와 동일하게 설정 */
