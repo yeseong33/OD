@@ -26,7 +26,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from django.core.files.base import ContentFile
 from community.serializers import BookSerializer
-from .serializers import TemporaryFileSerializer, VoiceSerializer
+from .serializers import VoiceSerializer
 from .models import *
 from user.views import decode_jwt
 from community.models import BookRequest
@@ -213,15 +213,6 @@ class ContentPlayHTML(APIView):
             book = Book.objects.get(pk=book_id)
             voice_name = request.GET.get("voice_name")
 
-            '''
-            if FILE_SAVE_POINT == 'local':
-                model_path = f'C:\\S3_bucket\\voice_rvcs\\{voice_name}.pth'
-            else:
-                model_path = 0
-
-            
-            '''
-
         except Book.DoesNotExist:
             print('book not exist.')
             return Response(status=404, template_name=self.template_name)
@@ -241,9 +232,14 @@ class ContentPlayHTML(APIView):
     def post(self, request, book_id):
         data = request.data
         action = data.get('action')
-        voice_creation_data = request.session.get('voice_creation')
-        voice_name = voice_creation_data['voice_name']
         
+        selected_voice_id = request.COOKIES.get('selectedVoiceId')
+        tone = data.get('tone', 0)
+        text = data.get('text')
+        voice = Voice.objects.get(
+                id=selected_voice_id)
+        voice_model = voice.voice_path
+        voice_name = voice.voice_name
         # SSH 클라이언트 생성
         client = paramiko.SSHClient()
         # 호스트 키 자동으로 수락
@@ -253,24 +249,48 @@ class ContentPlayHTML(APIView):
                         key_filename=key_filename)
 
         
-        try:
-            sftp = client.open_sftp()
-            
-            # 파일을 전송할 원격 경로
-            remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
+        sftp = client.open_sftp()
+        
+        # 파일을 전송할 원격 경로
+        remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
-            # 파일 전송
-            sftp.put(model_path, remote_file_path)
+        # 파일 전송
+        sftp.put(voice_model, remote_file_path)
 
-            # 연결 종료
-            sftp.close()
-        except:
-            return Response(status=405, template_name=self.template_name)
-
+        # 연결 종료
+        sftp.close()
+        
         # 셸 세션 열기
         shell = client.invoke_shell()
-            
+        
+        shell = client.invoke_shell()
+
+        commands = [
+            f'python3 tts.py {text}\n',
+            'cd project-main\n',
+            f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
+            'rm -rf audios/tts.mp3\n',
+        ]
+
+        for cmd in commands:
+            shell.send(cmd)
+            # 각 명령의 실행이 끝날 때까지 기다립니다.
+            output = receive_until_prompt(shell, prompt='$ ')
+            print(output)  # 받은 출력을 표시합니다.
+
+        # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
+        remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.mp3'
+        project_path = os.getcwd()
+        folder_path = os.path.join(project_path, 'static', 'temp')  # 경로 조합
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        sftp.get(remote_path, os.path.join(
+            project_path, f'static/temp/{voice_name}.mp3'))
+        # SFTP 세션 종료
+        sftp.close()
         client.close()
+        
+        JsonResponse({'Good': '변환완료'}, status=200)
         
 
 # 성우
@@ -412,16 +432,10 @@ class voice_custom_upload(APIView):
                 temp_voice_image_path=voice_photo
             )
 
-            # 여기에 rvc 파일을 임시로 저장하세요. 현재는 mp3 파일을 그대로 저장합니다.
-            temp_voice_file = TemporaryFile.objects.create(
-                temp_voice_sample_path=voice_file
-            )
-
             # 세션에 데이터 저장
             request.session['voice_creation'] = {
                 'voice_name': voice_name,
                 'temp_voice_photo_id': temp_voice_photo.id,
-                'temp_voice_file_id': temp_voice_file.id
             }
 
             redirect_url = reverse('audiobook:voice_custom_complete', kwargs={'book_id': book_id})
@@ -517,7 +531,6 @@ class voice_custom_complete(APIView):
             if voice_creation_data:
                 voice_name = voice_creation_data['voice_name']
                 temp_voice_photo_id = voice_creation_data['temp_voice_photo_id']
-                temp_voice_file_id = voice_creation_data['temp_voice_file_id']
                 public_status = data.get('public') == 'true'
                 tone = data.get('tone')
                 
@@ -533,7 +546,6 @@ class voice_custom_complete(APIView):
                 # 셸 세션 열기
                 shell = client.invoke_shell()
                 
-                '''
                 sample = "안녕?난오디야"
                 commands = [
                     f'python3 tts.py {sample}\n',
@@ -567,12 +579,9 @@ class voice_custom_complete(APIView):
                     project_path, f'static/tts/{voice_name}.pth'))
                 # SFTP 세션 종료
                 sftp_client.close()
-                '''
                 
                 temp_voice_photo = TemporaryFile.objects.get(
                     id=temp_voice_photo_id)
-                temp_voice_file = TemporaryFile.objects.get(
-                    id=temp_voice_file_id)
 
                 # Voice 인스턴스 생성 및 저장
                 voice_data = {
@@ -645,6 +654,7 @@ class voice_custom_complete(APIView):
 
             if voice_creation_data:
                 voice_name = voice_creation_data['voice_name']
+                temp_voice_photo_id = voice_creation_data['temp_voice_photo_id']
                 # SSH 클라이언트 생성
                 client = paramiko.SSHClient()
                 # 호스트 키 자동으로 수락
@@ -652,6 +662,11 @@ class voice_custom_complete(APIView):
                 # SSH 연결 (키 기반 인증)
                 client.connect(hostname=hostname, username=username,
                             key_filename=key_filename)
+                
+                temp_voice_photo = TemporaryFile.objects.get(
+                    id=temp_voice_photo_id)
+                
+                temp_voice_photo.delete()
 
                 # 셸 세션 열기
                 shell = client.invoke_shell()
