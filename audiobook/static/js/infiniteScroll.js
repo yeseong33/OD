@@ -10,10 +10,10 @@ function appendBooks(books) {
         bookElement.innerHTML = `
             <div class="book-card">
                 <a href="/books/${book.book_id}/">
-                    <img src="/${book.book_image_path}" alt="${book.book_title}" />
+                    <img src="${book.book_cover}" alt="${book.title}" />
                     <div>
-                        <h5>${book.book_title}</h5>
-                        <p>${book.book_title}</p>
+                        <h5>${book.title}</h5>
+                        <p>${book.author}</p>
                     </div>
                 </a>
             </div>

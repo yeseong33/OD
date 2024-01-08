@@ -131,8 +131,40 @@ class BookListAPI(ListAPIView):
             print(book.book_image_path)
         
         return queryset
-    
 
+
+
+# class BookListAPI(ListAPIView):
+#     # You can remove the serializer_class and pagination_class 
+#     # if they are no longer needed
+
+#     def get_queryset(self):
+#         query = self.request.query_params.get('query', '')
+#         queryset = Book.objects.filter(
+#             Q(book_title__icontains=query) | Q(book_author__icontains=query)
+#         ).order_by('-book_likes', 'book_id')
+#         return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+
+#         # Manually create the response data
+#         books_data = []
+#         for book in queryset:
+#             book_data = {
+#                 'book_id': book.book_id,
+#                 'book_title': book.book_title,
+#                 'book_image_path': book.book_image_path,
+#                 'book_author': book.book_author,
+#                 # Add other fields as necessary
+#             }
+#             books_data.append(book_data)
+#         print(book_data)
+
+#         # Return the JSON response
+#         return JsonResponse({'results': books_data})
+    
+    
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'audiobook/main_genre.html'
