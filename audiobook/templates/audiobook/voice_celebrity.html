@@ -3,6 +3,18 @@
 
 {% block title %}O :D - 성우 선택{% endblock %}
 {% block style %}
+<style>
+    .card-custom {
+        height: 200px;
+        width: 120px;
+    }
+
+    .card-img-top {
+        height: 200px; 
+        object-fit: contain; 
+    }
+
+</style>
 {% endblock %}
 {% block content %}
 
@@ -32,19 +44,23 @@
 <!-- 개인 음성 -->
 <div>
     <h2 class="fw-bold mt-4 mb-3">내 좋아요</h2>
-    <div class="row justify-content-center">
+    <div class="row justify-content-start">
         {% for voice in user_favorite_voices %}
-        <div class="col-md-auto mb-3">
-            <img src="{{ voice.voice_image_path.url }}" class="img-fluid rounded" alt="{{ voice.voice_name  }}" style="max-width: 100px;">
+        <div class="col-2 mb-3">
+            <div id="voiceCard{{ voice.voice_id }}" class="card card-custom" style="cursor:pointer;">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
+            </div>
         </div>
         {% endfor %}
     </div>
 
     <h2 class="fw-bold mt-4 mb-3">Top 10</h2>
-    <div class="row justify-content-center">
+    <div class="row justify-content-start">
         {% for voice in top_10_voices %}
-        <div class="col-md-auto mb-3">
-            <img src="{{ voice.voice_image_path.url }}" class="img-fluid rounded" alt="{{ voice.voice_name  }}" style="max-width: 100px;">
+        <div class="col-2 mb-3">
+            <div class="card card-custom">
+                <img src="{{ voice.voice_image_path.url }}" class="card-img-top" alt="{{ voice.voice_name }}">
+            </div>
         </div>
         {% endfor %}
     </div>
