@@ -3,6 +3,12 @@
 
 {% block title %}O :D - 청취{% endblock %}
 {% block style %}
+<style>
+    .action-btn {
+        border: none; /* 버튼 선 제거 */
+        outline: none; /* 포커스 효과 제거 */
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -83,17 +89,17 @@
             
             <div class="row justify-content-center"> 
                 <div class="col-2">
-                    <button id="prev" class="action-btn">
+                    <button id="prev" class="action-btn" style="background-color: white;"> 
                         <img src="/static/images/back.png" alt="Your Image" class="img-fluid"  style="max-width:100%;">
                     </button>
                 </div>
                 <div class="col-2">
-                    <button id="play" class="action-btn">
+                    <button id="play" class="action-btn" style="background-color: white;">
                         <img src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
                     </button>
                 </div>
                 <div class="col-2">
-                    <button id="next" class="action-btn">
+                    <button id="next" class="action-btn" style="background-color: white;">
                         <img src="/static/images/next.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
                     </button>
                 </div>
@@ -127,14 +133,21 @@
     function submitTone() {
         let toneValue = document.getElementById('toneRange').value;
         const bookId = {{ book.book_id }}; // Django 템플릿 변수
+        var tone = document.getElementById('toneRange').value;
+        var text = "{{book.book_description}}";
+        var formData = new FormData();
+        console.log(tone,text)
+        
+        formData.append('tone', tone);
+        formData.append('text', text);
     
         fetch('{% url 'audiobook:content_play' book_id=book.book_id %}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                //'Content-Type': 'application/json',
                 'X-CSRFToken': getCSRFToken('csrftoken')
             },
-            body: JSON.stringify({ toneRange: toneValue })
+            body: formData
         })
         .then(response => response.json())
         .then(data => {

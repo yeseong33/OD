@@ -26,6 +26,8 @@ from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.contrib.auth.models import AnonymousUser
+
 # Django REST framework 관련 라이브러리
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
@@ -86,10 +88,13 @@ class BookShareHtml(APIView):
     def get(self, request):
         file_path = self.get_file_path()
         books = Book.objects.all().order_by('book_id')
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id=user_inform['user_id'])
-        user_favorites = user.user_favorite_books # 유저가 좋아요 누른 책 조회.
+        user = request.user
         
+        if isinstance(user, AnonymousUser):
+            user_favorites = []
+        else:
+            user_favorites = user.user_favorite_books
+                
         # 검색어 처리
         search_term = request.GET.get('search_term')
         if search_term:
