@@ -114,7 +114,8 @@ class MainView(APIView):
 
         return Response(context, template_name=self.template_name)
 
-PAGE_SIZE = 5  # Number of items per page
+
+PAGE_SIZE = 10  # Number of items per page
 
 def main_search(request):
     query = request.GET.get('query', '')
@@ -136,10 +137,7 @@ class BookListAPI(ListAPIView):
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
         ).order_by('-book_likes', 'book_id')
-
-        for book in queryset:
-            print(book.book_image_path)
-
+        
         return queryset
 
 class MainGenreView(APIView):
@@ -200,6 +198,7 @@ class ContentHTML(APIView):
             'file_path': file_path,
             'user_book_history': user_book_history,
             'selected_voice': selected_voice,
+            'user': user,
         }
         return Response(context, template_name=self.template_name)
 
@@ -338,9 +337,18 @@ class VoiceCelebrityHTML(APIView):
     def get(self, request, book_id):
         book = get_object_or_404(Book, pk=book_id)
         user_favorite_voices = request.user.user_favorite_voices
+        
+        if user_favorite_voices is None:
+            user_favorite_voices = []
+        
         user_favorite_voices = Voice.objects.filter(
             voice_id__in=user_favorite_voices)
+        
+        search_term = request.GET.get('search_term')
+        if search_term:
+            user_favorite_voices = user_favorite_voices.filter(voice_name__icontains=search_term)
         top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
+
         context = {
             'active_tab': 'voice_popular',
             'user_favorite_voices': user_favorite_voices,
