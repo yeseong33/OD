@@ -7,7 +7,11 @@ from user.models import Subscription
 from community.serializers import BookSerializer
 from community.models import BookRequest, UserRequestBook, Inquiry
 from community.views import send_async_mail
-from manager.serializers import InquirySerializer
+from community.serializers import InquirySerializer
+from user.models import Subscription
+from audiobook.models import Book
+from community.models import BookRequest, UserRequestBook, Inquiry
+from rest_framework import status
 from manager.forms import InquiryResponseForm
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.views import APIView
@@ -316,10 +320,6 @@ class BookRequestListView(APIView):
     template_name = 'manager/book_request.html'
 
     def get(self, request):
-
-        if not request.user.is_admin:
-            return redirect('audiobook:main')
-
         book_requests = BookRequest.objects.all()
         book_list = []
         for book_request in book_requests:
@@ -365,23 +365,7 @@ class BookRegisterView(APIView):
 @method_decorator(specific_user_required, name='dispatch')
 class BookRegisterAPIView(APIView):
     def post(self, request):
-        if not request.user.is_admin:
-            return redirect('audiobook:main')
-
-        # ISBN으로 이미 존재하는 책을 확인
         book_isbn = request.POST.get('book_isbn')
-
-        try:
-            existing_book = Book.objects.get(book_isbn=book_isbn)
-            print("이미 ISBN이 존재합니다.")
-            # 책이 이미 존재하면 에러 메시지와 함께 종료
-            return Response({
-                'status': 'error',
-                'message': '이미 ISBN이 존재합니다.'
-            }, status=400)
-        except Book.DoesNotExist:
-            # 책이 존재하지 않으면 처리를 계속
-            pass
 
         # Naver API를 호출하여 책의 상세 정보를 가져옴
         book_details = get_book_details_from_naver(book_isbn)
@@ -393,8 +377,9 @@ class BookRegisterAPIView(APIView):
                 'message': 'Book details not found.'
             }, status=404)
 
-        # 데이터 저장소에 파일을 저장
-        # Naver API로부터 받은 이미지 URL에서 이미지를 다운로드
+        
+        # 새로운 Book 인스턴스 생성
+        
         image_response = requests.get(book_details['image'])
         if image_response.status_code != 200:
             print(image_response.status_code)
@@ -536,9 +521,6 @@ class InquiryDetailAPI(APIView):
 # 구독 및 수익 관리
 @specific_user_required
 def show_subscription(request):
-    if not request.user.is_admin:
-        return redirect('audiobook:main')
-
     return render(request, 'manager/subscription.html')
 
 
@@ -546,6 +528,7 @@ def show_subscription(request):
 class SubscriptionCountAPI(APIView):
     def get(self, request, format=None):
         today = timezone.now().date()  # 'aware' 현재 날짜 객체
+        now = timezone.now()
         dates = [today - relativedelta(months=n) for n in range(11, -1, -1)]
 
         data = {
@@ -555,7 +538,8 @@ class SubscriptionCountAPI(APIView):
         for date_point in dates:
             # 날짜를 'aware' datetime 객체로 변환
             aware_date_point = timezone.make_aware(
-                dt.combine(date_point, dt.min.time()))
+                dt.combine(date_point.replace(day=today.day), now.time()))
+            print(aware_date_point)
 
             count = Subscription.objects.filter(
                 sub_start_date__lte=aware_date_point,

@@ -113,8 +113,9 @@ def main_search(request):
     query = request.GET.get('query', '')
     book_list = Book.objects.filter(
         Q(book_title__icontains=query) | Q(book_author__icontains=query))[:PAGE_SIZE]
-    # serializers = BookSerializer(book_list, many=True)
-    return render(request, 'audiobook/main_search.html', {'book_list': book_list})
+    serializer = BookSerializer(book_list, many=True)
+    return render(request, 'audiobook/main_search.html', {'book_list': serializer.data})
+
 
 
 class CustomPaginationClass(PageNumberPagination):
@@ -135,7 +136,7 @@ class BookListAPI(ListAPIView):
             print(book.book_image_path)
 
         return queryset
-
+    
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -651,6 +652,11 @@ class VoiceCustomHTML(APIView):
         user_voices = Voice.objects.filter(user = user).order_by('voice_id')
         public_voices = Voice.objects.filter(voice_is_public=True).exclude(user = user).order_by('voice_id')
         
+        search_term = request.GET.get('search_term')
+        if search_term:
+            user_voices = user_voices.filter(voice_name__icontains=search_term)
+            public_voices = public_voices.filter(voice_name__icontains=search_term)
+
         context = {
             'active_tab': 'voice_private',
             'user_voices': user_voices,
@@ -667,8 +673,13 @@ class VoiceCelebrityHTML(APIView):
     template_name = 'audiobook/voice_celebrity.html'
 
     def get(self, request):
+        user_favorite_voices = request.user.user_favorite_voices
+        user_favorite_voices = Voice.objects.filter(voice_id__in=user_favorite_voices)
+        top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
         context = {
-            'active_tab': 'voice_popular'
+            'active_tab': 'voice_popular',
+            'user_favorite_voices': user_favorite_voices,
+            'top_10_voices': top_10_voices,
         }
         return Response(context, template_name=self.template_name)
 
