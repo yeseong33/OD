@@ -10,13 +10,13 @@ function appendBooks(books) {
         console.log(book.book_image_path)
         bookElement.innerHTML = `
             <div class="book-card">
-                <a href="/books/${book.book_id}/">
-                    // <img src="${book.book_image_path}" alt="${book.title}" />
-                    <div>
-                        <h5>${book.title}</h5>
-                        <p>${book.author}</p>
-                    </div>
+                <a href="/content/${book.book_id}/">
+                    <img class="book-img" src="${book.book_image_path}" alt="${book.book_title}" />
                 </a>
+                <div class="book-info">
+                    <h5>${book.book_title}</h5>
+                    <p>저자: ${book.book_author}</p>
+                </div>
             </div>
         `;
         container.appendChild(bookElement);
@@ -24,7 +24,11 @@ function appendBooks(books) {
 }
 
 function loadMoreBooks() {
-    if (isLoading) return;
+    if (isLoading) {
+        console.log("Already loading books, returning");
+        return;
+    }
+    console.log("Loading more books");
     isLoading = true;
     loadingDiv.style.display = 'block';
 
@@ -32,9 +36,13 @@ function loadMoreBooks() {
     const query = urlParams.get('query') || '';
 
     fetch(`/api/book/list/?page=${page}&query=${query}`)
-        .then(response => response.json())
+        .then(response => {
+            console.log("Received response from API", response);
+            return response.json();
+        })
         .then(data => {
             if (data.results && data.results.length > 0) {
+                console.log(data.results)
                 appendBooks(data.results);
                 page++;
             } else {
@@ -53,6 +61,7 @@ function loadMoreBooks() {
 }
 
 function onScroll() {
+    console.log("Scroll event triggered");
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
         loadMoreBooks();
     }

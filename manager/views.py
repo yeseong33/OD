@@ -11,6 +11,7 @@ from community.serializers import InquirySerializer
 from user.models import Subscription
 from audiobook.models import Book
 from community.models import BookRequest, UserRequestBook, Inquiry
+from user.models import User
 from rest_framework import status
 from manager.forms import InquiryResponseForm
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -482,9 +483,26 @@ def inquiry_detail(request, inquiry_id):
             inquiry.inquiry_is_answered = True
             inquiry.inquiry_answered_date = timezone.now()
             inquiry.save()
-
             serializer = InquirySerializer(inquiry)
+            
+            # 이메일 보내기
+            user = get_object_or_404(User, user_id=inquiry.user_id)
+            if user.email:
+                try:
+                    subject = '[오디 알림] 1:1 문의 답변 완료'
+                    html_content = render_to_string(
+                        'manager/email_template_inquiry.html', {'nickname': user.nickname})
+                    plain_message = strip_tags(html_content)
+                    from_email = '오디 <wooyoung9654@gmail.com>'
+                    send_async_mail(subject, plain_message,
+                                    from_email, [user.email])
+                    print('Email sent successfully')
+                except Exception as e:
+                    # 로그 기록, 오류 처리 등
+                    print(f'Error sending email: {e}')
+                    
             return JsonResponse(serializer.data, safe=False)
+        
         else:
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 

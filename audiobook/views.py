@@ -106,8 +106,7 @@ class MainView(APIView):
         return Response(context, template_name=self.template_name)
 
 
-PAGE_SIZE = 5  # Number of items per page
-
+PAGE_SIZE = 10  # Number of items per page
 
 def main_search(request):
     query = request.GET.get('query', '')
@@ -130,10 +129,7 @@ class BookListAPI(ListAPIView):
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
         ).order_by('-book_likes', 'book_id')
-
-        for book in queryset:
-            print(book.book_image_path)
-
+        
         return queryset
 
 
