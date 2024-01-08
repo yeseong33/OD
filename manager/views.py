@@ -18,7 +18,7 @@ import shutil
 # 표준 라이브러리
 from manager.forms import InquiryResponseForm
 from community.views import send_async_mail
-from manager.serializers import InquirySerializer
+from community.serializers import InquirySerializer
 from user.models import Subscription
 from audiobook.models import Book
 from community.models import BookRequest, UserRequestBook, Inquiry
