@@ -100,9 +100,7 @@ class MainView(APIView):
 
         # 최근 이용한 책
         user_history_book = []  # 최신 이용한 책 순서로 보이기 위해서 filter를 사용하지 않고 리스트를 만들어서 사용
-        if isinstance(request.user, AnonymousUser):
-            user_history_book = []
-        else:
+        if request.user.user_book_history is not None:
             for book_id in request.user.user_book_history:
                 book = get_object_or_404(Book, book_id=book_id)
                 user_history_book.append(book)
@@ -393,7 +391,7 @@ class VoiceCelebrityHTML(APIView):
     def get(self, request, book_id):
         book = get_object_or_404(Book, pk=book_id)
         user_favorite_voices = request.user.user_favorite_voices
-        
+
         user_favorite_voices = Voice.objects.filter(
             voice_id__in=user_favorite_voices)
 
@@ -797,18 +795,20 @@ class VoiceLikeView(APIView):
     def get(self, request):
         user_inform = decode_jwt(request.COOKIES.get("jwt"))
         user = User.objects.get(user_id=user_inform['user_id'])
-        voice_id = int(request.GET.get('voice_id'))  
-        voice = Voice.objects.get(voice_id = voice_id)
-        
+        voice_id = int(request.GET.get('voice_id'))
+        voice = Voice.objects.get(voice_id=voice_id)
+
         if voice_id in map(int, user.user_favorite_voices):
             user.user_favorite_voices.remove(voice_id)
             voice.voice_like -= 1
-            print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
+            print(
+                f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
         else:
             user.user_favorite_voices.append(voice_id)
             voice.voice_like += 1
-            print(f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
-                
+            print(
+                f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+
         user.save()
         voice.save()
 

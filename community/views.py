@@ -104,13 +104,21 @@ class BookLikeView(APIView):
         book_id = int(request.data.get('book_id'))
         book = Book.objects.get(book_id=book_id)
 
-        if book_id in map(int, user.user_favorite_books):
-            user.user_favorite_books.remove(book_id)
-            book.book_likes -= 1
-        else:
-            user.user_favorite_books.append(book_id)
+        liked = False  # 사용자가 좋아요를 눌렀는지 여부
+
+        if user.user_favorite_books is None:
+            user.user_favorite_books = [book_id]
             book.book_likes += 1
-                
+            liked = True
+        else:
+            if book_id in user.user_favorite_books:
+                user.user_favorite_books.remove(book_id)
+                book.book_likes -= 1
+            else:
+                user.user_favorite_books.append(book_id)
+                book.book_likes += 1
+                liked = True
+
         user.save()
         book.save()
 
@@ -231,7 +239,7 @@ class BookDetail(APIView):
             book, context=context, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'book':serializer.data})
+            return Response({'book': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
