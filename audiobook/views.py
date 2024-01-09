@@ -317,6 +317,7 @@ class ContentPlayHTML(APIView):
         voice = Voice.objects.get(
             pk=selected_voice_id)
         voice_name = voice.voice_name
+        voice_file_path = voice.voice_path.path  # RVC 파일의 경로
 
         # mp3 파일 생성 후 book 객체에 저장하기
         # SSH 클라이언트 생성
@@ -332,8 +333,8 @@ class ContentPlayHTML(APIView):
         # 파일을 전송할 원격 경로
         remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
-        # 파일 전송(file_path는 rvc 경로. pth파일)
-        sftp.put(file_path, remote_file_path)
+        # 파일 전송(voice.voice_path에 있는 pth 파일을 sftp로 업로드)
+        sftp.put(voice_file_path, remote_file_path)
 
         # 셸 세션 열기
         shell = client.invoke_shell()
@@ -816,7 +817,7 @@ class VoiceLikeView(APIView):
         user = request.user
         voice_id = int(request.GET.get('voice_id'))
         voice = Voice.objects.get(pk=voice_id)
-        
+
         print('통과1')
 
         if voice_id in map(int, user.user_favorite_voices):
@@ -840,7 +841,8 @@ class VoiceLikeView(APIView):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
         return JsonResponse({'success': True, 'liked': like})
-    
+
+
 @api_view(["GET", "POST"])
 def voice_search(request):
     if request.method == 'GET':
