@@ -49,6 +49,7 @@ def logout(request):
 
 
 def sign_in(user_data):
+    print('로그인 시도ㅇㅇ')
     user_serializer = UserSerializer(data=user_data)
 
     if user_serializer.is_valid():
