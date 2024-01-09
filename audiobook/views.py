@@ -131,11 +131,10 @@ class MainView(APIView):
 
 PAGE_SIZE = 12  # Number of items per page
 
-
 def main_search(request):
     query = request.GET.get('query', '')
     book_list = Book.objects.filter(
-        Q(book_title__icontains=query) | Q(book_author__icontains=query))[:PAGE_SIZE]
+        Q(book_title__icontains=query) | Q(book_author__icontains=query)).order_by('book_id')[:PAGE_SIZE]
     serializer = BookSerializer(book_list, many=True)
 
     # 좋아요 로직
@@ -168,7 +167,7 @@ class BookListAPI(ListAPIView):
         query = self.request.query_params.get('query', '')
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
-        ).order_by('-book_likes', 'book_id')
+        ).order_by('book_id')
 
         return queryset
 
