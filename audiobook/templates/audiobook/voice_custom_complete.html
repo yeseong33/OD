@@ -40,8 +40,9 @@
     <!-- 톤 조정하기-->
     <div class="row justify-content-center mb-4">
         <div class="col-8">
-            <label for="toneRange" class="form-label fs-4 fw-bold" min="1" max="100">톤 조정하기</label>
-            <input type="range" class="form-range" id="toneRange">
+            <label for="toneRange" class="form-label fs-4 fw-bold">톤 조정하기</label>
+            <input type="range" class="form-range" id="toneRange" min="0" max="12" value="0">
+
         </div>
     </div>
 
@@ -58,7 +59,7 @@
     <!-- 저장하기 / 돌아가기 버튼-->
     <div class="row justify-content-center">
         <div class="col-3 d-flex justify-content-center">
-            <a href="{% url 'audiobook:voice_custom_upload' %}" id="cancel-btn" class="btn btn-danger fw-bold btn-lg">돌아가기</a>
+            <a href="#" id="cancel-btn" class="btn btn-danger fw-bold btn-lg">돌아가기</a>
         </div>
         <div class="col-3 d-flex justify-content-center">
             <a href="#" id="saveBtn" class="btn btn-orange-400 btn-lg">저장하기</a>
@@ -67,6 +68,9 @@
 
     <!-- 여백 -->
     <div class="row my-5"></div>
+
+    <!-- 로딩 이미지-->
+    <img src="\static\images\loading.gif" class="loader" alt="로딩 중" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;">
 
 {% endblock %}
 {% block script %}
@@ -94,7 +98,7 @@
             var ttsText = document.getElementById('tts_text').value;
             var toneValue = document.getElementById('toneRange').value;
         
-            fetch('{% url "audiobook:voice_custom_complete" %}', {
+            fetch('{% url "audiobook:voice_custom_complete" book.book_id%}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,11 +127,11 @@
 
         // 목소리 저장하기
         document.getElementById('saveBtn').addEventListener('click', function() {
-            var ttsText = document.getElementById('tts_text').value;
             var toneValue = document.getElementById('toneRange').value;
             var publicStatus = document.querySelector('input[name="isPublic"]:checked').value;
+            document.querySelector('.loader').style.display = 'block';
     
-            fetch('{% url "audiobook:voice_custom_complete" %}', {
+            fetch('{% url "audiobook:voice_custom_complete" book.book_id%}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -135,9 +139,41 @@
                 },
                 body: JSON.stringify({
                     action: 'save',
-                    tts_text: ttsText, 
                     tone: toneValue, 
                     public: publicStatus
+                })
+            })
+            .then(response => {
+                if(response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            })
+            .then(data => {
+                if (data.redirect_url) {
+                    document.querySelector('.loader').style.display = 'none';
+                    window.location.href = data.redirect_url;
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        });
+
+        // 돌아가기
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            var toneValue = document.getElementById('toneRange').value;
+            var publicStatus = document.querySelector('input[name="isPublic"]:checked').value;
+    
+            fetch('{% url "audiobook:voice_custom_complete" book.book_id%}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'cancel',
                 })
             })
             .then(response => {
