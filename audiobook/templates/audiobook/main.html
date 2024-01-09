@@ -155,8 +155,20 @@
 {% block script %}
   <script src="/static/js/scrollContainer.js"></script>
   <script>
-      // 도서 좋아요 이벤트    
-      document.querySelectorAll('.like-icon').forEach(item => {
+    // CSRF 토큰을 가져오는 함수
+    function getCSRFToken() {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                return cookie.substring('csrftoken='.length, cookie.length);
+            }
+        }
+        return null;
+    }
+
+    // 도서 좋아요 이벤트    
+    document.querySelectorAll('.like-icon').forEach(item => {
         item.addEventListener('click', event => {
             const bookId = item.getAttribute('data-book-id');
             
@@ -179,7 +191,7 @@
                     console.log(data);
                     const icon = item.querySelector('svg');
                     const path = icon.querySelector('path');
-    
+
                     if (data.liked) {
                         // 좋아요 상태일 때 SVG path 변경
                         icon.classList.remove('bi-hand-thumbs-up');
