@@ -53,7 +53,7 @@
             <!-- 여백 -->
             <div class="row mt-5"></div>
 
-            <!-- 톤 조정하기 -->
+            <!-- 톤 조정 및 목소리 생성 -->
             <div class="row justify-content-center mb-4">
                 <div class="col-8 d-flex justify-content-center align-items-center" style="height: 100%;">
                     <div class="row w-100">
@@ -69,7 +69,7 @@
                 <div>
                     <div class="col-10 d-flex justify-content-end">
                         <div class="row">
-                            <button id="toneBtn" class="btn btn-outline-orange-400 btn-sm">조정하기</button>
+                            <button id="createBtn" class="btn btn-outline-orange-400 btn-sm">목소리 생성</button>
                         </div>
                     </div>
                 </div>
@@ -134,12 +134,10 @@
         let toneValue = document.getElementById('toneRange').value;
         const bookId = {{ book.book_id }}; // Django 템플릿 변수
         var tone = document.getElementById('toneRange').value;
-        var text = "{{ book.book_description|escapejs|safe }}";
         var formData = new FormData();
-        console.log(tone,text)
+        console.log(tone)
         
         formData.append('tone', tone);
-        formData.append('text', text);
     
         fetch('{% url 'audiobook:content_play' book_id=book.book_id %}', {
             method: 'POST',
@@ -151,8 +149,9 @@
         })
         .then(response => response.json())
         .then(data => {
+
             console.log(data);
-            // 여기서 응답 데이터를 처리합니다.
+            
         })
         .catch(error => console.error('Error:', error));
     }
@@ -321,7 +320,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         setupAudioPlayer();
         setupLikeButton();
-        const toneButton = document.getElementById('toneBtn');
+        const toneButton = document.getElementById('createBtn');
         toneButton.addEventListener('click', submitTone);
 
         // 책 내용을 가져오는 코드

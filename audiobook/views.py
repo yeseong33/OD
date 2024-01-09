@@ -238,7 +238,8 @@ class ContentHTML(APIView):
                 print("Selected voice does not exist.")
 
         if request.user.is_authenticated:
-            user_book_history = request.user.user_book_history
+            tmp = request.user.user_book_history
+            user_book_history = [] if tmp is None else tmp
             user = request.user
         else:
             user = {
@@ -293,18 +294,31 @@ class ContentPlayHTML(APIView):
             print(f"selectedVoiceId 쿠키 값: {selected_voice_id}")
         else:
             # 선택된 쿠키가 존재하지 않는 경우
-            selected_voice_id = 1  # 또는 다른 기본값을 할당할 수 있습니다.
-            # 이에 따른 추가적인 처리를 수행할 수 있습니다.
+            selected_voice_id = 1  # 또는 다른 기본값을 할당 (미완료)
 
+        # 톤
         tone = data.get('tone', 0)
-        text = "안녕하세요"
+        print(tone)
+
+        # 도서 객체
+        book = Book.objects.get(pk=book_id)
+        book_content_file_path = os.path.join(
+            get_file_path(), book.book_content_path.path)
+        print('book_content_file_path:', book_content_file_path)
+
+        try:
+            with open(book_content_file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                print(content)  # 파일 내용 출력
+        except IOError as e:
+            print("파일을 읽는 중 오류가 발생했습니다:", e)
+
+        # 음성 객체
         voice = Voice.objects.get(
             pk=selected_voice_id)
         voice_name = voice.voice_name
-        file_path = get_file_path()
-        file_path = "C:/S3_bucket/voice_rvcs/" + voice_name + ".pth"
-        print(file_path)
 
+        # mp3 파일 생성 후 book 객체에 저장하기
         # SSH 클라이언트 생성
         client = paramiko.SSHClient()
         # 호스트 키 자동으로 수락
@@ -318,14 +332,14 @@ class ContentPlayHTML(APIView):
         # 파일을 전송할 원격 경로
         remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
-        # 파일 전송
+        # 파일 전송(file_path는 rvc 경로. pth파일)
         sftp.put(file_path, remote_file_path)
 
         # 셸 세션 열기
         shell = client.invoke_shell()
 
         commands = [
-            f'python3 tts.py {text}\n',
+            f'python3 tts.py {content}\n',
             'cd project-main\n',
             f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
             'rm -rf audios/tts.mp3\n',
@@ -334,9 +348,9 @@ class ContentPlayHTML(APIView):
 
         for cmd in commands:
             shell.send(cmd)
-            # 각 명령의 실행이 끝날 때까지 기다립니다.
+            # 각 명령의 실행이 끝날 때까지 기다림
             output = receive_until_prompt(shell, prompt='$ ')
-            print(output)  # 받은 출력을 표시합니다.
+            print(output)  # 받은 출력을 표시함
 
         # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
         remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.mp3'
@@ -344,8 +358,11 @@ class ContentPlayHTML(APIView):
         folder_path = os.path.join(project_path, 'static', 'temp')  # 경로 조합
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+
+        # 로컬로 mp3 다운로드(로컬에 받고 db에 저장)
         sftp.get(remote_path, os.path.join(
             project_path, f'static/temp/{voice_name}.mp3'))
+
         # SFTP 세션 종료
         sftp.close()
         client.close()
