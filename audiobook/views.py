@@ -171,7 +171,7 @@ class BookListAPI(ListAPIView):
         query = self.request.query_params.get('query', '')
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
-        ).order_by('-book_likes', 'book_id')
+        ).order_by('book_id')
 
         return queryset
 
@@ -816,8 +816,6 @@ class VoiceLikeView(APIView):
         user = request.user
         voice_id = int(request.GET.get('voice_id'))
         voice = Voice.objects.get(pk=voice_id)
-        
-        print('통과1')
 
         if voice_id in map(int, user.user_favorite_voices):
             user.user_favorite_voices.remove(voice_id)
@@ -831,11 +829,9 @@ class VoiceLikeView(APIView):
             like = True
             print(
                 f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
-        print('통과2')
 
         user.save()
         voice.save()
-        print('통과3')
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
