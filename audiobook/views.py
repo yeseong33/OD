@@ -446,6 +446,8 @@ class voice_custom_upload(APIView):
             voice_name = data['voice_name']
             voice_photo = request.FILES['voice_photo']
             voice_file = request.FILES['voice_file']  # client에서 받아온 mp3 파일
+            print(voice_photo)
+            print(voice_file)
 
             if Voice.objects.filter(voice_name=voice_name).exists():
                 return JsonResponse({'error': '이미 존재하는 이름입니다.'}, status=400)
@@ -504,8 +506,6 @@ class voice_custom_upload(APIView):
                 output = receive_until_prompt(shell, prompt='$ ')
                 print('output:', output)  # 받은 출력을 표시
 
-            # sftp_client.get(remote_rvc_path, local_rvc_path) # rvc 파일을 로컬로 다운로드
-
             # 연결 종료
             client.close()
 
@@ -513,10 +513,12 @@ class voice_custom_upload(APIView):
             temp_voice = TemporaryFile.objects.create(
                 temp_voice_image_path=voice_photo,
             )
+            print(temp_voice)
 
             # 세션에 데이터 저장(name 및 image, rvc의 id 값)
             request.session['voice_creation'] = {
                 'voice_name': voice_name,
+                'temp_voice_image_path': temp_voice.id  # 이미지 파일의 id을 세션에 저장
             }
 
             redirect_url = reverse('audiobook:voice_custom_complete', kwargs={
@@ -614,7 +616,8 @@ class voice_custom_complete(APIView):
 
             if voice_creation_data:
                 voice_name = voice_creation_data['voice_name']
-                temp_voice_photo_id = voice_creation_data['temp_voice_photo_id']
+                voice_id = voice_creation_data['temp_voice_image_path']
+                voice_image = TemporaryFile.objects.get(pk=voice_id)
                 public_status = data.get('public') == 'true'
                 tone = data.get('tone')
 
@@ -630,7 +633,7 @@ class voice_custom_complete(APIView):
                 # 셸 세션 열기
                 shell = client.invoke_shell()
 
-                sample = "안녕?난오디야"
+                sample = "안녕하세요. 오디 많은 이용 부탁드려요."
                 commands = [
                     f'python3 tts.py {sample}\n',
                     'cd project-main\n',
@@ -656,24 +659,24 @@ class voice_custom_complete(APIView):
                 else:
                     print(f"이미 해당 폴더가 존재합니다: {folder_path}")
 
+                # 샘플 오디오 가져와서 static/tts에 저장
                 sftp_client.get(remote_path, os.path.join(
                     project_path, f'static/tts/{voice_name}.mp3'))
 
+                # 모델 가져와서 static/tts에 저장
                 remote_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
                 sftp_client.get(remote_path, os.path.join(
                     project_path, f'static/tts/{voice_name}.pth'))
+
                 # SFTP 세션 종료
                 sftp_client.close()
-
-                temp_voice_photo = TemporaryFile.objects.get(
-                    id=temp_voice_photo_id)
 
                 # Voice 인스턴스 생성 및 저장
                 voice_data = {
                     'voice_name': voice_name,  # 사용자 입력
                     'voice_like': 0,
                     # 'voice_path': voice_name,
-                    'voice_image_path': temp_voice_photo.temp_voice_image_path,
+                    'voice_image_path': voice_image.temp_voice_image_path,
                     # 'voice_sample_path': 'test',
                     'voice_created_date': datetime.date.today(),
                     'voice_is_public':  public_status,
@@ -686,12 +689,12 @@ class voice_custom_complete(APIView):
                 with open(f'static/tts/{voice_name}.pth', 'rb') as file:
                     voice_model = ContentFile(file.read())
 
-                print("해결1")
+                print("staic/tts 파일 로딩 완료")
 
                 serializer = VoiceSerializer(data=voice_data)
                 if serializer.is_valid():
                     voice_instance = serializer.save()
-                    print("해결2")
+                    print("voice 인스턴스 생성 완료")
                     voice_instance.voice_sample_path.save(
                         f"{voice_name}.mp3", voice_sample, save=False)
                     voice_instance.voice_path.save(
@@ -708,6 +711,7 @@ class voice_custom_complete(APIView):
 
                 del request.session['voice_creation']
 
+                # static/tts에 있는 파일 삭제
                 os.remove(os.path.join(project_path,
                           f'static/tts/{voice_name}.mp3'))
                 os.remove(os.path.join(project_path,
@@ -723,14 +727,14 @@ class voice_custom_complete(APIView):
 
                 for cmd in commands:
                     shell.send(cmd)
-                    # 각 명령의 실행이 끝날 때까지 기다립니다.
+                    # 각 명령의 실행이 끝날 때까지 기다림
                     output = receive_until_prompt(shell, prompt='$ ')
-                    print(output)  # 받은 출력을 표시합니다.
+                    print(output)
 
                 # 연결 종료
                 client.close()
 
-                temp_voice_photo.delete()
+                voice_image.delete()
 
                 redirect_url = reverse('audiobook:voice_custom', kwargs={
                                        'book_id': book_id})
@@ -754,7 +758,7 @@ class voice_custom_complete(APIView):
                 temp_voice_photo = TemporaryFile.objects.get(
                     id=temp_voice_photo_id)
 
-                temp_voice_photo.delete()
+                voice_image.delete()
 
                 # 셸 세션 열기
                 shell = client.invoke_shell()
