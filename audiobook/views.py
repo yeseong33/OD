@@ -113,8 +113,10 @@ class MainView(APIView):
 
         if isinstance(user, AnonymousUser):
             user_favorites = []
+            voice_favorites = []
         else:
             user_favorites = user.user_favorite_books
+            voice_favorites = user.user_favorite_voices
             if user_favorites is None:
                 user_favorites = []  # None으로 처리되면 template에서 인식하지 못하므로, 빈 값으로 처리
 
@@ -124,6 +126,7 @@ class MainView(APIView):
             'top_voices': top_voices,
             'user': request.user,
             'user_favorites': user_favorites,
+            'voice_favorites': voice_favorites,
         }
 
         return Response(context, template_name=self.template_name)
@@ -810,29 +813,34 @@ class VoiceLikeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id=user_inform['user_id'])
+        user = request.user
         voice_id = int(request.GET.get('voice_id'))
-        voice = Voice.objects.get(voice_id=voice_id)
+        voice = Voice.objects.get(pk=voice_id)
+        
+        print('통과1')
 
         if voice_id in map(int, user.user_favorite_voices):
             user.user_favorite_voices.remove(voice_id)
             voice.voice_like -= 1
+            like = False
             print(
                 f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
         else:
             user.user_favorite_voices.append(voice_id)
             voice.voice_like += 1
+            like = True
             print(
                 f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+        print('통과2')
 
         user.save()
         voice.save()
+        print('통과3')
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
-
-
+        return JsonResponse({'success': True, 'liked': like})
+    
 @api_view(["GET", "POST"])
 def voice_search(request):
     if request.method == 'GET':
