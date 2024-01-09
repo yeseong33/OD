@@ -793,19 +793,20 @@ class VoiceLikeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id=user_inform['user_id'])
+        user = request.user
         voice_id = int(request.GET.get('voice_id'))
-        voice = Voice.objects.get(voice_id=voice_id)
+        voice = Voice.objects.get(pk=voice_id)
 
         if voice_id in map(int, user.user_favorite_voices):
             user.user_favorite_voices.remove(voice_id)
             voice.voice_like -= 1
+            like = False
             print(
                 f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
         else:
             user.user_favorite_voices.append(voice_id)
             voice.voice_like += 1
+            like = True
             print(
                 f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
 
@@ -814,8 +815,8 @@ class VoiceLikeView(APIView):
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
-
-
+        return JsonResponse({'success': True, 'liked': like})
+    
 @api_view(["GET", "POST"])
 def voice_search(request):
     if request.method == 'GET':
