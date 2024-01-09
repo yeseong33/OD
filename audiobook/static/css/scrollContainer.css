@@ -26,7 +26,7 @@
 
 .scroll-left-button, .scroll-right-button {
   position: absolute; /* 절대적 위치 지정 */
-  top: 55%; /* 컨테이너의 중간 높이 */
+  top: 53%; /* 컨테이너의 중간 높이 */
   transform: translateY(-50%); /* 버튼을 정중앙으로 조정 */
   z-index: 10; /* 다른 요소들 위에 표시 */
 

@@ -113,8 +113,10 @@ class MainView(APIView):
 
         if isinstance(user, AnonymousUser):
             user_favorites = []
+            voice_favorites = []
         else:
             user_favorites = user.user_favorite_books
+            voice_favorites = user.user_favorite_voices
             if user_favorites is None:
                 user_favorites = []  # None으로 처리되면 template에서 인식하지 못하므로, 빈 값으로 처리
 
@@ -124,6 +126,7 @@ class MainView(APIView):
             'top_voices': top_voices,
             'user': request.user,
             'user_favorites': user_favorites,
+            'voice_favorites': voice_favorites,
         }
 
         return Response(context, template_name=self.template_name)
@@ -290,18 +293,32 @@ class ContentPlayHTML(APIView):
             print(f"selectedVoiceId 쿠키 값: {selected_voice_id}")
         else:
             # 선택된 쿠키가 존재하지 않는 경우
-            selected_voice_id = 1  # 또는 다른 기본값을 할당할 수 있습니다.
-            # 이에 따른 추가적인 처리를 수행할 수 있습니다.
+            selected_voice_id = 1  # 또는 다른 기본값을 할당 (미완료)
 
+        # 톤
         tone = data.get('tone', 0)
-        text = "안녕하세요"
+        print(tone)
+
+        # 도서 객체
+        book = Book.objects.get(pk=book_id)
+        book_content_file_path = os.path.join(
+            get_file_path(), book.book_content_path.path)
+        print('book_content_file_path:', book_content_file_path)
+
+        try:
+            with open(book_content_file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+                print(content)  # 파일 내용 출력
+        except IOError as e:
+            print("파일을 읽는 중 오류가 발생했습니다:", e)
+
+        # 음성 객체
         voice = Voice.objects.get(
             pk=selected_voice_id)
         voice_name = voice.voice_name
-        file_path = get_file_path()
-        file_path = "C:/S3_bucket/voice_rvcs/" + voice_name + ".pth"
-        print(file_path)
+        voice_file_path = voice.voice_path.path  # RVC 파일의 경로
 
+        # mp3 파일 생성 후 book 객체에 저장하기
         # SSH 클라이언트 생성
         client = paramiko.SSHClient()
         # 호스트 키 자동으로 수락
@@ -315,14 +332,14 @@ class ContentPlayHTML(APIView):
         # 파일을 전송할 원격 경로
         remote_file_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
 
-        # 파일 전송
-        sftp.put(file_path, remote_file_path)
+        # 파일 전송(voice.voice_path에 있는 pth 파일을 sftp로 업로드)
+        sftp.put(voice_file_path, remote_file_path)
 
         # 셸 세션 열기
         shell = client.invoke_shell()
 
         commands = [
-            f'python3 tts.py {text}\n',
+            f'python3 tts.py {content}\n',
             'cd project-main\n',
             f'python3 inference.py {voice_name} {tone} audios/tts.mp3\n',
             'rm -rf audios/tts.mp3\n',
@@ -331,9 +348,9 @@ class ContentPlayHTML(APIView):
 
         for cmd in commands:
             shell.send(cmd)
-            # 각 명령의 실행이 끝날 때까지 기다립니다.
+            # 각 명령의 실행이 끝날 때까지 기다림
             output = receive_until_prompt(shell, prompt='$ ')
-            print(output)  # 받은 출력을 표시합니다.
+            print(output)  # 받은 출력을 표시함
 
         # 임시 저장한 로컬 파일을 원격 시스템으로 업로드
         remote_path = f'/home/kimyea0454/project-main/audios/{voice_name}.mp3'
@@ -341,8 +358,11 @@ class ContentPlayHTML(APIView):
         folder_path = os.path.join(project_path, 'static', 'temp')  # 경로 조합
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
+
+        # 로컬로 mp3 다운로드(로컬에 받고 db에 저장)
         sftp.get(remote_path, os.path.join(
             project_path, f'static/temp/{voice_name}.mp3'))
+
         # SFTP 세션 종료
         sftp.close()
         client.close()
@@ -391,9 +411,6 @@ class VoiceCelebrityHTML(APIView):
     def get(self, request, book_id):
         book = get_object_or_404(Book, pk=book_id)
         user_favorite_voices = request.user.user_favorite_voices
-
-        if user_favorite_voices is None:
-            user_favorite_voices = []
 
         user_favorite_voices = Voice.objects.filter(
             voice_id__in=user_favorite_voices)
@@ -445,6 +462,8 @@ class voice_custom_upload(APIView):
             voice_name = data['voice_name']
             voice_photo = request.FILES['voice_photo']
             voice_file = request.FILES['voice_file']  # client에서 받아온 mp3 파일
+            print(voice_photo)
+            print(voice_file)
 
             if Voice.objects.filter(voice_name=voice_name).exists():
                 return JsonResponse({'error': '이미 존재하는 이름입니다.'}, status=400)
@@ -503,8 +522,6 @@ class voice_custom_upload(APIView):
                 output = receive_until_prompt(shell, prompt='$ ')
                 print('output:', output)  # 받은 출력을 표시
 
-            # sftp_client.get(remote_rvc_path, local_rvc_path) # rvc 파일을 로컬로 다운로드
-
             # 연결 종료
             client.close()
 
@@ -512,10 +529,12 @@ class voice_custom_upload(APIView):
             temp_voice = TemporaryFile.objects.create(
                 temp_voice_image_path=voice_photo,
             )
+            print(temp_voice)
 
             # 세션에 데이터 저장(name 및 image, rvc의 id 값)
             request.session['voice_creation'] = {
                 'voice_name': voice_name,
+                'temp_voice_image_path': temp_voice.id  # 이미지 파일의 id을 세션에 저장
             }
 
             redirect_url = reverse('audiobook:voice_custom_complete', kwargs={
@@ -613,7 +632,8 @@ class voice_custom_complete(APIView):
 
             if voice_creation_data:
                 voice_name = voice_creation_data['voice_name']
-                temp_voice_photo_id = voice_creation_data['temp_voice_photo_id']
+                voice_id = voice_creation_data['temp_voice_image_path']
+                voice_image = TemporaryFile.objects.get(pk=voice_id)
                 public_status = data.get('public') == 'true'
                 tone = data.get('tone')
 
@@ -629,7 +649,7 @@ class voice_custom_complete(APIView):
                 # 셸 세션 열기
                 shell = client.invoke_shell()
 
-                sample = "안녕?난오디야"
+                sample = "안녕하세요. 오디 많은 이용 부탁드려요."
                 commands = [
                     f'python3 tts.py {sample}\n',
                     'cd project-main\n',
@@ -655,24 +675,24 @@ class voice_custom_complete(APIView):
                 else:
                     print(f"이미 해당 폴더가 존재합니다: {folder_path}")
 
+                # 샘플 오디오 가져와서 static/tts에 저장
                 sftp_client.get(remote_path, os.path.join(
                     project_path, f'static/tts/{voice_name}.mp3'))
 
+                # 모델 가져와서 static/tts에 저장
                 remote_path = f'/home/kimyea0454/project-main/assets/weights/{voice_name}.pth'
                 sftp_client.get(remote_path, os.path.join(
                     project_path, f'static/tts/{voice_name}.pth'))
+
                 # SFTP 세션 종료
                 sftp_client.close()
-
-                temp_voice_photo = TemporaryFile.objects.get(
-                    id=temp_voice_photo_id)
 
                 # Voice 인스턴스 생성 및 저장
                 voice_data = {
                     'voice_name': voice_name,  # 사용자 입력
                     'voice_like': 0,
                     # 'voice_path': voice_name,
-                    'voice_image_path': temp_voice_photo.temp_voice_image_path,
+                    'voice_image_path': voice_image.temp_voice_image_path,
                     # 'voice_sample_path': 'test',
                     'voice_created_date': datetime.date.today(),
                     'voice_is_public':  public_status,
@@ -685,12 +705,12 @@ class voice_custom_complete(APIView):
                 with open(f'static/tts/{voice_name}.pth', 'rb') as file:
                     voice_model = ContentFile(file.read())
 
-                print("해결1")
+                print("staic/tts 파일 로딩 완료")
 
                 serializer = VoiceSerializer(data=voice_data)
                 if serializer.is_valid():
                     voice_instance = serializer.save()
-                    print("해결2")
+                    print("voice 인스턴스 생성 완료")
                     voice_instance.voice_sample_path.save(
                         f"{voice_name}.mp3", voice_sample, save=False)
                     voice_instance.voice_path.save(
@@ -707,6 +727,7 @@ class voice_custom_complete(APIView):
 
                 del request.session['voice_creation']
 
+                # static/tts에 있는 파일 삭제
                 os.remove(os.path.join(project_path,
                           f'static/tts/{voice_name}.mp3'))
                 os.remove(os.path.join(project_path,
@@ -722,14 +743,14 @@ class voice_custom_complete(APIView):
 
                 for cmd in commands:
                     shell.send(cmd)
-                    # 각 명령의 실행이 끝날 때까지 기다립니다.
+                    # 각 명령의 실행이 끝날 때까지 기다림
                     output = receive_until_prompt(shell, prompt='$ ')
-                    print(output)  # 받은 출력을 표시합니다.
+                    print(output)
 
                 # 연결 종료
                 client.close()
 
-                temp_voice_photo.delete()
+                voice_image.delete()
 
                 redirect_url = reverse('audiobook:voice_custom', kwargs={
                                        'book_id': book_id})
@@ -753,7 +774,7 @@ class voice_custom_complete(APIView):
                 temp_voice_photo = TemporaryFile.objects.get(
                     id=temp_voice_photo_id)
 
-                temp_voice_photo.delete()
+                voice_image.delete()
 
                 # 셸 세션 열기
                 shell = client.invoke_shell()
@@ -792,31 +813,33 @@ class VoiceLikeView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
 
     def get(self, request):
-        user_inform = decode_jwt(request.COOKIES.get("jwt"))
-        user = User.objects.get(user_id=user_inform['user_id'])
+        user = request.user
         voice_id = int(request.GET.get('voice_id'))
-        voice = Voice.objects.get(voice_id=voice_id)
+        voice = Voice.objects.get(pk=voice_id)
 
-        if user.user_favorite_voices is None:
-            user.user_favorite_voices = [voice_id]
-            voice.voice_like += 1
+        print('통과1')
+
+        if voice_id in map(int, user.user_favorite_voices):
+            user.user_favorite_voices.remove(voice_id)
+            voice.voice_like -= 1
+            like = False
+            print(
+                f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
         else:
-            if voice_id in map(int, user.user_favorite_voices):
-                user.user_favorite_voices.remove(voice_id)
-                voice.voice_like -= 1
-                print(
-                    f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 취소함")
-            else:
-                user.user_favorite_voices.append(voice_id)
-                voice.voice_like += 1
-                print(
-                    f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+            user.user_favorite_voices.append(voice_id)
+            voice.voice_like += 1
+            like = True
+            print(
+                f"성우 이름 : {voice.voice_name}, voice_id : {voice.voice_id} 좋아요 완료함")
+        print('통과2')
 
         user.save()
         voice.save()
+        print('통과3')
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
+        return JsonResponse({'success': True, 'liked': like})
 
 
 @api_view(["GET", "POST"])

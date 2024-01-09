@@ -153,6 +153,7 @@
             .then(data => {
                 if (data.redirect_url) {
                     document.querySelector('.loader').style.display = 'none';
+                    console.log(data.redirect_url)
                     window.location.href = data.redirect_url;
                 }
             })
