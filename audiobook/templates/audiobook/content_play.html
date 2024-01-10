@@ -95,7 +95,7 @@
                 </div>
                 <div class="col-2">
                     <button id="play" class="action-btn" style="background-color: white;">
-                        <img src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
+                        <img id="playImg" src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
                     </button>
                 </div>
                 <div class="col-2">
@@ -167,6 +167,8 @@
         const audio = document.getElementById("audioPlayer");
         const progressBar = document.getElementById("progress-bar");
         const progressBarThumb = document.getElementById("progress-bar-thumb");
+        const playPauseIcon = document.getElementById("playImg");
+
         let isDragging = false;
         let animationFrameId;
 
@@ -216,9 +218,11 @@
             if (audio.paused) {
                 audio.play();
                 animateProgressBar();
+                playPauseIcon.src = "/static/images/pause.png"; 
             } else {
                 audio.pause();
                 cancelAnimationFrame(animationFrameId);
+                playPauseIcon.src = "/static/images/play.png"; 
             }
         });
 

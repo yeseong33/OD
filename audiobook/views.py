@@ -164,8 +164,7 @@ def main_search(request):
 
 class CustomPaginationClass(PageNumberPagination):
     page_size = PAGE_SIZE
-
-
+    
 class BookListAPI(ListAPIView):
     serializer_class = BookSerializer
     pagination_class = CustomPaginationClass
@@ -175,9 +174,20 @@ class BookListAPI(ListAPIView):
         queryset = Book.objects.filter(
             Q(book_title__icontains=query) | Q(book_author__icontains=query)
         ).order_by('book_id')
-
+        
         return queryset
-
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            return Response([])
+        except Exception as e:
+            print(e)
+            return Response([])
 
 class MainGenreView(APIView):
     renderer_classes = [TemplateHTMLRenderer]
@@ -437,7 +447,7 @@ class VoiceCelebrityHTML(APIView):
         if search_term:
             user_favorite_voices = user_favorite_voices.filter(
                 voice_name__icontains=search_term)
-        top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
+        top_10_voices = Voice.objects.all().order_by('-voice_like')[:10]
 
         context = {
             'active_tab': 'voice_popular',

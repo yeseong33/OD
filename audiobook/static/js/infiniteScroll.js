@@ -107,7 +107,7 @@ function loadMoreBooks() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const query = urlParams.get('query') || '';
-
+    
     fetch(`/api/book/list/?page=${page}&query=${query}`)
         .then(response => {
             console.log("Received response from API", response);
@@ -125,7 +125,8 @@ function loadMoreBooks() {
             isLoading = false;
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.log('pas ')
+            // console.error('Error:', error);
             isLoading = false;
         })
         .finally(() => {
