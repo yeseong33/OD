@@ -447,7 +447,7 @@ class VoiceCelebrityHTML(APIView):
         if search_term:
             user_favorite_voices = user_favorite_voices.filter(
                 voice_name__icontains=search_term)
-        top_10_voices = user_favorite_voices.order_by('-voice_like')[:10]
+        top_10_voices = Voice.objects.all().order_by('-voice_like')[:10]
 
         context = {
             'active_tab': 'voice_popular',
