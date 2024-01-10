@@ -62,12 +62,15 @@
         {% for voice in user_favorite_voices %}
             <div class="col-2 mb-5">
                 <div class="card border-0 text-end h-100" id="voiceCard{{ voice.voice_id }}">
-                    <div class="card text-white">
-                        <img src="{{ voice.voice_image_path.url }}" class="card-img" alt="{{ voice.voice_image_path }}" style='height: 250px;'>
-                        <div class="card-img-overlay bg-secondary">
-                            <h5 class="card-title fw-bold">{{ voice.voice_name }}</h5>
+                    
+                    <a href = "{% url 'audiobook:content' book.book_id%}">
+                        <div class="card text-white">
+                            <img src="{{ voice.voice_image_path.url }}" class="card-img" alt="{{ voice.voice_image_path }}" style='height: 250px;'>
+                            <div class="card-img-overlay bg-secondary">
+                                <h5 class="card-title fw-bold">{{ voice.voice_name }}</h5>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                     
                     <div class="card-footer bg-transparent border-0 px-0 pt-2">
                         <a class="like-icon" data-voice-id="{{ voice.voice_id }}" style="cursor:pointer">
@@ -86,12 +89,14 @@
         {% for voice in top_10_voices %}
             <div class="col-2 mb-5">
                 <div class="card border-0 text-end h-100" id="voiceCard{{ voice.voice_id }}">
-                    <div class="card text-white">
-                        <img src="{{ voice.voice_image_path.url }}" class="card-img" alt="{{ voice.voice_image_path }}" style='height: 250px;'>
-                        <div class="card-img-overlay bg-secondary">
-                            <h5 class="card-title fw-bold">{{ voice.voice_name }}</h5>
+                    <a href = "{% url 'audiobook:content' book.book_id%}">
+                        <div class="card text-white">
+                            <img src="{{ voice.voice_image_path.url }}" class="card-img" alt="{{ voice.voice_image_path }}" style='height: 250px;'>
+                            <div class="card-img-overlay bg-secondary">
+                                <h5 class="card-title fw-bold">{{ voice.voice_name }}</h5>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                     
                     <div class="card-footer bg-transparent border-0 px-0 pt-2">
                         {% if voice.voice_id in user_favorite_voices %}
@@ -140,6 +145,25 @@
             // 현재 페이지 URL에 검색어를 추가한 후 페이지를 리로드
             window.location.href = `{% url 'audiobook:voice_celebrity' book.book_id %}?search_term=${searchTerm}`;
         });
+
+        {% for voice in user_favorite_voices %}
+        var card = document.getElementById("voiceCard{{ voice.voice_id}}");
+        card.addEventListener("click", function() {
+            selectVoice('{{ voice.voice_id}}', '{{ voice.voice_name }}');
+        });
+        {% endfor %}
+
+        {% for voice in top_10_voices %}
+        var card = document.getElementById("voiceCard{{ voice.voice_id}}");
+        card.addEventListener("click", function() {
+            selectVoice('{{ voice.voice_id}}', '{{ voice.voice_name }}');
+        });
+        {% endfor %}
+        
+        function selectVoice(voiceId, voiceName) {
+            document.cookie = "selectedVoiceId=" + voiceId + ";path=/";
+            document.cookie = "selectedVoiceName=" + voiceName + ";path=/";
+        } 
 
     });
 

@@ -98,8 +98,12 @@
 {% endblock %}
 
 {% block script %}
-  <script src="{% static 'js/infiniteScroll.js' %}"></script>
-  <script>
+   <script type="text/javascript">
+        const bookLikeUrl = "{% url 'community:book_like' %}";
+        const user_favorites = {{ user_favorites }}; 
+    </script> 
+    <script src="{% static 'js/infiniteScroll.js' %}"></script>
+    <script>
     // CSRF 토큰을 가져오는 함수
     function getCSRFToken() {
         const cookies = document.cookie.split(';');
