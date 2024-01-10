@@ -68,9 +68,11 @@
         
                 <div>
                     <div class="col-10 d-flex justify-content-end">
-                        <div class="row">
-                            <button id="createBtn" class="btn btn-outline-orange-400 btn-sm">목소리 생성</button>
-                        </div>
+                            <div class="row">
+                                <a href = "{% url 'audiobook:voice_custom_upload' book.book_id %}">
+                                    <button id="createBtn" class="btn btn-outline-orange-400 btn-sm">목소리 생성</button>
+                                </a>
+                            </div>
                     </div>
                 </div>
             </div>
