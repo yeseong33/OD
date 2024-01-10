@@ -95,7 +95,7 @@
                 </div>
                 <div class="col-2">
                     <button id="play" class="action-btn" style="background-color: white;">
-                        <img src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
+                        <img id="playImg" src="/static/images/play.png" alt="Your Image" class="img-fluid"  style="max-width: 100%;">
                     </button>
                 </div>
                 <div class="col-2">
@@ -107,9 +107,15 @@
         </div>
     </div>
 
-    <audio id="audioPlayer" style="display: none">
-        <source src="{{ selected_voice.voice_sample_path.url }}" type="audio/mp3">
+    {% if book.book_voice_path %}
+    <audio id="audioPlayer">
+        <source src="{{ book.book_voice_path.url }}" type="audio/mp3">
     </audio>
+    {% else %}
+    <audio id="audioPlayer">
+        <source src="" type="audio/mp3">
+    </audio>
+    {% endif %}
 
     <!-- 공백 -->
     <div class="row my-5"></div>
@@ -149,9 +155,9 @@
         })
         .then(response => response.json())
         .then(data => {
-
-            console.log(data);
-            
+            console.log(data); 
+            alert('생성이 완료되었습니다.');
+            window.location.reload();           
         })
         .catch(error => console.error('Error:', error));
     }
@@ -161,6 +167,8 @@
         const audio = document.getElementById("audioPlayer");
         const progressBar = document.getElementById("progress-bar");
         const progressBarThumb = document.getElementById("progress-bar-thumb");
+        const playPauseIcon = document.getElementById("playImg");
+
         let isDragging = false;
         let animationFrameId;
 
@@ -210,9 +218,11 @@
             if (audio.paused) {
                 audio.play();
                 animateProgressBar();
+                playPauseIcon.src = "/static/images/pause.png"; 
             } else {
                 audio.pause();
                 cancelAnimationFrame(animationFrameId);
+                playPauseIcon.src = "/static/images/play.png"; 
             }
         });
 

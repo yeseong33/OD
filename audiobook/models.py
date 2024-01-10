@@ -44,8 +44,8 @@ class Book(models.Model):
 
 class TemporaryFile(models.Model):
     temp_voice_image_path = models.ImageField(
-        upload_to='voice_images/', null=True)
+        upload_to='tmp/', null=True)
     temp_voice_sample_path = models.FileField(
-        upload_to='voice_sample/', null=True)
+        upload_to='tmp/', null=True)
     temp_voice_rvc_path = models.FileField(
-        upload_to='voice_rvc/', null=True)
+        upload_to='tmp/', null=True)

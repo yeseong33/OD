@@ -3,6 +3,13 @@
 
 {% block title %}O :D{% endblock %}
 {% block style %}
+<style>
+    .carousel-item img {
+        object-fit: contain; 
+        max-height: 500px;  
+        width: auto;         
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -18,13 +25,13 @@
     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active" data-bs-interval="5000">
-            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="wo">
+                <img src="{% static 'images/index1.png' %}" class="d-block w-100 rounded my-5" alt="index1">
             </div>
             <div class="carousel-item" data-bs-interval="5000">
-            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="oh">
+                <img src="{% static 'images/index2.png' %}" class="d-block w-100 rounded my-5" alt="index2">
             </div>
             <div class="carousel-item" data-bs-interval="5000">
-            <img src="https://placehold.co/500x300" class="d-block w-100 rounded my-5" alt="young">
+                <img src="{% static 'images/index3.png' %}" class="d-block w-100 rounded my-5" alt="index3">
             </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
