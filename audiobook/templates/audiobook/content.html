@@ -6,10 +6,10 @@
 {% block style %}
 <style>
     #voice_img {
+        object-fit: contain; 
         height: 300px;
-        object-fit: cover; 
-        cursor:pointer;
         width: 300px;
+        cursor: pointer;
     }
 </style>
 {% endblock %}
@@ -34,7 +34,7 @@
                     {% if selected_voice %}
                         <img id="voice_img" src="{{ selected_voice.voice_image_path.url }}" alt="{{ selected_voice_name }}" class="img-fluid rounded">
                     {% else %}
-                        <img id="voice_img" src="/static/images/IU.jpg" alt="기본 성우" class="img-fluid rounded">
+                        <img id="voice_img" src="{% static 'images/default_voice_image.png' %}" alt="기본 성우" class="img-fluid rounded">
                     {% endif %}
                 </a>                
             </div>
