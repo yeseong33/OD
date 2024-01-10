@@ -107,9 +107,15 @@
         </div>
     </div>
 
-    <audio id="audioPlayer" style="display: none">
-        <source src="{{ selected_voice.voice_sample_path.url }}" type="audio/mp3">
+    {% if book.book_voice_path %}
+    <audio id="audioPlayer">
+        <source src="{{ book.book_voice_path.url }}" type="audio/mp3">
     </audio>
+    {% else %}
+    <audio id="audioPlayer">
+        <source src="" type="audio/mp3">
+    </audio>
+    {% endif %}
 
     <!-- 공백 -->
     <div class="row my-5"></div>
@@ -149,9 +155,9 @@
         })
         .then(response => response.json())
         .then(data => {
-
-            console.log(data);
-            
+            console.log(data); 
+            alert('생성이 완료되었습니다.');
+            window.location.reload();           
         })
         .catch(error => console.error('Error:', error));
     }
