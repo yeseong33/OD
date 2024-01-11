@@ -132,8 +132,9 @@
       <div class="custom-col">
         <div class="card border-0 text-end h-100">
             <a href="#">
-                <div class="card text-white">
+                <div class="card text-white" onmouseenter="playAudio(this)" onmouseleave="stopAudio(this)">   <!-- 이미지에 마우스 올렸을 때 내렸을 때 -->
                     <img src="{{ file_path }}{{ voice.voice_image_path }}" class="card-img" alt="{{ voice.voice_name }}" style='height: 250px;'>
+                    <audio class="voice-sample" src="{{ file_path }}{{ voice.voice_sample_path }}"></audio>
                     <div class="card-img-overlay bg-secondary">
                         <h5 class="card-title fw-bold">{{ voice.voice_name }}</h5>
                     </div>
@@ -169,6 +170,18 @@
 {% block script %}
   <script src="/static/js/scrollContainer.js"></script>
   <script>
+    // 오디오를 재생하고 정지하는 함수들
+    function playAudio(element) {
+        var audio = element.querySelector('.voice-sample');
+        audio.play();
+        }
+    
+        function stopAudio(element) {
+        var audio = element.querySelector('.voice-sample');
+        audio.pause();
+        audio.currentTime = 0; // 오디오 재생 위치를 처음으로 리셋합니다.
+        }
+      
     // CSRF 토큰을 가져오는 함수
     function getCSRFToken() {
         const cookies = document.cookie.split(';');
