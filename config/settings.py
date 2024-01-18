@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'community',
     'manager',
     'config',
+    'api',
 ]
 
 AUTHENTICATION_BACKENDS = [
