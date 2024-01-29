@@ -104,7 +104,7 @@
             item.addEventListener('click', event => {
                 const bookId = item.getAttribute('data-book-id');
                 
-                fetch('{% url 'community:book_like' %}', {
+                fetch('{% url 'api:book_like' %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

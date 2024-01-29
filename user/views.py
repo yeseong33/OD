@@ -3,7 +3,6 @@ import os
 from datetime import datetime, timedelta
 
 # 제3자 라이브러리
-import bcrypt
 import requests
 from dotenv import load_dotenv
 from jose import jwt

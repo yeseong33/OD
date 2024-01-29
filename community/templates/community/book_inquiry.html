@@ -82,7 +82,7 @@
          
 
             // POST 요청 보내기
-            fetch("{% url 'community:inquiry_list' %}", {
+            fetch("{% url 'api:inquiry_list' %}", {
                 method: 'POST',
                 body: formData,
             })

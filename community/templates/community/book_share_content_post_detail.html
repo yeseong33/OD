@@ -121,7 +121,7 @@
             // AJAX 요청
             $.ajax({
                 type: "POST",
-                url: "{% url 'community:comment_list' %}",
+                url: "{% url 'api:comment_list' %}",
                 data: formData,
                 success: function(response) {
                     // 서버 응답 처리
@@ -140,7 +140,7 @@
             // AJAX 요청
             $.ajax({
                 type: "DELETE",
-                url: "{% url 'community:post_detail' pk=post.post_id %}",
+                url: "{% url 'api:post_detail' pk=post.post_id %}",
                 success: function(response) {
                     // 서버 응답 처리
                     console.log(response)
@@ -189,7 +189,7 @@
 
             $.ajax({
                 method: "PUT",
-                url: "{% url 'community:post_detail' pk=post.post_id %}",  // 이 부분 수정
+                url: "{% url 'api:post_detail' pk=post.post_id %}",  // 이 부분 수정
                 data: {
                     new_title: updatedTitle,
                     new_content: updatedContent,
@@ -246,7 +246,7 @@
                     // 해당 댓글 삭제 AJAX 요청
                     $.ajax({
                         type: "DELETE",
-                        url: "{% url 'community:comment_detail' pk=0%}".replace("0", commentId),  // 댓글 삭제 URL을 적절하게 수정
+                        url: "{% url 'api:comment_detail' pk=0%}".replace("0", commentId),  // 댓글 삭제 URL을 적절하게 수정
                         success: function(response) {
                             handleCommentResponse(response);
                         },

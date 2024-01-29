@@ -34,8 +34,6 @@ urlpatterns = [
     path('faq/', views.ManagerFAQHtml.as_view(), name='faq'),
     path('faq/post/', views.ManagerFAQPostHtml.as_view(), name='faq_post'),
 
-
-    
     ## 접근 제한
     path('access/deney/', views.AccessDenyHtml.as_view(), name='access_deny')
 ]

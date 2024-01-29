@@ -199,7 +199,7 @@
         item.addEventListener('click', event => {
             const bookId = item.getAttribute('data-book-id');
             
-            fetch('{% url 'community:book_like' %}', {
+            fetch('{% url 'api:book_like' %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -238,7 +238,6 @@
         });
     });
 
-    
     // 좋아요 이벤트    
     document.querySelectorAll('.like-icon-voice').forEach(item => {
         item.addEventListener('click', event => {

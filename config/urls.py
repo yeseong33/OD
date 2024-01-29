@@ -24,6 +24,7 @@ from config.views import privacy_policy
 
 urlpatterns = [
     path('', include('audiobook.urls')),
+    path('api', include('api.urls')),
     path('admin/', admin.site.urls),
     path('community/', include('community.urls')),
     path('user/', include('user.urls')),

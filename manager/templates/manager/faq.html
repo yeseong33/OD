@@ -102,7 +102,7 @@
                 }
 
                 // DELETE 요청 보내기
-                fetch("{% url 'community:faq_detail' pk=0%}".replace("0", delete_id), {
+                fetch("{% url 'api:faq_detail' pk=0%}".replace("0", delete_id), {
                     method: 'DELETE',
                     headers: {
                         "Content-Type": "application/json",

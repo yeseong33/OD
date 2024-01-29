@@ -64,7 +64,7 @@
             var formData = new FormData(document.getElementById('postForm'));
 
             // POST 요청 보내기
-            fetch("{% url 'community:post_list' %}", {
+            fetch("{% url 'api:post_list' %}", {
                 method: 'POST',
                 body: formData,
             })

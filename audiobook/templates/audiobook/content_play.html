@@ -124,20 +124,17 @@
 {% endblock %}
 
 {% block script %}
+<script src="/static/js/getCSRFToken.js"></script>
+<script src="/static/js/submitTone.js"></script>
 <script>
-    // CSRF 토큰을 가져오는 함수
-    function getCSRFToken() {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith('csrftoken=')) {
-                return cookie.substring('csrftoken='.length, cookie.length);
-            }
-        }
-        return null;
-    }
+    var playUrl = "{% url 'audiobook:content_play' book_id=book.book_id %}";
+    const bookId = {{ book.book_id }}; // Django 템플릿 변수
+    let toneValue = document.getElementById('toneRange').value;
+    var tone = document.getElementById('toneRange').value;
+    var formData = new FormData();
+    formData.append('tone', tone);
 
-    // 조정하기 버튼 함수
+    {% comment %} // 조정하기 버튼 함수
     function submitTone() {
         let toneValue = document.getElementById('toneRange').value;
         const bookId = {{ book.book_id }}; // Django 템플릿 변수
@@ -147,7 +144,7 @@
         
         formData.append('tone', tone);
     
-        fetch('{% url 'audiobook:content_play' book_id=book.book_id %}', {
+        fetch(playUrl, {
             method: 'POST',
             headers: {
                 //'Content-Type': 'application/json',
@@ -162,7 +159,7 @@
             window.location.reload();           
         })
         .catch(error => console.error('Error:', error));
-    }
+    } {% endcomment %}
 
     // 오디오 관련 기능을 담당하는 함수
     function setupAudioPlayer() {
@@ -278,7 +275,7 @@
             }
 
             // 좋아요 버튼을 클릭했을 때 서버로 비동기 요청을 보내는 코드
-            fetch("{% url 'community:book_detail' pk=book.book_id%}", {
+            fetch("{% url 'api:book_detail' pk=book.book_id%}", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -312,7 +309,7 @@
                 console.error("좋아요 업데이트 중 오류 발생", error);
             });
 
-            fetch("{% url 'community:user_detail' pk=user.user_id%}", {
+            fetch("{% url 'api:user_detail' pk=user.user_id%}", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
