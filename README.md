@@ -358,8 +358,6 @@ USE_GPU=off bash start_docker.sh
 - 본인이 코드 설명이나, 필요한 설명이 있으면 추가하고 chore branch를 통해 업데이트 해주세요!
 
 
-### (5) 지원자 2133-000317
-
 #### serializers.py 확인과정
 
 - serializers가 잘 작동하는지 확인하는 방법입니다.
